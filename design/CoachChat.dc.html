@@ -1,0 +1,143 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@200;300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0A0C0B; font-family: 'Readex Pro', 'Segoe UI', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C8F751; text-decoration: none; }
+    a:hover { color: #E2FF9A; }
+    .scr { width: 390px; height: 844px; background: #0A0C0B; color: #EDF2EE; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .safeTop { height: 52px; flex: none; }
+    .body { flex: 1; display: flex; flex-direction: column; gap: 14px; padding: 0 20px 10px; overflow: hidden; }
+    .d1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+    .h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+    .h2 { font-size: 16.5px; font-weight: 600; line-height: 1.35; }
+    .h3 { font-size: 14.5px; font-weight: 500; line-height: 1.4; }
+    .b1 { font-size: 13.5px; font-weight: 300; line-height: 1.6; }
+    .b2 { font-size: 12px; font-weight: 300; line-height: 1.5; }
+    .cap { font-size: 10.5px; font-weight: 400; letter-spacing: 0.06em; }
+    .num { font-family: 'Space Grotesk', 'Readex Pro', system-ui, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+    .t1 { color: #EDF2EE; }
+    .t2 { color: #A9B5AE; }
+    .t3 { color: #74807A; }
+    .ink { color: #0A0C0B; }
+    .card { background: #131715; border: 1px solid rgba(255,255,255,0.07); border-radius: 22px; }
+    .card2 { background: #1A201D; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; }
+    .hair { background: rgba(255,255,255,0.07); }
+    .accent { color: #C8F751; }
+    .accentSoft { background: rgba(200,247,81,0.12); color: #C8F751; }
+    .fill { background: #C8F751; color: #0A0C0B; }
+    .ghost { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); color: #EDF2EE; }
+    .track { stroke: rgba(255,255,255,0.09); }
+    .trackBg { background: rgba(255,255,255,0.08); }
+    .mP { color: #C8F751; } .mC { color: #7FD4FF; } .mF { color: #FFC46B; }
+    .mPb { background: #C8F751; } .mCb { background: #7FD4FF; } .mFb { background: #FFC46B; }
+    .mPs { stroke: #C8F751; } .mCs { stroke: #7FD4FF; } .mFs { stroke: #FFC46B; }
+    .accentS { stroke: #C8F751; }
+    .ic { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    .ic18 { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    .ic14 { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    .nav { flex: none; height: 88px; background: rgba(10,12,11,0.92); border-top: 1px solid rgba(255,255,255,0.07); display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 18px 0; }
+    .navi { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 58px; min-height: 46px; color: #6C7873; }
+    .naviOn { color: #C8F751; }
+    .fab { width: 56px; height: 56px; border-radius: 20px; background: #C8F751; color: #0A0C0B; display: flex; align-items: center; justify-content: center; margin-top: -14px; box-shadow: 0 10px 24px rgba(200,247,81,0.22); }
+    .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
+    .rowc { display: flex; align-items: center; gap: 12px; }
+    .btn { min-height: 52px; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 500; }
+    .chip { min-height: 36px; padding: 0 14px; border-radius: 12px; display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 400; }
+    .seg { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 4px; display: flex; gap: 4px; }
+    .segi { flex: 1; min-height: 36px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; }
+    .segOn { background: #C8F751; color: #0A0C0B; font-weight: 500; }
+    .glow { position: absolute; border-radius: 999px; filter: blur(70px); opacity: 0.5; pointer-events: none; }
+  </style>
+</helmet>
+
+<div class="scr" dir="rtl">
+  <div class="safeTop"></div>
+  <div class="body" style="gap:12px;">
+
+    <div class="head">
+      <svg class="ic t2" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg>
+      <div class="rowc" style="gap:10px;">
+        <div class="accentSoft" style="width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;"><div class="h3">س</div></div>
+        <div style="display:flex;flex-direction:column;gap:1px;">
+          <div class="h3 t1">سلطان الحربي</div>
+          <div class="cap accent">متصل الآن</div>
+        </div>
+      </div>
+      <svg class="ic t2" viewBox="0 0 24 24"><path d="M12 5.4h.01M12 12h.01M12 18.6h.01"/></svg>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;flex:1;">
+
+      <div class="cap t3" style="text-align:center;">اليوم</div>
+
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:5px;max-width:82%;">
+        <div class="card" style="padding:12px 14px;border-radius:20px 20px 20px 6px;">
+          <div class="b1 t1">كوتش، اليوم بديت أحس بجوع بالليل. أزيد بروتين العشاء؟</div>
+        </div>
+        <div class="cap t3">٦:٤٢ م</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:5px;max-width:70%;">
+        <div class="card" style="padding:10px;border-radius:20px 20px 20px 6px;display:flex;flex-direction:column;gap:8px;">
+          <div class="card2" style="height:120px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+            <svg class="ic t3" viewBox="0 0 24 24"><path d="M4.6 7.4h14.8a1.4 1.4 0 0 1 1.4 1.4v9.4a1.4 1.4 0 0 1-1.4 1.4H4.6a1.4 1.4 0 0 1-1.4-1.4V8.8a1.4 1.4 0 0 1 1.4-1.4zM9 7.4l1.2-2.6h3.6L15 7.4M12 10.8a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4z"/></svg>
+            <div class="cap t3">صورة عشاء اليوم</div>
+          </div>
+          <div class="b2 t2">سجّلتها: ١٥٠ جم دجاج · خضار · ٤٤٠ سعرة</div>
+        </div>
+        <div class="cap t3">٦:٤٣ م</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;max-width:82%;align-self:flex-end;">
+        <div class="fill" style="padding:12px 14px;border-radius:20px 20px 6px 20px;">
+          <div class="b1" style="color:#0A0C0B;">زد ٣٠ جم بروتين على العشاء وخلّ الدهون زي ماهي. عدّلت لك الخطة توّي — شيّكها.</div>
+        </div>
+        <div class="rowc" style="gap:5px;">
+          <div class="cap t3">٦:٥٠ م</div>
+          <svg class="ic14 accent" viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M5.6 12.6l4 4 8.8-9.2"/></svg>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;max-width:82%;align-self:flex-end;">
+        <div class="card" style="padding:12px 14px;border-radius:20px 20px 6px 20px;border-color:rgba(200,247,81,0.3);display:flex;align-items:center;gap:10px;">
+          <div class="accentSoft" style="width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;">
+            <svg class="ic18" viewBox="0 0 24 24"><path d="M9.4 3.8h5.2v2.4H9.4zM8.4 5h-2A1.6 1.6 0 0 0 4.8 6.6v12.2a1.6 1.6 0 0 0 1.6 1.6h11.2a1.6 1.6 0 0 0 1.6-1.6V6.6A1.6 1.6 0 0 0 17.6 5h-2M8.8 11.6h6.4M8.8 15.6h4.2"/></svg>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:1px;">
+            <div class="h3 t1">خطة أكل محدّثة</div>
+            <div class="b2 t3">كيتو · ٢٢٠٠ سعرة · ١٩٥ بروتين</div>
+          </div>
+        </div>
+        <div class="cap t3">٦:٥٠ م</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <div class="ghost chip">أحسنت، استمر</div>
+      <div class="ghost chip">أرسل خطة</div>
+      <div class="ghost chip">ذكّره بالتسجيل</div>
+    </div>
+
+    <div class="card" style="min-height:52px;display:flex;align-items:center;gap:12px;padding:0 14px;border-radius:18px;">
+      <svg class="ic18 t3" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>
+      <div class="b1 t3" style="flex:1;">اكتب رسالة…</div>
+      <div class="fill" style="width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+        <svg class="ic18" viewBox="0 0 24 24"><path d="M20 4.6 3.8 10.4l6.6 2.8 2.8 6.6z"/></svg>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

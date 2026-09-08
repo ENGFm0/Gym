@@ -1,50 +1,363 @@
 {
   "pages": [
-    { "id": "page-1", "name": "التطبيق — داكن" },
-    { "id": "page-2", "name": "البداية وحساب الخطة" },
-    { "id": "page-3", "name": "الوضع الفاتح" },
-    { "id": "page-4", "name": "English (LTR)" },
-    { "id": "page-5", "name": "نظام التصميم" }
+    {
+      "id": "page-1",
+      "name": "التطبيق — داكن"
+    },
+    {
+      "id": "page-2",
+      "name": "البداية وحساب الخطة"
+    },
+    {
+      "id": "page-3",
+      "name": "الوضع الفاتح"
+    },
+    {
+      "id": "page-4",
+      "name": "English (LTR)"
+    },
+    {
+      "id": "page-5",
+      "name": "نظام التصميم"
+    },
+    {
+      "id": "page-6",
+      "name": "لوحة المدرّب"
+    }
   ],
   "artboards": [
-    { "file": "Main.dc.html",        "x": 0,    "y": 0,    "w": 390, "h": 844, "page": "page-1", "title": "الرئيسية" },
-    { "file": "Diary.dc.html",       "x": 470,  "y": 0,    "w": 390, "h": 844, "page": "page-1", "title": "اليوميات" },
-    { "file": "AddFood.dc.html",     "x": 940,  "y": 0,    "w": 390, "h": 844, "page": "page-1", "title": "إضافة طعام" },
-    { "file": "Scanner.dc.html",     "x": 1410, "y": 0,    "w": 390, "h": 844, "page": "page-1", "title": "ماسح الباركود" },
-    { "file": "FoodDetail.dc.html",  "x": 1880, "y": 0,    "w": 390, "h": 844, "page": "page-1", "title": "تفاصيل الصنف" },
-    { "file": "Diets.dc.html",       "x": 0,    "y": 964,  "w": 390, "h": 844, "page": "page-1", "title": "أنظمة الدايت" },
-    { "file": "DietDetail.dc.html",  "x": 470,  "y": 964,  "w": 390, "h": 844, "page": "page-1", "title": "تفاصيل النظام" },
-    { "file": "Workouts.dc.html",    "x": 940,  "y": 964,  "w": 390, "h": 844, "page": "page-1", "title": "التمارين" },
-    { "file": "ExerciseLog.dc.html", "x": 1410, "y": 964,  "w": 390, "h": 844, "page": "page-1", "title": "تسجيل تمرين" },
-    { "file": "Progress.dc.html",    "x": 1880, "y": 964,  "w": 390, "h": 844, "page": "page-1", "title": "التقدّم" },
-    { "file": "Scale.dc.html",       "x": 0,    "y": 1928, "w": 390, "h": 844, "page": "page-1", "title": "الميزان الذكي" },
-    { "file": "Steps.dc.html",       "x": 470,  "y": 1928, "w": 390, "h": 844, "page": "page-1", "title": "المشي والنشاط" },
-    { "file": "Profile.dc.html",     "x": 940,  "y": 1928, "w": 390, "h": 844, "page": "page-1", "title": "حسابي" },
-
-    { "file": "Welcome.dc.html",     "x": 0,    "y": 0,    "w": 390, "h": 844, "page": "page-2", "title": "الترحيب" },
-    { "file": "BodyData.dc.html",    "x": 470,  "y": 0,    "w": 390, "h": 844, "page": "page-2", "title": "بياناتك الجسدية" },
-    { "file": "PlanResult.dc.html",  "x": 940,  "y": 0,    "w": 390, "h": 844, "page": "page-2", "title": "نتيجة الحساب" },
-
-    { "file": "HomeLight.dc.html",   "x": 0,    "y": 0,    "w": 390, "h": 844, "page": "page-3", "title": "الرئيسية — فاتح" },
-    { "file": "DiaryLight.dc.html",  "x": 470,  "y": 0,    "w": 390, "h": 844, "page": "page-3", "title": "اليوميات — فاتح" },
-    { "file": "ScaleLight.dc.html",  "x": 940,  "y": 0,    "w": 390, "h": 844, "page": "page-3", "title": "الميزان — فاتح" },
-
-    { "file": "HomeEN.dc.html",      "x": 0,    "y": 0,    "w": 390, "h": 844, "page": "page-4", "title": "Home" },
-    { "file": "AddFoodEN.dc.html",   "x": 470,  "y": 0,    "w": 390, "h": 844, "page": "page-4", "title": "Add food" },
-
-    { "file": "System.dc.html",      "x": 0,    "y": 0,    "w": 1120, "h": 940, "page": "page-5", "title": "نظام التصميم" }
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "title": "الرئيسية"
+    },
+    {
+      "file": "Diary.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "title": "اليوميات"
+    },
+    {
+      "file": "AddFood.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "title": "إضافة طعام"
+    },
+    {
+      "file": "Scanner.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "title": "ماسح الباركود"
+    },
+    {
+      "file": "FoodDetail.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "title": "تفاصيل الصنف"
+    },
+    {
+      "file": "Diets.dc.html",
+      "x": 0,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "title": "أنظمة الدايت"
+    },
+    {
+      "file": "DietDetail.dc.html",
+      "x": 470,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "title": "تفاصيل النظام"
+    },
+    {
+      "file": "Workouts.dc.html",
+      "x": 940,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "title": "التمارين"
+    },
+    {
+      "file": "ExerciseLog.dc.html",
+      "x": 1410,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "title": "تسجيل تمرين"
+    },
+    {
+      "file": "Progress.dc.html",
+      "x": 1880,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "title": "التقدّم"
+    },
+    {
+      "file": "Scale.dc.html",
+      "x": 0,
+      "y": 1928,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "title": "الميزان الذكي"
+    },
+    {
+      "file": "Steps.dc.html",
+      "x": 470,
+      "y": 1928,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "title": "المشي والنشاط"
+    },
+    {
+      "file": "Profile.dc.html",
+      "x": 940,
+      "y": 1928,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "title": "حسابي"
+    },
+    {
+      "file": "Welcome.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-2",
+      "title": "الترحيب"
+    },
+    {
+      "file": "BodyData.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-2",
+      "title": "بياناتك الجسدية"
+    },
+    {
+      "file": "PlanResult.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-2",
+      "title": "نتيجة الحساب"
+    },
+    {
+      "file": "HomeLight.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-3",
+      "title": "الرئيسية — فاتح"
+    },
+    {
+      "file": "DiaryLight.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-3",
+      "title": "اليوميات — فاتح"
+    },
+    {
+      "file": "ScaleLight.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-3",
+      "title": "الميزان — فاتح"
+    },
+    {
+      "file": "HomeEN.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-4",
+      "title": "Home"
+    },
+    {
+      "file": "AddFoodEN.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-4",
+      "title": "Add food"
+    },
+    {
+      "file": "System.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1120,
+      "h": 940,
+      "page": "page-5",
+      "title": "نظام التصميم"
+    },
+    {
+      "file": "CoachHome.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-6",
+      "title": "لوحة المدرّب"
+    },
+    {
+      "file": "Clients.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-6",
+      "title": "المتدربون"
+    },
+    {
+      "file": "ClientProfile.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-6",
+      "title": "ملف المتدرب"
+    },
+    {
+      "file": "ClientDiary.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-6",
+      "title": "وجباته مقابل الخطة"
+    },
+    {
+      "file": "AssignPlan.dc.html",
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-6",
+      "title": "بناء خطة أكل"
+    },
+    {
+      "file": "CoachCheckin.dc.html",
+      "x": 0,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "page": "page-6",
+      "title": "المراجعة الأسبوعية"
+    },
+    {
+      "file": "CoachChat.dc.html",
+      "x": 470,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "page": "page-6",
+      "title": "المحادثة"
+    },
+    {
+      "file": "AddClient.dc.html",
+      "x": 940,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "page": "page-6",
+      "title": "إضافة متدرب"
+    },
+    {
+      "file": "MyCoachPlan.dc.html",
+      "x": 1410,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "page": "page-6",
+      "title": "شاشة المتدرب"
+    }
   ],
   "annotations": [
-    { "id": "flow-note", "x": 0, "y": -150, "w": 1000, "page": "page-1",
-      "text": "المسار الأساسي: الرئيسية ← اليوميات ← إضافة طعام (باركود / بحث / يدوي) ← تفاصيل الصنف.\nالصف الثاني: مكتبة الدايت والتمارين. الصف الثالث: الميزان والمشي والحساب." },
-    { "id": "onboard-note", "x": 0, "y": -130, "w": 760, "page": "page-2",
-      "text": "٤ خطوات: الترحيب ← الهدف ← البيانات الجسدية ← نتيجة الحساب.\nالسعرات محسوبة بمعادلة Mifflin-St Jeor والتوزيع حسب النظام المختار." },
-    { "id": "light-note", "x": 0, "y": -130, "w": 760, "page": "page-3",
-      "text": "نفس الشاشات بالوضع الفاتح — نفس المقاسات والمسافات، تتغيّر الألوان فقط." },
-    { "id": "en-note", "x": 0, "y": -130, "w": 760, "page": "page-4",
-      "text": "النسخة الإنجليزية LTR: كل شي ينعكس تلقائياً — الأيقونات والأسهم والترتيب." },
-    { "id": "system-note", "x": 0, "y": -130, "w": 900, "page": "page-5",
-      "text": "المرجع للمبرمج: الألوان بالوضعين، سلم الخطوط، العناصر الجاهزة، والأيقونات." }
+    {
+      "id": "flow-note",
+      "x": 0,
+      "y": -150,
+      "w": 1000,
+      "page": "page-1",
+      "text": "المسار الأساسي: الرئيسية ← اليوميات ← إضافة طعام (باركود / بحث / يدوي) ← تفاصيل الصنف.\nالصف الثاني: مكتبة الدايت والتمارين. الصف الثالث: الميزان والمشي والحساب."
+    },
+    {
+      "id": "onboard-note",
+      "x": 0,
+      "y": -130,
+      "w": 760,
+      "page": "page-2",
+      "text": "٤ خطوات: الترحيب ← الهدف ← البيانات الجسدية ← نتيجة الحساب.\nالسعرات محسوبة بمعادلة Mifflin-St Jeor والتوزيع حسب النظام المختار."
+    },
+    {
+      "id": "light-note",
+      "x": 0,
+      "y": -130,
+      "w": 760,
+      "page": "page-3",
+      "text": "نفس الشاشات بالوضع الفاتح — نفس المقاسات والمسافات، تتغيّر الألوان فقط."
+    },
+    {
+      "id": "en-note",
+      "x": 0,
+      "y": -130,
+      "w": 760,
+      "page": "page-4",
+      "text": "النسخة الإنجليزية LTR: كل شي ينعكس تلقائياً — الأيقونات والأسهم والترتيب."
+    },
+    {
+      "id": "system-note",
+      "x": 0,
+      "y": -130,
+      "w": 900,
+      "page": "page-5",
+      "text": "المرجع للمبرمج: الألوان بالوضعين، سلم الخطوط، العناصر الجاهزة، والأيقونات."
+    },
+    {
+      "id": "coach-note",
+      "x": 0,
+      "y": -170,
+      "w": 1100,
+      "page": "page-6",
+      "text": "وحدة إدارة المدرّب: يضيف متدربين بكود دعوة، يبني لهم خطة أكل، ويشوف يومياتهم «الخطة مقابل اللي أكلوه» بثلاث حالات — مطابق، بديل مقبول، خارج الخطة.\nالمراجعة الأسبوعية تجمع الصور والوزن والمقاسات في شاشة وحدة. آخر شاشة بالصف الثاني هي شاشة المتدرب نفسه لمّا توصله خطتك."
+    }
   ],
-  "launch": { "view": "canvas", "page": "page-1" }
+  "launch": {
+    "view": "canvas",
+    "page": "page-6"
+  }
 }

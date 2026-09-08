@@ -7,15 +7,16 @@ P = HERE / "parts"
 
 HEAD = {"dark": (P / "head-dark.html").read_text(), "light": (P / "head-light.html").read_text()}
 TAIL = (P / "tail.html").read_text()
-NAV = (P / "nav.html").read_text()
+NAV = {"app": (P / "nav.html").read_text(), "coach": (P / "nav-coach.html").read_text()}
 
 LABELS = {
     "ar": ["الرئيسية", "الوجبات", "التمارين", "التقدّم"],
     "en": ["Home", "Meals", "Train", "Progress"],
+    "coach": ["اللوحة", "المتدربون", "الخطط", "الرسائل"],
 }
 
 def nav(active, lang):
-    out = NAV
+    out = NAV["coach" if lang == "coach" else "app"]
     for i in range(4):
         out = out.replace(f"NAV{i}", "naviOn" if i == active else "")
         out = out.replace(f"LBL{i}", LABELS[lang][i])
@@ -45,6 +46,16 @@ SCREENS = [
     ("HomeEN",      "home-en",     "dark",  "en", 0),
     ("AddFoodEN",   "addfood-en",  "dark",  "en", None),
     ("System",      "system",      "dark",  "ar", None),
+
+    ("CoachHome",     "coachhome",     "dark", "coach", 0),
+    ("Clients",       "clients",       "dark", "coach", 1),
+    ("ClientProfile", "clientprofile", "dark", "coach", None),
+    ("ClientDiary",   "clientdiary",   "dark", "coach", None),
+    ("AssignPlan",    "assignplan",    "dark", "coach", None),
+    ("CoachCheckin",  "coachcheckin",  "dark", "coach", None),
+    ("CoachChat",     "coachchat",     "dark", "coach", None),
+    ("AddClient",     "addclient",     "dark", "coach", None),
+    ("MyCoachPlan",   "mycoachplan",   "dark", "ar",    None),
 ]
 
 def build():
