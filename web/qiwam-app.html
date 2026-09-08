@@ -249,7 +249,7 @@ var DIETS = [
    desc:"فائض ٣٠٠–٥٠٠ سعرة مع بروتين عالي وكارب كافٍ حول التمرين، لزيادة العضل بأقل دهون.",
    yes:["أرز وشوفان","لحوم ودجاج","بيض","حليب","مكسرات","فواكه"],
    no:["الفائض المبالغ فيه","الوجبات السريعة اليومية"]},
-  {id:"balanced", n:"متوازن", sub:"٤٠ كارب · ٣٠ بروتين · ٣٠ دهون", split:{f:.30,p:.30,c:.40},
+  {id:"balanced", n:"متوازن", sub:"بدون تقييد نوع الأكل", split:{f:.30,p:.30,c:.40},
    desc:"توزيع معتدل بدون تقييد نوع الأكل. الأنسب لمن يبي يبدأ بدون تعقيد.",
    yes:["كل المجموعات الغذائية","بروتين في كل وجبة","خضار في وجبتين"],
    no:["السكر المضاف اليومي","المقليات المتكررة"]}
@@ -507,8 +507,10 @@ function vHome(){
   var diet = DIET_BY_ID[S.profile.diet];
   return '<div class="glow" style="width:260px;height:260px;background:var(--acc);top:-130px;inset-inline-end:-90px"></div>'+
   '<div class="head" style="position:relative">'+
-    '<div class="col" style="gap:2px"><div class="h1 t1">أهلاً '+esc(S.profile.name)+'</div>'+
-    '<div class="b2 t3">'+esc(diet.n)+' · هدفك '+ar(t.kcal)+' سعرة</div></div>'+
+    '<div class="col" style="gap:4px;align-items:flex-start"><div class="h1 t1">أهلاً '+esc(S.profile.name)+'</div>'+
+    '<button class="press rowc" data-act="go" data-to="diets" style="gap:5px;min-height:28px">'+
+      '<span class="b2 acc">'+esc(diet.n)+'</span><span class="b2 t3">· هدفك '+ar(t.kcal)+' سعرة</span>'+
+      '<span class="t3">'+svg("next","ic14")+'</span></button></div>'+
     '<button class="card2 sq press" data-act="go" data-to="profile" style="width:44px;height:44px;border-radius:14px" aria-label="حسابي">'+svg("user","ic18")+'</button>'+
   '</div>'+
 
@@ -531,6 +533,12 @@ function vHome(){
     '</div>'+
   '</div>'+
 
+  '<div class="scrollx">'+
+    '<button class="ghost chip press" data-act="go" data-to="diets" style="min-height:44px">'+svg("flame","ic18")+'أنظمة الدايت</button>'+
+    '<button class="ghost chip press" data-act="go" data-to="scale" style="min-height:44px">'+svg("scale","ic18")+'الميزان الذكي</button>'+
+    '<button class="ghost chip press" data-act="go" data-to="steps" style="min-height:44px">'+svg("steps","ic18")+'المشي</button>'+
+    '<button class="ghost chip press" data-act="go" data-to="coachplan" style="min-height:44px">'+svg("chatbub","ic18")+'خطة المدرّب</button>'+
+  '</div>'+
   '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">'+
     '<button class="card press" data-act="go" data-to="steps" style="padding:14px 16px;display:flex;flex-direction:column;gap:8px;align-items:stretch">'+
       '<div class="rowc" style="gap:8px">'+svg("steps","ic18")+'<div class="b2 t2">خطوات اليوم</div></div>'+
@@ -610,6 +618,10 @@ function vDiary(){
       '<button class="rowc acc press" data-act="addto" data-meal="'+m+'" style="gap:6px;min-height:46px">'+svg("plus","ic14")+'<div class="b2">أضف لـ'+m+'</div></button>'+
     '</div>';
   }).join("")+
+  '<button class="card press" data-act="go" data-to="diets" style="padding:14px 16px;display:flex;align-items:center;gap:12px">'+
+    '<div class="softacc sq" style="width:40px;height:40px;border-radius:13px">'+svg("flame","ic18")+'</div>'+
+    '<div class="col" style="gap:1px;flex:1;align-items:flex-start"><div class="h3 t1">نظامك: '+esc(DIET_BY_ID[S.profile.diet].n)+'</div>'+
+    '<div class="b2 t3">بدّله وتنعاد قسمة الماكروز على هدفك</div></div>'+svg("next","ic14")+'</button>'+
   '<button class="card press" data-act="go" data-to="workouts" style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between">'+
     '<div class="col" style="gap:2px;align-items:flex-start"><div class="h2 t1">النشاط</div>'+
     '<div class="b2 t3">مشي '+ar(S.day.steps)+' خطوة</div></div>'+
