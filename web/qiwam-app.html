@@ -533,8 +533,28 @@ function vHome(){
     '</div>'+
   '</div>'+
 
+  '<button class="card press" data-act="go" data-to="diets" style="padding:16px 18px;display:flex;flex-direction:column;gap:14px;align-items:stretch;border-color:var(--acc)">'+
+    '<div class="between">'+
+      '<div class="rowc">'+
+        '<div class="softacc sq" style="width:46px;height:46px;border-radius:15px">'+svg("flame")+'</div>'+
+        '<div class="col" style="gap:2px;align-items:flex-start">'+
+          '<div class="cap t3">نظامك الغذائي</div>'+
+          '<div class="h2 t1">'+esc(diet.n)+'</div></div>'+
+      '</div>'+
+      '<div class="softacc chip" style="min-height:36px">بدّله'+svg("next","ic14")+'</div>'+
+    '</div>'+
+    '<div class="bar" style="height:8px;display:flex">'+
+      '<i style="width:'+(diet.split.f*100)+'%;background:var(--f)"></i>'+
+      '<i style="width:'+(diet.split.p*100)+'%;background:var(--p);border-radius:0"></i>'+
+      '<i style="width:'+(diet.split.c*100)+'%;background:var(--c)"></i></div>'+
+    '<div class="between">'+
+      '<div class="b2 mF">'+ar(diet.split.f*100)+'٪ دهون</div>'+
+      '<div class="b2 mP">'+ar(diet.split.p*100)+'٪ بروتين</div>'+
+      '<div class="b2 mC">'+ar(diet.split.c*100)+'٪ كارب</div>'+
+      '<div class="b2 t3">٨ أنظمة</div>'+
+    '</div>'+
+  '</button>'+
   '<div class="scrollx">'+
-    '<button class="ghost chip press" data-act="go" data-to="diets" style="min-height:44px">'+svg("flame","ic18")+'أنظمة الدايت</button>'+
     '<button class="ghost chip press" data-act="go" data-to="scale" style="min-height:44px">'+svg("scale","ic18")+'الميزان الذكي</button>'+
     '<button class="ghost chip press" data-act="go" data-to="steps" style="min-height:44px">'+svg("steps","ic18")+'المشي</button>'+
     '<button class="ghost chip press" data-act="go" data-to="coachplan" style="min-height:44px">'+svg("chatbub","ic18")+'خطة المدرّب</button>'+
@@ -618,10 +638,6 @@ function vDiary(){
       '<button class="rowc acc press" data-act="addto" data-meal="'+m+'" style="gap:6px;min-height:46px">'+svg("plus","ic14")+'<div class="b2">أضف لـ'+m+'</div></button>'+
     '</div>';
   }).join("")+
-  '<button class="card press" data-act="go" data-to="diets" style="padding:14px 16px;display:flex;align-items:center;gap:12px">'+
-    '<div class="softacc sq" style="width:40px;height:40px;border-radius:13px">'+svg("flame","ic18")+'</div>'+
-    '<div class="col" style="gap:1px;flex:1;align-items:flex-start"><div class="h3 t1">نظامك: '+esc(DIET_BY_ID[S.profile.diet].n)+'</div>'+
-    '<div class="b2 t3">بدّله وتنعاد قسمة الماكروز على هدفك</div></div>'+svg("next","ic14")+'</button>'+
   '<button class="card press" data-act="go" data-to="workouts" style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between">'+
     '<div class="col" style="gap:2px;align-items:flex-start"><div class="h2 t1">النشاط</div>'+
     '<div class="b2 t3">مشي '+ar(S.day.steps)+' خطوة</div></div>'+
