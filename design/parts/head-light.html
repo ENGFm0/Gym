@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@200;300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F4F6F1; font-family: 'Readex Pro', 'Segoe UI', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #4C7A0B; text-decoration: none; }
+    a:hover { color: #3A5F06; }
+    .scr { width: 390px; height: 844px; background: #F4F6F1; color: #101512; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .safeTop { height: 52px; flex: none; }
+    .body { flex: 1; display: flex; flex-direction: column; gap: 14px; padding: 0 20px 10px; overflow: hidden; }
+    .d1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+    .h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+    .h2 { font-size: 16.5px; font-weight: 600; line-height: 1.35; }
+    .h3 { font-size: 14.5px; font-weight: 500; line-height: 1.4; }
+    .b1 { font-size: 13.5px; font-weight: 300; line-height: 1.6; }
+    .b2 { font-size: 12px; font-weight: 300; line-height: 1.5; }
+    .cap { font-size: 10.5px; font-weight: 400; letter-spacing: 0.06em; }
+    .num { font-family: 'Space Grotesk', 'Readex Pro', system-ui, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+    .t1 { color: #101512; }
+    .t2 { color: #4F5A54; }
+    .t3 { color: #7C877F; }
+    .ink { color: #0A0C0B; }
+    .card { background: #FFFFFF; border: 1px solid rgba(16,21,18,0.07); border-radius: 22px; box-shadow: 0 1px 2px rgba(16,21,18,0.04), 0 8px 24px rgba(16,21,18,0.04); }
+    .card2 { background: #F0F3EC; border: 1px solid rgba(16,21,18,0.05); border-radius: 16px; }
+    .hair { background: rgba(16,21,18,0.08); }
+    .accent { color: #4C7A0B; }
+    .accentSoft { background: rgba(139,196,32,0.16); color: #3F6A08; }
+    .fill { background: #C8F751; color: #0A0C0B; }
+    .ghost { background: #FFFFFF; border: 1px solid rgba(16,21,18,0.10); color: #101512; }
+    .track { stroke: rgba(16,21,18,0.08); }
+    .trackBg { background: rgba(16,21,18,0.08); }
+    .mP { color: #6F9E0E; } .mC { color: #1E86BE; } .mF { color: #C07A12; }
+    .mPb { background: #8DC22A; } .mCb { background: #35A3DC; } .mFb { background: #E0A03A; }
+    .mPs { stroke: #8DC22A; } .mCs { stroke: #35A3DC; } .mFs { stroke: #E0A03A; }
+    .accentS { stroke: #8DC22A; }
+    .ic { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    .ic18 { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    .ic14 { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    .nav { flex: none; height: 88px; background: rgba(244,246,241,0.94); border-top: 1px solid rgba(16,21,18,0.08); display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 18px 0; }
+    .navi { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 58px; min-height: 46px; color: #8A948D; }
+    .naviOn { color: #2E4A06; }
+    .fab { width: 56px; height: 56px; border-radius: 20px; background: #1B2318; color: #DFFF8E; display: flex; align-items: center; justify-content: center; margin-top: -14px; box-shadow: 0 10px 24px rgba(16,21,18,0.18); }
+    .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
+    .rowc { display: flex; align-items: center; gap: 12px; }
+    .btn { min-height: 52px; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 500; }
+    .chip { min-height: 36px; padding: 0 14px; border-radius: 12px; display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 400; }
+    .seg { background: #E8ECE2; border: 1px solid rgba(16,21,18,0.06); border-radius: 14px; padding: 4px; display: flex; gap: 4px; }
+    .segi { flex: 1; min-height: 36px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; }
+    .segOn { background: #1B2318; color: #DFFF8E; font-weight: 500; }
+    .glow { position: absolute; border-radius: 999px; filter: blur(70px); opacity: 0.35; pointer-events: none; }
+  </style>
+</helmet>

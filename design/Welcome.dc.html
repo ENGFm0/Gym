@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@200;300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0A0C0B; font-family: 'Readex Pro', 'Segoe UI', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #C8F751; text-decoration: none; }
+    a:hover { color: #E2FF9A; }
+    .scr { width: 390px; height: 844px; background: #0A0C0B; color: #EDF2EE; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .safeTop { height: 52px; flex: none; }
+    .body { flex: 1; display: flex; flex-direction: column; gap: 14px; padding: 0 20px 10px; overflow: hidden; }
+    .d1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+    .h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+    .h2 { font-size: 16.5px; font-weight: 600; line-height: 1.35; }
+    .h3 { font-size: 14.5px; font-weight: 500; line-height: 1.4; }
+    .b1 { font-size: 13.5px; font-weight: 300; line-height: 1.6; }
+    .b2 { font-size: 12px; font-weight: 300; line-height: 1.5; }
+    .cap { font-size: 10.5px; font-weight: 400; letter-spacing: 0.06em; }
+    .num { font-family: 'Space Grotesk', 'Readex Pro', system-ui, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+    .t1 { color: #EDF2EE; }
+    .t2 { color: #A9B5AE; }
+    .t3 { color: #74807A; }
+    .ink { color: #0A0C0B; }
+    .card { background: #131715; border: 1px solid rgba(255,255,255,0.07); border-radius: 22px; }
+    .card2 { background: #1A201D; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; }
+    .hair { background: rgba(255,255,255,0.07); }
+    .accent { color: #C8F751; }
+    .accentSoft { background: rgba(200,247,81,0.12); color: #C8F751; }
+    .fill { background: #C8F751; color: #0A0C0B; }
+    .ghost { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); color: #EDF2EE; }
+    .track { stroke: rgba(255,255,255,0.09); }
+    .trackBg { background: rgba(255,255,255,0.08); }
+    .mP { color: #C8F751; } .mC { color: #7FD4FF; } .mF { color: #FFC46B; }
+    .mPb { background: #C8F751; } .mCb { background: #7FD4FF; } .mFb { background: #FFC46B; }
+    .mPs { stroke: #C8F751; } .mCs { stroke: #7FD4FF; } .mFs { stroke: #FFC46B; }
+    .accentS { stroke: #C8F751; }
+    .ic { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    .ic18 { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    .ic14 { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    .nav { flex: none; height: 88px; background: rgba(10,12,11,0.92); border-top: 1px solid rgba(255,255,255,0.07); display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 18px 0; }
+    .navi { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 58px; min-height: 46px; color: #6C7873; }
+    .naviOn { color: #C8F751; }
+    .fab { width: 56px; height: 56px; border-radius: 20px; background: #C8F751; color: #0A0C0B; display: flex; align-items: center; justify-content: center; margin-top: -14px; box-shadow: 0 10px 24px rgba(200,247,81,0.22); }
+    .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
+    .rowc { display: flex; align-items: center; gap: 12px; }
+    .btn { min-height: 52px; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 500; }
+    .chip { min-height: 36px; padding: 0 14px; border-radius: 12px; display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 400; }
+    .seg { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 4px; display: flex; gap: 4px; }
+    .segi { flex: 1; min-height: 36px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; }
+    .segOn { background: #C8F751; color: #0A0C0B; font-weight: 500; }
+    .glow { position: absolute; border-radius: 999px; filter: blur(70px); opacity: 0.5; pointer-events: none; }
+  </style>
+</helmet>
+
+<div class="scr" dir="rtl">
+  <div class="glow" style="width:320px;height:320px;background:#C8F751;top:-140px;right:-120px;opacity:0.45;"></div>
+  <div class="glow" style="width:260px;height:260px;background:#7FD4FF;bottom:120px;left:-140px;opacity:0.28;"></div>
+  <div class="safeTop"></div>
+  <div class="body" style="gap:0;">
+
+    <div style="display:flex;align-items:center;gap:10px;padding-top:8px;">
+      <div class="fill" style="width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;">
+        <svg class="ic18" viewBox="0 0 24 24" style="stroke-width:2;"><path d="M4 9.2v5.6M7.2 6.8v10.4M16.8 6.8v10.4M20 9.2v5.6M7.2 12h9.6"/></svg>
+      </div>
+      <div class="h2 t1" style="letter-spacing:0.02em;">قِوام</div>
+    </div>
+
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:22px;">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="t1" style="font-size:42px;font-weight:600;line-height:1.15;letter-spacing:-0.03em;">دايتك وتمرينك<br>في مكان واحد</div>
+        <div class="b1 t2" style="max-width:300px;font-size:15px;">اختر نظامك الغذائي، سجّل أكلك بالباركود، تابع أوزانك وتمارينك — والتطبيق يحسب سعراتك وماكروزك تلقائياً.</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="card" style="padding:14px 16px;display:flex;align-items:center;gap:12px;">
+          <div class="accentSoft" style="width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center;">
+            <svg class="ic18" viewBox="0 0 24 24"><path d="M4 6.6v10.8M7.2 6.6v10.8M10 6.6v10.8M13.4 6.6v10.8M16.6 6.6v10.8M20 6.6v10.8"/></svg>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:1px;flex:1;">
+            <div class="h3 t1">تسجيل بالباركود والبحث</div>
+            <div class="b2 t3">قاعدة أصناف عالمية وخليجية</div>
+          </div>
+        </div>
+        <div class="card" style="padding:14px 16px;display:flex;align-items:center;gap:12px;">
+          <div class="accentSoft" style="width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center;">
+            <svg class="ic18" viewBox="0 0 24 24"><path d="M4 19.4h16M7.4 16.2V9.6M12 16.2V4.8M16.6 16.2v-4.4"/></svg>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:1px;flex:1;">
+            <div class="h3 t1">تطوّرك بالأرقام</div>
+            <div class="b2 t3">أوزان التمرين والوزن والمقاسات</div>
+          </div>
+        </div>
+        <div class="card" style="padding:14px 16px;display:flex;align-items:center;gap:12px;">
+          <div class="accentSoft" style="width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center;">
+            <svg class="ic18" viewBox="0 0 24 24"><path d="M12 3.4v17.2M12 3.4 17 8M12 3.4 7 8M12 20.6 17 16M12 20.6 7 16"/></svg>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:1px;flex:1;">
+            <div class="h3 t1">يتصل بميزانك الذكي</div>
+            <div class="b2 t3">XG Scale · صحة آيفون · جوجل فِت</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;padding-bottom:26px;">
+      <div class="fill btn" style="font-weight:600;min-height:56px;">ابدأ خطتي</div>
+      <div class="rowc" style="justify-content:center;gap:6px;">
+        <div class="b2 t3">عندك حساب؟</div>
+        <div class="b2 accent">سجّل الدخول</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

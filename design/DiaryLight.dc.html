@@ -1,0 +1,215 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@200;300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F4F6F1; font-family: 'Readex Pro', 'Segoe UI', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: #4C7A0B; text-decoration: none; }
+    a:hover { color: #3A5F06; }
+    .scr { width: 390px; height: 844px; background: #F4F6F1; color: #101512; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .safeTop { height: 52px; flex: none; }
+    .body { flex: 1; display: flex; flex-direction: column; gap: 14px; padding: 0 20px 10px; overflow: hidden; }
+    .d1 { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+    .h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+    .h2 { font-size: 16.5px; font-weight: 600; line-height: 1.35; }
+    .h3 { font-size: 14.5px; font-weight: 500; line-height: 1.4; }
+    .b1 { font-size: 13.5px; font-weight: 300; line-height: 1.6; }
+    .b2 { font-size: 12px; font-weight: 300; line-height: 1.5; }
+    .cap { font-size: 10.5px; font-weight: 400; letter-spacing: 0.06em; }
+    .num { font-family: 'Space Grotesk', 'Readex Pro', system-ui, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+    .t1 { color: #101512; }
+    .t2 { color: #4F5A54; }
+    .t3 { color: #7C877F; }
+    .ink { color: #0A0C0B; }
+    .card { background: #FFFFFF; border: 1px solid rgba(16,21,18,0.07); border-radius: 22px; box-shadow: 0 1px 2px rgba(16,21,18,0.04), 0 8px 24px rgba(16,21,18,0.04); }
+    .card2 { background: #F0F3EC; border: 1px solid rgba(16,21,18,0.05); border-radius: 16px; }
+    .hair { background: rgba(16,21,18,0.08); }
+    .accent { color: #4C7A0B; }
+    .accentSoft { background: rgba(139,196,32,0.16); color: #3F6A08; }
+    .fill { background: #C8F751; color: #0A0C0B; }
+    .ghost { background: #FFFFFF; border: 1px solid rgba(16,21,18,0.10); color: #101512; }
+    .track { stroke: rgba(16,21,18,0.08); }
+    .trackBg { background: rgba(16,21,18,0.08); }
+    .mP { color: #6F9E0E; } .mC { color: #1E86BE; } .mF { color: #C07A12; }
+    .mPb { background: #8DC22A; } .mCb { background: #35A3DC; } .mFb { background: #E0A03A; }
+    .mPs { stroke: #8DC22A; } .mCs { stroke: #35A3DC; } .mFs { stroke: #E0A03A; }
+    .accentS { stroke: #8DC22A; }
+    .ic { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    .ic18 { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    .ic14 { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    .nav { flex: none; height: 88px; background: rgba(244,246,241,0.94); border-top: 1px solid rgba(16,21,18,0.08); display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 18px 0; }
+    .navi { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 58px; min-height: 46px; color: #8A948D; }
+    .naviOn { color: #2E4A06; }
+    .fab { width: 56px; height: 56px; border-radius: 20px; background: #1B2318; color: #DFFF8E; display: flex; align-items: center; justify-content: center; margin-top: -14px; box-shadow: 0 10px 24px rgba(16,21,18,0.18); }
+    .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
+    .rowc { display: flex; align-items: center; gap: 12px; }
+    .btn { min-height: 52px; border-radius: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 500; }
+    .chip { min-height: 36px; padding: 0 14px; border-radius: 12px; display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 400; }
+    .seg { background: #E8ECE2; border: 1px solid rgba(16,21,18,0.06); border-radius: 14px; padding: 4px; display: flex; gap: 4px; }
+    .segi { flex: 1; min-height: 36px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; }
+    .segOn { background: #1B2318; color: #DFFF8E; font-weight: 500; }
+    .glow { position: absolute; border-radius: 999px; filter: blur(70px); opacity: 0.35; pointer-events: none; }
+  </style>
+</helmet>
+
+<div class="scr" dir="rtl">
+  <div class="safeTop"></div>
+  <div class="body">
+
+    <div class="head">
+      <div class="h1 t1">اليوميات</div>
+      <div class="rowc" style="gap:8px;">
+        <div class="card2" style="width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center;">
+          <svg class="ic18 t2" viewBox="0 0 24 24"><path d="M7.6 3.4v3M16.4 3.4v3M4 8.4h16M5.6 5.4h12.8A1.6 1.6 0 0 1 20 7v11.4a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 18.4V7a1.6 1.6 0 0 1 1.6-1.6z"/></svg>
+        </div>
+        <div class="card2" style="width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center;">
+          <svg class="ic18 t2" viewBox="0 0 24 24"><path d="M4.4 7.2h15.2M4.4 12h15.2M4.4 16.8h9.6"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <svg class="ic18 t3" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg>
+      <div style="display:flex;gap:6px;flex:1;justify-content:center;">
+        <div class="card2" style="width:44px;padding:8px 0;display:flex;flex-direction:column;align-items:center;gap:3px;">
+          <div class="cap t3">سبت</div><div class="num h3 t2">٤</div>
+        </div>
+        <div class="card2" style="width:44px;padding:8px 0;display:flex;flex-direction:column;align-items:center;gap:3px;">
+          <div class="cap t3">أحد</div><div class="num h3 t2">٥</div>
+        </div>
+        <div class="card2" style="width:44px;padding:8px 0;display:flex;flex-direction:column;align-items:center;gap:3px;">
+          <div class="cap t3">إثنين</div><div class="num h3 t2">٦</div>
+        </div>
+        <div class="card2" style="width:44px;padding:8px 0;display:flex;flex-direction:column;align-items:center;gap:3px;">
+          <div class="cap t3">ثلاثاء</div><div class="num h3 t2">٧</div>
+        </div>
+        <div class="fill" style="width:44px;padding:8px 0;border-radius:16px;display:flex;flex-direction:column;align-items:center;gap:3px;">
+          <div class="cap">أربعاء</div><div class="num h3" style="font-weight:600;">٨</div>
+        </div>
+      </div>
+      <svg class="ic18 t3" viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></svg>
+    </div>
+
+    <div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div class="rowc" style="gap:6px;">
+          <div class="num h3 t1">١٩٥٠</div><div class="b2 t3">الهدف</div>
+        </div>
+        <div class="rowc" style="gap:6px;">
+          <div class="num h3 t1">١٤٢٠</div><div class="b2 t3">أكل</div>
+        </div>
+        <div class="rowc" style="gap:6px;">
+          <div class="num h3 accent">٢١٠</div><div class="b2 t3">حركة</div>
+        </div>
+        <div class="rowc" style="gap:6px;">
+          <div class="num h3 t1">٧٤٠</div><div class="b2 t3">متبقي</div>
+        </div>
+      </div>
+      <div class="trackBg" style="height:8px;border-radius:99px;overflow:hidden;display:flex;">
+        <div class="mPb" style="width:30%;height:100%;"></div>
+        <div class="mCb" style="width:14%;height:100%;"></div>
+        <div class="mFb" style="width:29%;height:100%;"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;flex:1;">
+
+      <div class="card" style="padding:12px 14px 6px;">
+        <div class="rowc" style="justify-content:space-between;">
+          <div class="rowc" style="gap:10px;">
+            <div class="h2 t1">الفطور</div>
+            <div class="accentSoft chip" style="min-height:24px;padding:0 8px;font-size:11px;">داخل الكيتو</div>
+          </div>
+          <div class="num h3 t2">٤٢٠</div>
+        </div>
+        <div class="rowc" style="justify-content:space-between;min-height:48px;">
+          <div style="display:flex;flex-direction:column;gap:1px;">
+            <div class="h3 t1">بيض مقلي بالزبدة</div>
+            <div class="b2 t3">٣ حبات · ١٥٠ جم</div>
+          </div>
+          <div class="num b1 t2">٢٧٠</div>
+        </div>
+        <div class="hair" style="height:1px;"></div>
+        <div class="rowc" style="justify-content:space-between;min-height:48px;">
+          <div style="display:flex;flex-direction:column;gap:1px;">
+            <div class="h3 t1">أفوكادو</div>
+            <div class="b2 t3">نصف حبة · ٧٠ جم</div>
+          </div>
+          <div class="num b1 t2">١٥٠</div>
+        </div>
+        <div class="hair" style="height:1px;"></div>
+        <div class="rowc accent" style="gap:6px;min-height:44px;">
+          <svg class="ic14" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>
+          <div class="b2">أضف للفطور</div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:12px 14px 6px;">
+        <div class="rowc" style="justify-content:space-between;">
+          <div class="h2 t1">الغداء</div>
+          <div class="num h3 t2">٦٤٠</div>
+        </div>
+        <div class="rowc" style="justify-content:space-between;min-height:48px;">
+          <div style="display:flex;flex-direction:column;gap:1px;">
+            <div class="h3 t1">صدر دجاج مشوي</div>
+            <div class="b2 t3">٢٠٠ جم · ماسح باركود</div>
+          </div>
+          <div class="num b1 t2">٣٣٠</div>
+        </div>
+        <div class="hair" style="height:1px;"></div>
+        <div class="rowc" style="justify-content:space-between;min-height:48px;">
+          <div style="display:flex;flex-direction:column;gap:1px;">
+            <div class="h3 t1">سلطة يونانية</div>
+            <div class="b2 t3">وصفة محفوظة · حصة</div>
+          </div>
+          <div class="num b1 t2">٣١٠</div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+        <div class="rowc" style="justify-content:space-between;">
+          <div class="h2 t1">النشاط</div>
+          <div class="num h3 accent">−٢١٠</div>
+        </div>
+        <div class="rowc" style="justify-content:space-between;">
+          <div class="b2 t2">مشي ٧٬٤٢٠ خطوة · تمرين ظهر ٤٥ د</div>
+          <svg class="ic14 t3" viewBox="0 0 24 24"><path d="M14.5 6 8.5 12l6 6"/></svg>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="nav">
+  <div class="navi ">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M3.5 10.6 12 4.2l8.5 6.4V19a1.6 1.6 0 0 1-1.6 1.6h-3.6v-6h-6.6v6H5.1A1.6 1.6 0 0 1 3.5 19z"/></svg>
+    <div class="cap">الرئيسية</div>
+  </div>
+  <div class="navi naviOn">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M7 3.2v6.6a2.4 2.4 0 0 0 4.8 0V3.2M9.4 9.8v11M17.4 3.2c-1.6 1.4-2.3 3.1-2.3 5.4 0 1.6.8 2.6 2.3 2.6v9.6"/></svg>
+    <div class="cap">الوجبات</div>
+  </div>
+  <div class="fab">
+    <svg class="ic" viewBox="0 0 24 24" style="width:26px;height:26px;stroke-width:1.8"><path d="M12 5.5v13M5.5 12h13"/></svg>
+  </div>
+  <div class="navi ">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M4 9.2v5.6M7.2 6.8v10.4M16.8 6.8v10.4M20 9.2v5.6M7.2 12h9.6"/></svg>
+    <div class="cap">التمارين</div>
+  </div>
+  <div class="navi ">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M4 19.4h16M7.4 16.2V9.6M12 16.2V4.8M16.6 16.2v-4.4"/></svg>
+    <div class="cap">التقدّم</div>
+  </div>
+</div>
+
+</div>
+</x-dc>
+</body>
+</html>
