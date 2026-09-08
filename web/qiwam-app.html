@@ -307,6 +307,253 @@ var CLIENTS = [
 ];
 var CLIENT_BY_ID = {}; CLIENTS.forEach(function(c){ CLIENT_BY_ID[c.id] = c; });
 
+
+/* ---------- diet detail: what to eat, what to avoid, a sample day, where to buy ---------- */
+var SHOPS = {
+  markets: ["بنده", "العثيم", "التميمي", "دانوب", "لولو", "كارفور", "المزرعة"],
+  apps: ["نعناع", "نينجا", "أمازون السعودية", "نون", "آي هيرب"]
+};
+var DIET_DETAIL = {
+  keto: {
+    eat: [
+      {c:"بروتين", i:["لحم بقري وغنم","دجاج بالجلد","سمك وسلمون","روبيان","بيض","كبد ولسان"]},
+      {c:"دهون", i:["زبدة وسمن بلدي","زيت زيتون","زيت جوز الهند","أفوكادو","مايونيز بدون سكر","قشطة وكريمة طبخ"]},
+      {c:"خضار", i:["خس وسبانخ","قرنبيط وبروكلي","كوسا","خيار","فلفل رومي","فطر"]},
+      {c:"ألبان ومكسرات", i:["جبن شيدر وحلوم","جبن كريمي","لبن يوناني كامل","لوز وبيكان","جوز","زبدة لوز بدون سكر"]},
+      {c:"مشروبات", i:["ماء","قهوة سادة","شاي أخضر","ماء بالليمون","مشروبات دايت"]}
+    ],
+    avoid: [
+      ["أرز ومعكرونة وخبز","أعلى مصدر كارب — رغيف واحد يستهلك حصتك اليومية كاملة"],
+      ["تمر وموز وعنب","سكر سريع يوقف الحرق الكيتوني"],
+      ["بطاطس وذرة","نشا عالي حتى لو مطبوخ بدون زيت"],
+      ["سكر وعسل ومربى","سكر صافي"],
+      ["عصائر ومشروبات محلّاة","سعرات سائلة ما تشبع"],
+      ["البقوليات: فول وحمص وعدس","كاربها أعلى من ميزانيتك اليومية"]
+    ],
+    moderate: ["طماطم وجزر — كميات صغيرة","مكسرات — ٣٠ جم كحد","توت وفراولة — نصف كوب"],
+    day: [
+      ["الفطور","٣ بيضات بالزبدة · نصف أفوكادو · قهوة سادة"],
+      ["الغداء","٢٠٠ جم دجاج مشوي · سلطة بزيت زيتون · قرنبيط"],
+      ["سناك","٣٠ جم لوز · جبن حلوم مقلي"],
+      ["العشاء","سمك مشوي · كوسا سوتيه بالزبدة"]
+    ],
+    buy: [
+      {n:"زيت جوز الهند البكر", w:"دانوب · آي هيرب", note:"للطبخ والقلي بحرارة عالية"},
+      {n:"دقيق اللوز ودقيق جوز الهند", w:"العثيم · أمازون السعودية", note:"بديل الطحين للخبز الكيتوني"},
+      {n:"محلّي ستيفيا أو إريثريتول", w:"لولو · آي هيرب", note:"بدل السكر في القهوة والحلا"},
+      {n:"جبن شيدر وحلوم كامل الدسم", w:"أي سوبرماركت", note:"تجنّب الأنواع قليلة الدسم"},
+      {n:"زبدة لوز بدون سكر مضاف", w:"دانوب · آي هيرب", note:"اقرأ المكونات — لازم لوز فقط"},
+      {n:"شرائط قياس الكيتون", w:"صيدليات النهدي والدواء", note:"تتأكد إنك داخل الحالة الكيتونية"}
+    ],
+    tip: "أول أسبوع بتحس بخمول وصداع — زد الملح والماء والبوتاسيوم."
+  },
+  if: {
+    eat: [
+      {c:"داخل نافذة الأكل", i:["بروتين في كل وجبة","أرز وبطاطس باعتدال","خضار وفواكه","بقوليات","مكسرات","ألبان"]},
+      {c:"أثناء الصيام", i:["ماء","قهوة سادة","شاي بدون سكر","ماء بالليمون بدون تحلية"]},
+      {c:"يفطّر عليه", i:["تمرة أو تمرتين","لبن","شوربة خفيفة","سلطة ببروتين"]}
+    ],
+    avoid: [
+      ["أي سعرات خارج النافذة","حتى القهوة بحليب تكسر الصيام"],
+      ["وجبة ضخمة عند الفطور","تسبب خمول وحرقة — قسّمها على وجبتين"],
+      ["العصائر والمشروبات المحلّاة","ترفع الأنسولين وتلغي فائدة الصيام"],
+      ["النوم المتأخر مع سناك ليلي","يخرّب النافذة ويقلّل جودة النوم"]
+    ],
+    moderate: ["الحلويات داخل النافذة","القهوة بعد العصر","الملح إذا عندك ضغط"],
+    day: [
+      ["١٢:٠٠ ظهراً","فتح النافذة: دجاج · أرز · سلطة"],
+      ["٣:٣٠ عصراً","لبن يوناني · فاكهة · مكسرات"],
+      ["٧:٣٠ مساءً","آخر وجبة: سمك أو لحم · خضار · بطاطس"],
+      ["٨:٠٠ — ١٢:٠٠","صيام: ماء وقهوة سادة وشاي فقط"]
+    ],
+    buy: [
+      {n:"قهوة مطحونة أو نسكافيه بلاك", w:"أي سوبرماركت", note:"تمرّر الصيام بدون سعرات"},
+      {n:"شاي أخضر وأعشاب", w:"بنده · العثيم", note:"يقلّل الإحساس بالجوع"},
+      {n:"ماء فوارة أو سباركلنق", w:"دانوب · نعناع", note:"إحساس امتلاء بدون سعرات"},
+      {n:"أملاح إلكتروليت", w:"آي هيرب · صيدليات", note:"للصيام الطويل ومنع الصداع"},
+      {n:"علب تحضير وجبات", w:"أمازون السعودية · لولو", note:"تجهّز وجبات النافذة مسبقاً"}
+    ],
+    tip: "ابدأ ١٢:١٢ أسبوعين قبل ما تنزل لـ١٦:٨ — الالتزام أهم من الشدّة."
+  },
+  med: {
+    eat: [
+      {c:"بروتين", i:["سمك وتونة وسردين","دجاج","بقوليات: عدس وحمص","بيض","لحم أحمر مرة بالأسبوع"]},
+      {c:"دهون", i:["زيت زيتون بكر","زيتون","أفوكادو","مكسرات نيّة","طحينة"]},
+      {c:"نشويات", i:["خبز أسمر وحبوب كاملة","برغل وفريكة","أرز بني","شوفان","بطاطا حلوة"]},
+      {c:"خضار وفواكه", i:["طماطم وخيار","ورقيات","باذنجان","برتقال وتفاح","عنب وتين"]}
+    ],
+    avoid: [
+      ["اللحوم المصنّعة: مرتديلا ونقانق","صوديوم ودهون مهدرجة"],
+      ["السكر المضاف والحلويات اليومية","السبب الأول لارتفاع الدهون الثلاثية"],
+      ["الزيوت المهدرجة والسمن الصناعي","تلغي فائدة النظام على القلب"],
+      ["الخبز الأبيض والمعجنات","حبوب مكرّرة بلا ألياف"],
+      ["المشروبات الغازية","سكر سائل"]
+    ],
+    moderate: ["الجبن — حصتين باليوم","اللحم الأحمر — مرة أسبوعياً","النبيذ غير وارد؛ استبدله بعصير رمان طبيعي"],
+    day: [
+      ["الفطور","شوفان بالحليب · مكسرات · تفاح"],
+      ["الغداء","سمك مشوي · أرز بني · سلطة بزيت زيتون"],
+      ["سناك","حمص بالطحينة · خضار مقطّع"],
+      ["العشاء","شوربة عدس · خبز أسمر · جبن قليل الملح"]
+    ],
+    buy: [
+      {n:"زيت زيتون بكر ممتاز", w:"العثيم · التميمي · نعناع", note:"العمود الفقري للنظام — استخدمه يومياً"},
+      {n:"سردين وتونة بالماء", w:"أي سوبرماركت", note:"أوميغا ٣ بسعر رخيص"},
+      {n:"برغل وفريكة وعدس", w:"بنده · العثيم", note:"نشويات كاملة بدل الأبيض"},
+      {n:"مكسرات نيّة غير مملّحة", w:"دانوب · أمازون السعودية", note:"حفنة يومياً"},
+      {n:"طحينة وحمص", w:"أي سوبرماركت", note:"دهون صحية مع الخضار"}
+    ],
+    tip: "أكثر نظام عليه دراسات طويلة المدى لصحة القلب — سهل الاستمرار عليه عمر كامل."
+  },
+  hp: {
+    eat: [
+      {c:"بروتين أساسي", i:["صدور دجاج","لحم بقري قليل الدهن","سمك وتونة","بيض وبياض بيض","جبن قريش","لبن يوناني"]},
+      {c:"مكمّلات", i:["بروتين واي","كازين قبل النوم","بروتين نباتي إذا ما يناسبك الحليب"]},
+      {c:"نشويات", i:["أرز","شوفان","بطاطا","خبز أسمر","معكرونة قمح كامل"]},
+      {c:"خضار ودهون", i:["بروكلي","سبانخ","سلطة","زيت زيتون","أفوكادو","مكسرات"]}
+    ],
+    avoid: [
+      ["الاعتماد على الكارب الفارغ","يملأ سعراتك بدون بروتين"],
+      ["الوجبات السريعة اليومية","دهون عالية وبروتين قليل نسبةً للسعرات"],
+      ["العصائر بدل الوجبات","صفر بروتين"],
+      ["تجاهل وجبة ما بعد التمرين","تفوّت أفضل وقت لبناء العضل"]
+    ],
+    moderate: ["الحلويات — مرة أو مرتين بالأسبوع","القهوة — ٣ أكواب كحد","المكسرات — سعراتها عالية"],
+    day: [
+      ["الفطور","٤ بيضات · شوفان · قهوة"],
+      ["الغداء","٢٠٠ جم دجاج · أرز · بروكلي"],
+      ["بعد التمرين","بروتين واي + موزة"],
+      ["العشاء","لحم أو سمك · بطاطا · سلطة"]
+    ],
+    buy: [
+      {n:"بروتين واي", w:"متاجر المكملات · آي هيرب · أمازون السعودية", note:"٢٤ جم بروتين للسكوب — اقرأ التحليل"},
+      {n:"صدور دجاج مجمّدة", w:"بنده · العثيم · التميمي", note:"أرخص مصدر بروتين للكيلو"},
+      {n:"جبن قريش ولبن يوناني", w:"أي سوبرماركت", note:"بروتين عالي ودهون قليلة"},
+      {n:"تونة بالماء", w:"أي سوبرماركت", note:"سناك بروتيني سريع"},
+      {n:"ميزان مطبخ", w:"أمازون السعودية · نون", note:"ضروري تعرف كم بروتين فعلاً"}
+    ],
+    tip: "استهدف ١٫٦–٢٫٢ جم بروتين لكل كجم من وزنك، موزّعة على ٣–٤ وجبات."
+  },
+  vegan: {
+    eat: [
+      {c:"بروتين نباتي", i:["عدس وحمص وفول","توفو وتمبيه","فول الصويا","بروتين بازلاء","زبدة الفول السوداني"]},
+      {c:"حبوب", i:["أرز بني","كينوا","شوفان","برغل","خبز أسمر"]},
+      {c:"دهون", i:["أفوكادو","طحينة","زيت زيتون","بذور شيا وكتان","مكسرات"]},
+      {c:"بدائل ألبان", i:["حليب صويا","حليب لوز","زبادي نباتي","جبن نباتي"]}
+    ],
+    avoid: [
+      ["اللحوم والدواجن والأسماك","أساس النظام"],
+      ["البيض والألبان","بما فيها الزبدة والقشطة"],
+      ["العسل","منتج حيواني"],
+      ["الاعتماد على النشويات فقط","أشهر خطأ — تنقص بروتين وحديد"],
+      ["الأكل النباتي المصنّع يومياً","برجر نباتي وسناكات = صوديوم ودهون عالية"]
+    ],
+    moderate: ["الصويا — حصتين باليوم","الفواكه المجفّفة — سكرها مركّز","المكسرات — سعراتها عالية"],
+    day: [
+      ["الفطور","شوفان بحليب الصويا · بذور شيا · موز"],
+      ["الغداء","عدس أو حمص · أرز بني · سلطة طحينة"],
+      ["سناك","حمص بالطحينة · خضار · مكسرات"],
+      ["العشاء","توفو مقلي بالخضار · كينوا"]
+    ],
+    buy: [
+      {n:"توفو وتمبيه", w:"لولو · كارفور · تمور ماركت الآسيوي", note:"أعلى بروتين نباتي كامل"},
+      {n:"بروتين نباتي (بازلاء أو أرز)", w:"آي هيرب · متاجر المكملات", note:"يكمّل نقص البروتين"},
+      {n:"فيتامين ب١٢", w:"صيدليات النهدي والدواء", note:"ضروري — ما يجي من النبات"},
+      {n:"حليب صويا أو لوز مدعّم", w:"أي سوبرماركت", note:"اختر المدعّم بالكالسيوم"},
+      {n:"بذور شيا وكتان", w:"العثيم · آي هيرب", note:"أوميغا ٣ نباتي"}
+    ],
+    tip: "اجمع البقوليات مع الحبوب في نفس اليوم عشان تكمل الأحماض الأمينية."
+  },
+  paleo: {
+    eat: [
+      {c:"بروتين", i:["لحوم","دجاج","أسماك","بيض","كبد"]},
+      {c:"خضار وفواكه", i:["كل الخضار","بطاطا حلوة","تفاح وتوت","موز","أفوكادو"]},
+      {c:"دهون", i:["زيت زيتون","زيت جوز الهند","مكسرات وبذور","سمن بلدي"]}
+    ],
+    avoid: [
+      ["الحبوب: قمح وأرز وشوفان","أساس استبعاد النظام"],
+      ["الألبان بكل أنواعها","ما كانت موجودة قبل الزراعة"],
+      ["البقوليات: فول وعدس وحمص","مضادات مغذيات حسب فلسفة النظام"],
+      ["السكر المكرر والمحليات الصناعية","أكل مصنّع"],
+      ["الزيوت النباتية المكررة","زيت دوار الشمس والذرة والكانولا"]
+    ],
+    moderate: ["الفواكه المجفّفة","العسل الطبيعي — ملعقة","البطاطا الحلوة بعد التمرين"],
+    day: [
+      ["الفطور","بيض بالسمن · أفوكادو · تفاح"],
+      ["الغداء","لحم مشوي · خضار مشوي · بطاطا حلوة"],
+      ["سناك","مكسرات · توت"],
+      ["العشاء","سمك · سلطة كبيرة بزيت زيتون"]
+    ],
+    buy: [
+      {n:"سمن بلدي أو غي", w:"العثيم · التميمي", note:"بديل الزبدة"},
+      {n:"لحوم طازجة من الجزار", w:"الأسواق المركزية · مسالخ محلية", note:"أرخص وأطزج من المعلّب"},
+      {n:"زيت جوز الهند وزيت الزيتون", w:"دانوب · آي هيرب", note:"بدل الزيوت النباتية المكررة"},
+      {n:"دقيق لوز أو جوز هند", w:"أمازون السعودية", note:"للخبز بدون حبوب"},
+      {n:"مكسرات وبذور نيّة", w:"العثيم · دانوب", note:"غير محمّصة بزيت"}
+    ],
+    tip: "لو النظام صعب كامل، طبّق قاعدة ٨٠٪ — الفائدة الأكبر من ترك المصنّع والسكر."
+  },
+  bulk: {
+    eat: [
+      {c:"بروتين", i:["دجاج ولحم","سمك","بيض","بروتين واي","لبن وحليب كامل"]},
+      {c:"كارب", i:["أرز","معكرونة","شوفان","بطاطس وبطاطا","خبز","تمر"]},
+      {c:"دهون", i:["زبدة فول سوداني","مكسرات","زيت زيتون","أفوكادو","طحينة"]},
+      {c:"سناك عالي السعرات", i:["سموذي بالحليب والموز والزبدة","تمر بالطحينة","جرانولا"]}
+    ],
+    avoid: [
+      ["الفائض المبالغ فيه","أكثر من ٥٠٠ سعرة زيادة = دهون مو عضل"],
+      ["الوجبات السريعة يومياً","تضخيم قذر ودهون بطن"],
+      ["إهمال الخضار","إمساك ونقص ألياف"],
+      ["تفويت وجبات","الفائض يحتاج انتظام"]
+    ],
+    moderate: ["المقليات — مرتين بالأسبوع","الحلويات بعد التمرين فقط","المشروبات الغازية"],
+    day: [
+      ["الفطور","شوفان بالحليب · زبدة فول سوداني · موز · ٣ بيضات"],
+      ["الغداء","٢٥٠ جم لحم · أرز · خضار"],
+      ["بعد التمرين","واي + تمر + حليب"],
+      ["العشاء","دجاج · معكرونة · سلطة"]
+    ],
+    buy: [
+      {n:"بروتين واي أو ماس جينر", w:"متاجر المكملات · آي هيرب", note:"الجينر يسهّل الفائض إذا شهيتك ضعيفة"},
+      {n:"زبدة فول سوداني", w:"بنده · العثيم", note:"أرخص طريقة تزيد سعرات نظيفة"},
+      {n:"شوفان بكيس كبير", w:"العثيم · لولو", note:"أرخص كارب للكيلو"},
+      {n:"كرياتين مونوهيدرات", w:"متاجر المكملات · آي هيرب", note:"٥ جم يومياً — أكثر مكمل عليه دراسات"},
+      {n:"خلاط سموذي", w:"أمازون السعودية · نون", note:"وجبة سائلة بسعرات عالية"}
+    ],
+    tip: "الفائض ٣٠٠–٥٠٠ سعرة فقط، ووزن نفسك أسبوعياً — الزيادة الصحية ٠٫٢٥–٠٫٥ كجم بالأسبوع."
+  },
+  balanced: {
+    eat: [
+      {c:"بروتين", i:["دجاج ولحم وسمك","بيض","بقوليات","ألبان"]},
+      {c:"كارب", i:["أرز","خبز","بطاطس","شوفان","فواكه"]},
+      {c:"دهون", i:["زيت زيتون","مكسرات","أفوكادو","طحينة"]},
+      {c:"خضار", i:["سلطة يومياً","خضار مطبوخ","شوربات"]}
+    ],
+    avoid: [
+      ["السكر المضاف اليومي","أسهل شي تحذفه وأكبر أثر"],
+      ["المقليات المتكررة","سعرات مخفية عالية"],
+      ["الأكل بدون تسجيل","بدون تتبّع ما تعرف وين تروح سعراتك"],
+      ["وجبة وحدة ضخمة باليوم","جوع وإفراط بالليل"]
+    ],
+    moderate: ["الحلا — مرتين بالأسبوع","القهوة المحلّاة","الخبز الأبيض"],
+    day: [
+      ["الفطور","بيض · خبز أسمر · فاكهة"],
+      ["الغداء","دجاج · أرز · سلطة"],
+      ["سناك","لبن يوناني · مكسرات"],
+      ["العشاء","سمك أو شوربة · خضار"]
+    ],
+    buy: [
+      {n:"ميزان مطبخ", w:"أمازون السعودية · نون", note:"أهم أداة في البداية"},
+      {n:"علب تحضير وجبات", w:"لولو · أمازون السعودية", note:"جهّز ٣ أيام مرة وحدة"},
+      {n:"صدور دجاج وسمك مجمّد", w:"أي سوبرماركت", note:"بروتين جاهز طول الأسبوع"},
+      {n:"خضار مجمّد", w:"بنده · العثيم", note:"يوفّر وقت وما يخرب"},
+      {n:"شوفان وأرز بني", w:"العثيم · التميمي", note:"كارب يشبع أطول"}
+    ],
+    tip: "أفضل نظام تبدأ فيه — ركّز على البروتين والخضار وسجّل كل شي أسبوعين."
+  }
+};
+window.__SHOPS = SHOPS; window.__DIET_DETAIL = DIET_DETAIL;
+
 window.__ar = ar; window.__svg = svg; window.__esc = esc; window.__el = el; window.__ICON = ICON;
 window.__FOODS = FOODS; window.__FOOD_BY_ID = FOOD_BY_ID;
 window.__DIETS = DIETS; window.__DIET_BY_ID = DIET_BY_ID;
@@ -481,7 +728,7 @@ var screenEl = document.getElementById("screen"),
 
 var route = { name:"home", p:{} }, stack = [], search = "", sheet = null;
 
-function go(name, p){ stack.push({ name:route.name, p:route.p }); route = { name:name, p:p||{} }; search=""; render(); scrollEl.scrollTop = 0; }
+function go(name, p){ stack.push({ name:route.name, p:route.p }); route = { name:name, p:p||{} }; search=""; dietTab="eat"; render(); scrollEl.scrollTop = 0; }
 function back(){ var r = stack.pop(); route = r || { name: S.role === "coach" ? "chome" : "home", p:{} }; render(); }
 function tab(name){ stack = []; route = { name:name, p:{} }; render(); scrollEl.scrollTop = 0; }
 
@@ -720,32 +967,102 @@ function vDiets(){
   '</div>';
 }
 
+var dietTab = "eat";
 function vDiet(){
   var d = DIET_BY_ID[route.p.id] || DIET_BY_ID[S.profile.diet];
-  var kcal = A.targets().kcal, sp = d.split, on = d.id === S.profile.diet;
+  var D = window.__DIET_DETAIL[d.id], SH = window.__SHOPS;
+  var kcal = window.__app.targets().kcal, sp = d.split, on = d.id === S.profile.diet;
   var g = { f: Math.round(kcal*sp.f/9), p: Math.round(kcal*sp.p/4), c: Math.round(kcal*sp.c/4) };
+  var TABS = [["eat","وش آكل"],["avoid","وش أتجنّب"],["day","يوم نموذجي"],["buy","وين أشتري"]];
+
+  function tabEat(){
+    return D.eat.map(function(sec){
+      return '<div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">'+
+        '<div class="rowc" style="gap:8px"><span class="acc">'+svg("check","ic18")+'</span><div class="h3 t1">'+esc(sec.c)+'</div></div>'+
+        '<div style="display:flex;flex-wrap:wrap;gap:8px">'+
+          sec.i.map(function(x){ return '<div class="softacc chip">'+esc(x)+'</div>'; }).join("")+
+        '</div></div>';
+    }).join("")+
+    (D.moderate ? '<div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">'+
+      '<div class="rowc" style="gap:8px"><span class="mF">'+svg("clock","ic18")+'</span><div class="h3 t1">باعتدال</div></div>'+
+      '<div style="display:flex;flex-direction:column;gap:6px">'+
+        D.moderate.map(function(x){ return '<div class="b1 t2">· '+esc(x)+'</div>'; }).join("")+
+      '</div></div>' : "");
+  }
+  function tabAvoid(){
+    return '<div class="card" style="padding:2px 16px">'+
+      D.avoid.map(function(a, i){
+        return (i ? '<div class="hair"></div>' : "")+
+        '<div style="display:flex;gap:12px;padding:14px 0">'+
+          '<span class="t3" style="padding-top:2px">'+svg("close","ic18")+'</span>'+
+          '<div class="col" style="gap:3px;flex:1"><div class="h3 t1">'+esc(a[0])+'</div>'+
+          '<div class="b2 t3">'+esc(a[1])+'</div></div></div>';
+      }).join("")+
+    '</div>'+
+    '<div class="card" style="padding:14px 16px;display:flex;gap:12px">'+
+      '<span class="acc" style="padding-top:2px">'+svg("star","ic18")+'</span>'+
+      '<div class="b1 t2" style="flex:1">'+esc(D.tip)+'</div></div>';
+  }
+  function tabDay(){
+    return '<div class="card" style="padding:2px 16px">'+
+      D.day.map(function(m, i){
+        return (i ? '<div class="hair"></div>' : "")+
+        '<div style="display:flex;gap:12px;padding:14px 0;align-items:flex-start">'+
+          '<div class="softacc sq" style="width:34px;height:34px;border-radius:11px"><div class="num cap">'+ar(i+1)+'</div></div>'+
+          '<div class="col" style="gap:3px;flex:1"><div class="h3 t1">'+esc(m[0])+'</div>'+
+          '<div class="b1 t2">'+esc(m[1])+'</div></div></div>';
+      }).join("")+
+    '</div>'+
+    '<div class="b2 t3">الكميات تُضبط على هدفك '+ar(kcal)+' سعرة — سجّلها من زر + وتتحدّث تلقائياً.</div>';
+  }
+  function tabBuy(){
+    var ticked = (S.shop && S.shop[d.id]) || {};
+    var n = Object.keys(ticked).filter(function(k){ return ticked[k]; }).length;
+    return '<div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">'+
+      '<div class="h3 t1">سوبرماركت</div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:8px">'+SH.markets.map(function(x){ return '<div class="ghost chip">'+esc(x)+'</div>'; }).join("")+'</div>'+
+      '<div class="hair"></div>'+
+      '<div class="h3 t1">تطبيقات ومتاجر أونلاين</div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:8px">'+SH.apps.map(function(x){ return '<div class="ghost chip">'+esc(x)+'</div>'; }).join("")+'</div>'+
+    '</div>'+
+    '<div class="between"><div class="h2 t1">منتجات أساسية لهذا النظام</div>'+
+      (n ? '<div class="softacc tag">'+ar(n)+' في القائمة</div>' : "")+'</div>'+
+    '<div class="card" style="padding:2px 14px">'+
+      D.buy.map(function(b, i){
+        var on2 = !!ticked[i];
+        return (i ? '<div class="hair"></div>' : "")+
+        '<button class="row press" data-act="shoptick" data-diet="'+d.id+'" data-i="'+i+'" style="align-items:flex-start;padding:14px 0">'+
+          '<div class="col" style="gap:3px;flex:1;align-items:flex-start"><div class="h3 t1">'+esc(b.n)+'</div>'+
+            '<div class="rowc" style="gap:6px"><span class="acc">'+svg("search","ic14")+'</span><div class="b2 acc">'+esc(b.w)+'</div></div>'+
+            '<div class="b2 t3">'+esc(b.note)+'</div></div>'+
+          '<div class="'+(on2 ? "fill" : "card2")+' sq" style="width:32px;height:32px;border-radius:10px;margin-top:2px">'+(on2 ? svg("check","ic14") : svg("plus","ic14"))+'</div>'+
+        '</button>';
+      }).join("")+
+    '</div>'+
+    (n ? '<button class="ghost btn press" data-act="clearshop" data-diet="'+d.id+'">فرّغ قائمة التسوّق ('+ar(n)+')</button>'
+       : '<div class="b2 t3">اضغط + على أي منتج يضيفه لقائمة تسوّقك.</div>');
+  }
+
   return U.backHead(d.n, d.sub)+
   '<div class="b1 t2">'+esc(d.desc)+'</div>'+
   '<div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px">'+
-    '<div class="between"><div class="h3 t1">توزيع الماكروز على هدفك</div><div class="num b2 t3">'+ar(kcal)+' سعرة</div></div>'+
+    '<div class="between"><div class="h3 t1">ماكروزك على هذا النظام</div><div class="num b2 t3">'+ar(kcal)+' سعرة</div></div>'+
     '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">'+
       '<div class="card2" style="padding:12px 10px;text-align:center"><div class="num h2 mF">'+ar(g.f)+' جم</div><div class="cap t3">دهون '+ar(sp.f*100)+'٪</div></div>'+
       '<div class="card2" style="padding:12px 10px;text-align:center"><div class="num h2 mP">'+ar(g.p)+' جم</div><div class="cap t3">بروتين '+ar(sp.p*100)+'٪</div></div>'+
       '<div class="card2" style="padding:12px 10px;text-align:center"><div class="num h2 mC">'+ar(g.c)+' جم</div><div class="cap t3">كارب '+ar(sp.c*100)+'٪</div></div>'+
     '</div>'+
   '</div>'+
-  '<div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:12px">'+
-    '<div class="rowc" style="gap:8px"><span class="acc">'+svg("check","ic18")+'</span><div class="h3 t1">كُل بحرية</div></div>'+
-    '<div style="display:flex;flex-wrap:wrap;gap:8px">'+d.yes.map(function(x){ return '<div class="softacc chip">'+esc(x)+'</div>'; }).join("")+'</div>'+
-    '<div class="hair"></div>'+
-    '<div class="rowc" style="gap:8px"><span class="t3">'+svg("close","ic18")+'</span><div class="h3 t2">تجنّبه</div></div>'+
-    '<div style="display:flex;flex-wrap:wrap;gap:8px">'+d.no.map(function(x){ return '<div class="card2 chip t3">'+esc(x)+'</div>'; }).join("")+'</div>'+
-  '</div>'+
+  '<div class="seg">'+TABS.map(function(t){
+    return '<button data-act="dtab" data-v="'+t[0]+'" class="'+(dietTab === t[0] ? "on" : "")+'">'+t[1]+'</button>';
+  }).join("")+'</div>'+
+  (dietTab === "eat" ? tabEat() : dietTab === "avoid" ? tabAvoid() : dietTab === "day" ? tabDay() : tabBuy())+
   (on ? '<div class="ghost btn" style="opacity:.7">هذا نظامك الحالي</div>'
       : '<button class="fill btn press" data-act="setdiet" data-id="'+d.id+'" style="font-weight:600">فعّل '+esc(d.n)+' وحدّث الماكروز</button>');
 }
 
-window.__views1 = { vHome:vHome, vDiary:vDiary, vAdd:vAdd, vDiets:vDiets, vDiet:vDiet, foodSheet:foodSheet };
+window.__views1 = { vHome:vHome, vDiary:vDiary, vAdd:vAdd, vDiets:vDiets, vDiet:vDiet, foodSheet:foodSheet,
+  setDietTab:function(v){ dietTab = v; } };
 window.__nav = { go:go, back:back, tab:tab, toast:toast, openSheet:openSheet, closeSheet:closeSheet,
   getRoute:function(){ return route; }, setRoute:function(r){ route = r; },
   getSearch:function(){ return search; }, setSearch:function(v){ search = v; },
@@ -1474,6 +1791,17 @@ function act(name, ds, target){
       N.closeSheet(); N.tab("diary"); N.toast("أُضيف " + sheetState.food.n + " لـ" + sheetState.meal); break;
     case "closesheet": N.closeSheet(); break;
 
+    case "dtab": V1.setDietTab(ds.v); window.render(); break;
+    case "shoptick": {
+      S.shop = S.shop || {};
+      S.shop[ds.diet] = S.shop[ds.diet] || {};
+      S.shop[ds.diet][ds.i] = !S.shop[ds.diet][ds.i];
+      A.save(); window.render();
+      if (S.shop[ds.diet][ds.i]) N.toast("انضاف لقائمة التسوّق");
+      break;
+    }
+    case "clearshop":
+      S.shop[ds.diet] = {}; A.save(); window.render(); N.toast("فُرّغت القائمة"); break;
     case "setdiet":
       S.profile.diet = ds.id; A.save(); window.render();
       N.toast("فعّلنا " + DIET_BY_ID[ds.id].n + " وحدّثنا ماكروزك"); break;
