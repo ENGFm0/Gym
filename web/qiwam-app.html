@@ -315,6 +315,12 @@ var SHOPS = {
 };
 var DIET_DETAIL = {
   keto: {
+    meals: [
+      {n:"فطور الكيتو السريع", m:"الفطور", i:[["egg",3],["avo",70],["coffee",1]]},
+      {n:"دجاج مشوي وسلطة", m:"الغداء", i:[["chick",200],["gsalad",1]]},
+      {n:"سلمون وبروكلي بالزبدة", m:"العشاء", i:[["salmon",180],["broc",150],["oil",1]]},
+      {n:"جبن حلوم ولوز", m:"سناك", i:[["halou",40],["almond",30]]}
+    ],
     eat: [
       {c:"بروتين", i:["لحم بقري وغنم","دجاج بالجلد","سمك وسلمون","روبيان","بيض","كبد ولسان"]},
       {c:"دهون", i:["زبدة وسمن بلدي","زيت زيتون","زيت جوز الهند","أفوكادو","مايونيز بدون سكر","قشطة وكريمة طبخ"]},
@@ -348,6 +354,12 @@ var DIET_DETAIL = {
     tip: "أول أسبوع بتحس بخمول وصداع — زد الملح والماء والبوتاسيوم."
   },
   if: {
+    meals: [
+      {n:"قهوة الصيام", m:"الفطور", i:[["coffee",1]]},
+      {n:"فتح النافذة — دجاج وأرز", m:"الغداء", i:[["chick",180],["rice",150],["cucum",100]]},
+      {n:"لبن يوناني وتفاح", m:"سناك", i:[["yog",170],["apple",1]]},
+      {n:"آخر وجبة — سمك وبطاطس", m:"العشاء", i:[["salmon",150],["potato",120],["tomato",80]]}
+    ],
     eat: [
       {c:"داخل نافذة الأكل", i:["بروتين في كل وجبة","أرز وبطاطس باعتدال","خضار وفواكه","بقوليات","مكسرات","ألبان"]},
       {c:"أثناء الصيام", i:["ماء","قهوة سادة","شاي بدون سكر","ماء بالليمون بدون تحلية"]},
@@ -376,6 +388,12 @@ var DIET_DETAIL = {
     tip: "ابدأ ١٢:١٢ أسبوعين قبل ما تنزل لـ١٦:٨ — الالتزام أهم من الشدّة."
   },
   med: {
+    meals: [
+      {n:"شوفان بالحليب والمكسرات", m:"الفطور", i:[["oats",60],["milk",200],["almond",20]]},
+      {n:"سمك وأرز وسلطة", m:"الغداء", i:[["salmon",160],["rice",150],["gsalad",1]]},
+      {n:"حمص بالطحينة وخضار", m:"سناك", i:[["hummus",100],["cucum",100]]},
+      {n:"فول وخبز أسمر", m:"العشاء", i:[["foul",1],["bread",1]]}
+    ],
     eat: [
       {c:"بروتين", i:["سمك وتونة وسردين","دجاج","بقوليات: عدس وحمص","بيض","لحم أحمر مرة بالأسبوع"]},
       {c:"دهون", i:["زيت زيتون بكر","زيتون","أفوكادو","مكسرات نيّة","طحينة"]},
@@ -406,6 +424,12 @@ var DIET_DETAIL = {
     tip: "أكثر نظام عليه دراسات طويلة المدى لصحة القلب — سهل الاستمرار عليه عمر كامل."
   },
   hp: {
+    meals: [
+      {n:"٤ بيضات وشوفان", m:"الفطور", i:[["egg",4],["oats",50]]},
+      {n:"دجاج وأرز وبروكلي", m:"الغداء", i:[["chick",200],["rice",150],["broc",150]]},
+      {n:"واي وموز بعد التمرين", m:"سناك", i:[["whey",1],["banana",1]]},
+      {n:"لحم وبطاطس وسلطة", m:"العشاء", i:[["beef",180],["potato",120],["gsalad",1]]}
+    ],
     eat: [
       {c:"بروتين أساسي", i:["صدور دجاج","لحم بقري قليل الدهن","سمك وتونة","بيض وبياض بيض","جبن قريش","لبن يوناني"]},
       {c:"مكمّلات", i:["بروتين واي","كازين قبل النوم","بروتين نباتي إذا ما يناسبك الحليب"]},
@@ -435,6 +459,12 @@ var DIET_DETAIL = {
     tip: "استهدف ١٫٦–٢٫٢ جم بروتين لكل كجم من وزنك، موزّعة على ٣–٤ وجبات."
   },
   vegan: {
+    meals: [
+      {n:"شوفان بزبدة الفول والموز", m:"الفطور", i:[["oats",60],["pb",20],["banana",1]]},
+      {n:"حمص وأرز وبروكلي", m:"الغداء", i:[["hummus",150],["rice",150],["broc",120]]},
+      {n:"لوز وتفاح", m:"سناك", i:[["almond",30],["apple",1]]},
+      {n:"فول وخبز وطماطم", m:"العشاء", i:[["foul",1],["bread",1],["tomato",80]]}
+    ],
     eat: [
       {c:"بروتين نباتي", i:["عدس وحمص وفول","توفو وتمبيه","فول الصويا","بروتين بازلاء","زبدة الفول السوداني"]},
       {c:"حبوب", i:["أرز بني","كينوا","شوفان","برغل","خبز أسمر"]},
@@ -465,6 +495,12 @@ var DIET_DETAIL = {
     tip: "اجمع البقوليات مع الحبوب في نفس اليوم عشان تكمل الأحماض الأمينية."
   },
   paleo: {
+    meals: [
+      {n:"بيض بالسمن وأفوكادو", m:"الفطور", i:[["egg",3],["butter",10],["avo",70]]},
+      {n:"لحم وخضار مشوي", m:"الغداء", i:[["beef",200],["broc",150],["oil",1]]},
+      {n:"لوز وتفاح", m:"سناك", i:[["almond",30],["apple",1]]},
+      {n:"سمك وسلطة", m:"العشاء", i:[["salmon",170],["gsalad",1]]}
+    ],
     eat: [
       {c:"بروتين", i:["لحوم","دجاج","أسماك","بيض","كبد"]},
       {c:"خضار وفواكه", i:["كل الخضار","بطاطا حلوة","تفاح وتوت","موز","أفوكادو"]},
@@ -494,6 +530,12 @@ var DIET_DETAIL = {
     tip: "لو النظام صعب كامل، طبّق قاعدة ٨٠٪ — الفائدة الأكبر من ترك المصنّع والسكر."
   },
   bulk: {
+    meals: [
+      {n:"شوفان بزبدة الفول والحليب", m:"الفطور", i:[["oats",80],["pb",30],["banana",1],["milk",200]]},
+      {n:"لحم وأرز", m:"الغداء", i:[["beef",250],["rice",250]]},
+      {n:"واي وتمر وحليب", m:"سناك", i:[["whey",1],["dates",3],["milk",200]]},
+      {n:"دجاج ومعكرونة", m:"العشاء", i:[["chick",200],["pasta",200],["oil",1]]}
+    ],
     eat: [
       {c:"بروتين", i:["دجاج ولحم","سمك","بيض","بروتين واي","لبن وحليب كامل"]},
       {c:"كارب", i:["أرز","معكرونة","شوفان","بطاطس وبطاطا","خبز","تمر"]},
@@ -523,6 +565,12 @@ var DIET_DETAIL = {
     tip: "الفائض ٣٠٠–٥٠٠ سعرة فقط، ووزن نفسك أسبوعياً — الزيادة الصحية ٠٫٢٥–٠٫٥ كجم بالأسبوع."
   },
   balanced: {
+    meals: [
+      {n:"بيض وخبز وتفاح", m:"الفطور", i:[["egg",2],["bread",1],["apple",1]]},
+      {n:"دجاج وأرز وسلطة", m:"الغداء", i:[["chick",180],["rice",150],["gsalad",1]]},
+      {n:"لبن يوناني ولوز", m:"سناك", i:[["yog",170],["almond",20]]},
+      {n:"سمك وبطاطس وخضار", m:"العشاء", i:[["salmon",150],["potato",120],["broc",100]]}
+    ],
     eat: [
       {c:"بروتين", i:["دجاج ولحم وسمك","بيض","بقوليات","ألبان"]},
       {c:"كارب", i:["أرز","خبز","بطاطس","شوفان","فواكه"]},
@@ -728,7 +776,7 @@ var screenEl = document.getElementById("screen"),
 
 var route = { name:"home", p:{} }, stack = [], search = "", sheet = null;
 
-function go(name, p){ stack.push({ name:route.name, p:route.p }); route = { name:name, p:p||{} }; search=""; dietTab="eat"; render(); scrollEl.scrollTop = 0; }
+function go(name, p){ stack.push({ name:route.name, p:route.p }); route = { name:name, p:p||{} }; search=""; dietTab="meals"; render(); scrollEl.scrollTop = 0; }
 function back(){ var r = stack.pop(); route = r || { name: S.role === "coach" ? "chome" : "home", p:{} }; render(); }
 function tab(name){ stack = []; route = { name:name, p:{} }; render(); scrollEl.scrollTop = 0; }
 
@@ -849,8 +897,14 @@ function vHome(){
 function vDiary(){
   var t = A.targets(), d = A.dayTotals(), burn = A.stepBurn();
   var days = ["سبت","أحد","إثنين","ثلاثاء","أربعاء"], nums = [4,5,6,7,8];
-  return '<div class="head"><div class="h1 t1">اليوميات</div>'+
+  var seg = '<div class="head"><div class="h1 t1">الوجبات</div>'+
     '<button class="card2 sq press" data-act="go" data-to="progress" style="width:44px;height:44px;border-radius:14px" aria-label="التقدم">'+svg("chart","ic18")+'</button></div>'+
+    '<div class="seg">'+
+      '<button data-act="diarytab" data-v="log" class="'+(diaryTab === "log" ? "on" : "")+'">يومياتي</button>'+
+      '<button data-act="diarytab" data-v="diet" class="'+(diaryTab === "diet" ? "on" : "")+'">النظام</button>'+
+    '</div>';
+  if (diaryTab === "diet") return seg + dietBody(DIET_BY_ID[S.profile.diet], true);
+  return seg+
   '<div class="rowc" style="justify-content:center;gap:6px">'+
     days.map(function(dn, i){
       var on = i === days.length - 1;
@@ -967,14 +1021,49 @@ function vDiets(){
   '</div>';
 }
 
-var dietTab = "eat";
-function vDiet(){
-  var d = DIET_BY_ID[route.p.id] || DIET_BY_ID[S.profile.diet];
-  var D = window.__DIET_DETAIL[d.id], SH = window.__SHOPS;
-  var kcal = window.__app.targets().kcal, sp = d.split, on = d.id === S.profile.diet;
-  var g = { f: Math.round(kcal*sp.f/9), p: Math.round(kcal*sp.p/4), c: Math.round(kcal*sp.c/4) };
-  var TABS = [["eat","وش آكل"],["avoid","وش أتجنّب"],["day","يوم نموذجي"],["buy","وين أشتري"]];
+var dietTab = "meals", diaryTab = "log";
 
+function mealTotals(mm){
+  var t = { kcal:0, p:0, c:0, f:0 };
+  mm.i.forEach(function(x){
+    var f = FOOD_BY_ID[x[0]], k = x[1] / f.base;
+    t.kcal += f.kcal*k; t.p += f.p*k; t.c += f.c*k; t.f += f.f*k;
+  });
+  return t;
+}
+function mealItemsLabel(mm){
+  return mm.i.map(function(x){
+    var f = FOOD_BY_ID[x[0]];
+    return f.n + " " + ar(x[1], x[1] % 1 ? 1 : 0) + " " + f.u;
+  }).join(" · ");
+}
+
+function dietBody(d, inline){
+  var D = window.__DIET_DETAIL[d.id], SH = window.__SHOPS;
+  var kcal = window.__app.targets().kcal, sp = d.split;
+  var g = { f: Math.round(kcal*sp.f/9), p: Math.round(kcal*sp.p/4), c: Math.round(kcal*sp.c/4) };
+  var TABS = [["meals","وجبات جاهزة"],["eat","وش آكل"],["avoid","وش أتجنّب"],["day","يوم نموذجي"],["buy","وين أشتري"]];
+
+  function tabMeals(){
+    return '<div class="b2 t3">وجبات مبنية على '+esc(d.n)+' — اضغط أضف وتنحسب في يومياتك فوراً.</div>'+
+    D.meals.map(function(mm, i){
+      var t = mealTotals(mm);
+      return '<div class="card" style="padding:14px;display:flex;flex-direction:column;gap:12px">'+
+        '<div class="between" style="align-items:flex-start">'+
+          '<div class="col" style="gap:3px;flex:1"><div class="h3 t1">'+esc(mm.n)+'</div>'+
+          '<div class="b2 t3">'+esc(mealItemsLabel(mm))+'</div></div>'+
+          '<div class="card2 tag t2">'+mm.m+'</div>'+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">'+
+          '<div class="card2" style="padding:10px 6px;text-align:center"><div class="num h3 t1">'+ar(t.kcal)+'</div><div class="cap t3">سعرة</div></div>'+
+          '<div class="card2" style="padding:10px 6px;text-align:center"><div class="num h3 mP">'+ar(t.p)+'</div><div class="cap t3">بروتين</div></div>'+
+          '<div class="card2" style="padding:10px 6px;text-align:center"><div class="num h3 mC">'+ar(t.c)+'</div><div class="cap t3">كارب</div></div>'+
+          '<div class="card2" style="padding:10px 6px;text-align:center"><div class="num h3 mF">'+ar(t.f)+'</div><div class="cap t3">دهون</div></div>'+
+        '</div>'+
+        '<button class="fill btn press" data-act="addmeal" data-diet="'+d.id+'" data-i="'+i+'" style="min-height:48px;font-size:14px;font-weight:600">أضف لـ'+mm.m+'</button>'+
+      '</div>';
+    }).join("");
+  }
   function tabEat(){
     return D.eat.map(function(sec){
       return '<div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">'+
@@ -1013,7 +1102,7 @@ function vDiet(){
           '<div class="b1 t2">'+esc(m[1])+'</div></div></div>';
       }).join("")+
     '</div>'+
-    '<div class="b2 t3">الكميات تُضبط على هدفك '+ar(kcal)+' سعرة — سجّلها من زر + وتتحدّث تلقائياً.</div>';
+    '<div class="b2 t3">الكميات مضبوطة على هدفك '+ar(kcal)+' سعرة.</div>';
   }
   function tabBuy(){
     var ticked = (S.shop && S.shop[d.id]) || {};
@@ -1043,8 +1132,10 @@ function vDiet(){
        : '<div class="b2 t3">اضغط + على أي منتج يضيفه لقائمة تسوّقك.</div>');
   }
 
-  return U.backHead(d.n, d.sub)+
-  '<div class="b1 t2">'+esc(d.desc)+'</div>'+
+  return (inline ? '<div class="between"><div class="col" style="gap:2px"><div class="h2 t1">'+esc(d.n)+'</div>'+
+      '<div class="b2 t3">'+esc(d.sub)+'</div></div>'+
+      '<button class="softacc chip press" data-act="go" data-to="diets" style="min-height:40px">بدّل النظام</button></div>'+
+      '<div class="b1 t2">'+esc(d.desc)+'</div>' : '')+
   '<div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px">'+
     '<div class="between"><div class="h3 t1">ماكروزك على هذا النظام</div><div class="num b2 t3">'+ar(kcal)+' سعرة</div></div>'+
     '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">'+
@@ -1053,16 +1144,24 @@ function vDiet(){
       '<div class="card2" style="padding:12px 10px;text-align:center"><div class="num h2 mC">'+ar(g.c)+' جم</div><div class="cap t3">كارب '+ar(sp.c*100)+'٪</div></div>'+
     '</div>'+
   '</div>'+
-  '<div class="seg">'+TABS.map(function(t){
-    return '<button data-act="dtab" data-v="'+t[0]+'" class="'+(dietTab === t[0] ? "on" : "")+'">'+t[1]+'</button>';
+  '<div class="scrollx">'+TABS.map(function(t){
+    return '<button class="chip press '+(dietTab === t[0] ? "fill" : "ghost")+'" data-act="dtab" data-v="'+t[0]+'" style="min-height:44px">'+t[1]+'</button>';
   }).join("")+'</div>'+
-  (dietTab === "eat" ? tabEat() : dietTab === "avoid" ? tabAvoid() : dietTab === "day" ? tabDay() : tabBuy())+
+  (dietTab === "meals" ? tabMeals() : dietTab === "eat" ? tabEat() : dietTab === "avoid" ? tabAvoid() : dietTab === "day" ? tabDay() : tabBuy());
+}
+
+function vDiet(){
+  var d = DIET_BY_ID[route.p.id] || DIET_BY_ID[S.profile.diet];
+  var on = d.id === S.profile.diet;
+  return U.backHead(d.n, d.sub)+
+  '<div class="b1 t2">'+esc(d.desc)+'</div>'+
+  dietBody(d, false)+
   (on ? '<div class="ghost btn" style="opacity:.7">هذا نظامك الحالي</div>'
       : '<button class="fill btn press" data-act="setdiet" data-id="'+d.id+'" style="font-weight:600">فعّل '+esc(d.n)+' وحدّث الماكروز</button>');
 }
 
 window.__views1 = { vHome:vHome, vDiary:vDiary, vAdd:vAdd, vDiets:vDiets, vDiet:vDiet, foodSheet:foodSheet,
-  setDietTab:function(v){ dietTab = v; } };
+  setDietTab:function(v){ dietTab = v; }, setDiaryTab:function(v){ diaryTab = v; }, mealTotals:mealTotals };
 window.__nav = { go:go, back:back, tab:tab, toast:toast, openSheet:openSheet, closeSheet:closeSheet,
   getRoute:function(){ return route; }, setRoute:function(r){ route = r; },
   getSearch:function(){ return search; }, setSearch:function(v){ search = v; },
@@ -1792,6 +1891,14 @@ function act(name, ds, target){
     case "closesheet": N.closeSheet(); break;
 
     case "dtab": V1.setDietTab(ds.v); window.render(); break;
+    case "diarytab": V1.setDiaryTab(ds.v); window.render(); els.scroll.scrollTop = 0; break;
+    case "addmeal": {
+      var dm = window.__DIET_DETAIL[ds.diet].meals[+ds.i];
+      dm.i.forEach(function(x){ addItem(FOOD_BY_ID[x[0]], x[1], dm.m); });
+      var tt = V1.mealTotals(dm);
+      V1.setDiaryTab("log"); window.render(); els.scroll.scrollTop = 0;
+      N.toast("أُضيفت " + dm.n + " · " + ar(tt.kcal) + " سعرة"); break;
+    }
     case "shoptick": {
       S.shop = S.shop || {};
       S.shop[ds.diet] = S.shop[ds.diet] || {};
