@@ -636,6 +636,8 @@ function seed(){
     chat: [],
     shop: {},
     measures: [],
+    scans: [],
+    units: { mass:"kg", len:"cm" },
     coachDemo: false
   };
 }
@@ -682,6 +684,8 @@ if (!S.auth) S.auth = { status:"in", name:S.profile.name || "", email:"" };
 if (!S.profile.goal) S.profile.goal = "lose";
 if (!S.history) S.history = {};
 if (!S.measures) S.measures = [];
+if (!S.scans) S.scans = [];
+if (!S.units) S.units = { mass:"kg", len:"cm" };
 if (!S.shop) S.shop = {};
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 
@@ -720,6 +724,13 @@ function dayTotals(){
   return t;
 }
 function stepBurn(){ return Math.round(S.day.steps * 0.04); }
+var KG_LB = 2.20462, CM_IN = 2.54;
+function massU(){ return S.units.mass === "lb" ? "رطل" : "كجم"; }
+function lenU(){ return S.units.len === "in" ? "إنش" : "سم"; }
+function showMass(kg){ return S.units.mass === "lb" ? kg * KG_LB : kg; }
+function toKg(v){ return S.units.mass === "lb" ? v / KG_LB : v; }
+function showLen(cm){ return S.units.len === "in" ? cm / CM_IN : cm; }
+function toCm(v){ return S.units.len === "in" ? v * CM_IN : v; }
 function curWeight(){ return S.weights.length ? S.weights[S.weights.length-1].kg : S.profile.w; }
 function stepKm(){ return S.day.steps * 0.00072; }
 
@@ -785,7 +796,8 @@ function backHead(title, sub, right){
 }
 window.__ui = { ring:ring, bar:bar, macroRow:macroRow, lineChart:lineChart, barsChart:barsChart, iconBtn:iconBtn, backHead:backHead, clampP:clampP };
 window.__app = { S:S, save:save, MEALS:MEALS, targets:targets, dayTotals:dayTotals, mealTotals:mealTotals,
-                 itemTotals:itemTotals, item:item, seed:seed, stepBurn:stepBurn, stepKm:stepKm, ACT:ACT, bmr:bmr, tdee:tdee, KEY:KEY, curWeight:curWeight, demoData:demoData };
+                 itemTotals:itemTotals, item:item, seed:seed, stepBurn:stepBurn, stepKm:stepKm, ACT:ACT, bmr:bmr, tdee:tdee, KEY:KEY, curWeight:curWeight, demoData:demoData,
+  massU:massU, lenU:lenU, showMass:showMass, toKg:toKg, showLen:showLen, toCm:toCm };
 })();
 </script>
 
@@ -1209,6 +1221,7 @@ var FOOD_BY_ID = window.__FOOD_BY_ID, DIET_BY_ID = window.__DIET_BY_ID;
 var EXERCISES = window.__EXERCISES, EX_BY_ID = window.__EX_BY_ID;
 var CLIENTS = window.__CLIENTS, CLIENT_BY_ID = window.__CLIENT_BY_ID;
 var S = A.S, MEALS = A.MEALS, curWeight = A.curWeight;
+var massU = A.massU, lenU = A.lenU, showMass = A.showMass, toKg = A.toKg, showLen = A.showLen, toCm = A.toCm;
 var SESSION = ["lat","row","bench","curl"];
 
 function setsOf(id){ if (!S.sets[id]) S.sets[id] = [{w:0,r:0,d:false},{w:0,r:0,d:false},{w:0,r:0,d:false}]; return S.sets[id]; }
@@ -1336,8 +1349,8 @@ function vProgress(){
   '<div class="card" style="padding:18px 16px 12px;display:flex;flex-direction:column;gap:12px">'+
     '<div class="between" style="align-items:flex-start">'+
       '<div class="col" style="gap:3px"><div class="cap t3">الوزن الحالي</div>'+
-      '<div class="rowc" style="gap:8px"><div class="num d1 t1">'+ar(cur,1)+'</div><div class="b1 t3" style="padding-bottom:6px">كجم</div></div></div>'+
-      '<div class="'+(cur <= first ? "softacc" : "card2 t2")+' tag" style="min-height:30px">'+ar(Math.abs(cur-first),1)+(cur <= first ? "−" : "+")+' كجم منذ البداية</div>'+
+      '<div class="rowc" style="gap:8px"><div class="num d1 t1">'+ar(showMass(cur),1)+'</div><div class="b1 t3" style="padding-bottom:6px">'+massU()+'</div></div></div>'+
+      '<div class="'+(cur <= first ? "softacc" : "card2 t2")+' tag" style="min-height:30px">'+ar(Math.abs(showMass(cur)-showMass(first)),1)+(cur <= first ? "−" : "+")+' '+massU()+' منذ البداية</div>'+
     '</div>'+
     (ws.length > 1 ? U.lineChart(ws.map(function(x){ return x.kg; }), 320, 128, ws[ws.length-1].d, ws[0].d)
       : '<div class="b2 t3">سجّل وزنك مرة ثانية بعد أسبوع عشان يبدأ المنحنى.</div>')+
@@ -1348,14 +1361,14 @@ function vProgress(){
     '<div class="card" style="padding:14px 12px;display:flex;flex-direction:column;gap:4px"><div class="cap t3">كتلة العضل</div>'+
       '<div class="num h1 t1">'+ar(c.muscle,1)+'</div><div class="b2 t3">كجم</div></div>'+
     '<div class="card" style="padding:14px 12px;display:flex;flex-direction:column;gap:4px"><div class="cap t3">باقي للهدف</div>'+
-      '<div class="num h1 t1">'+ar(Math.abs(toGo),1)+'</div><div class="b2 t3">كجم إلى '+ar(S.profile.target)+'</div></div>'+
+      '<div class="num h1 t1">'+ar(Math.abs(showMass(toGo)),1)+'</div><div class="b2 t3">'+massU()+' إلى '+ar(showMass(S.profile.target),1)+'</div></div>'+
   '</div>'+
   '<div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px">'+
     '<div class="h3 t1">سجل الأوزان</div>'+
     ws.slice().reverse().slice(0,5).map(function(x, i, a){
       var prev = a[i+1];
       return '<div class="between" style="min-height:34px"><div class="b1 t2">'+esc(x.d)+'</div>'+
-        '<div class="rowc" style="gap:10px"><div class="num b1 t1">'+ar(x.kg,1)+' كجم</div>'+
+        '<div class="rowc" style="gap:10px"><div class="num b1 t1">'+ar(showMass(x.kg),1)+' '+massU()+'</div>'+
         (prev ? '<div class="num b2 '+(x.kg <= prev.kg ? "acc" : "t3")+'" style="width:52px;text-align:start">'+ar(Math.abs(x.kg-prev.kg),1)+(x.kg <= prev.kg ? "−" : "+")+'</div>' : '<div style="width:52px"></div>')+
         '</div></div>';
     }).join("")+
@@ -1364,12 +1377,9 @@ function vProgress(){
 }
 function weightSheet(){
   var cur = curWeight();
-  return '<div class="grip"></div><div class="h2 t1">وزن اليوم</div>'+
-  '<div class="card2" style="padding:18px;display:flex;flex-direction:column;align-items:center;gap:14px">'+
-    '<div class="rowc" style="gap:8px"><div class="num t1" id="wv" style="font-size:44px;font-weight:600">'+ar(cur,1)+'</div><div class="h2 t3">كجم</div></div>'+
-    '<div class="stepper"><button class="press" data-act="wv" data-d="-0.1" aria-label="أنقص">'+svg("minus","ic18")+'</button>'+
-    '<button class="press" data-act="wv" data-d="0.1" aria-label="زد">'+svg("plus","ic18")+'</button></div>'+
-  '</div>'+
+  return '<div class="grip"></div>'+
+  '<div class="between"><div class="h2 t1">وزن اليوم</div>'+unitSeg("mass")+'</div>'+
+  numField("wIn", "الوزن", showMass(cur), massU(), 1)+
   '<div class="rowc" style="gap:10px"><button class="ghost btn press" data-act="closesheet" style="flex:1">إلغاء</button>'+
   '<button class="fill btn press" data-act="savew" style="flex:1.6;font-weight:600">احفظ الوزن</button></div>';
 }
@@ -1388,8 +1398,8 @@ function vScale(){
     '<div style="width:8px;height:8px;border-radius:99px;background:var(--acc)"></div></div>'+
   '<div class="card" style="padding:22px 18px;display:flex;flex-direction:column;align-items:center;gap:12px">'+
     '<div class="cap t3">'+(S.weights.length ? "آخر قياس" : "وزنك من بياناتك")+'</div>'+
-    '<div class="rowc" style="gap:10px;align-items:flex-end"><div class="num t1" style="font-size:52px;font-weight:600;letter-spacing:-.03em">'+ar(cur,1)+'</div>'+
-    '<div class="h2 t3" style="padding-bottom:10px">كجم</div></div>'+
+    '<div class="rowc" style="gap:10px;align-items:flex-end"><div class="num t1" style="font-size:52px;font-weight:600;letter-spacing:-.03em">'+ar(showMass(cur),1)+'</div>'+
+    '<div class="h2 t3" style="padding-bottom:10px">'+massU()+'</div></div>'+
     (prev ? '<div class="'+(cur <= prev.kg ? "softacc" : "card2 t2")+' tag" style="min-height:30px">'+ar(Math.abs(cur-prev.kg),1)+(cur <= prev.kg ? "−" : "+")+' كجم عن القياس السابق</div>' : "")+
   '</div>'+
   '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">'+
@@ -1444,6 +1454,29 @@ var PARTS = [
 var PART_BY_K = {}; PARTS.forEach(function(x){ PART_BY_K[x.k] = x; });
 var progTab = "weight";
 
+function unitSeg(kind){
+  var opts = kind === "mass" ? [["kg","كجم"],["lb","رطل"]] : [["cm","سم"],["in","إنش"]];
+  var cur = kind === "mass" ? S.units.mass : S.units.len;
+  return '<div class="seg" style="width:auto;flex:none">'+opts.map(function(o){
+    return '<button data-act="setunit" data-kind="'+kind+'" data-v="'+o[0]+'" class="'+(cur === o[0] ? "on" : "")+'" style="min-width:64px;min-height:34px;font-size:12px">'+o[1]+'</button>';
+  }).join("")+'</div>';
+}
+function numField(id, label, value, unit, dec){
+  return '<div class="col" style="gap:7px"><div class="cap t3">'+label+'</div>'+
+    '<div style="position:relative">'+
+      '<input class="f num" id="'+id+'" type="text" inputmode="decimal" value="'+(value === "" ? "" : ar(value, dec))+'"'+
+        ' style="padding-inline-end:52px;font-size:16px" autocomplete="off">'+
+      '<div class="b2 t3" style="position:absolute;inset-inline-end:14px;top:50%;transform:translateY(-50%)">'+unit+'</div>'+
+    '</div></div>';
+}
+/* Arabic-Indic digits typed or shown are read back as numbers */
+function readNum(id){
+  var el2 = document.getElementById(id);
+  if (!el2) return NaN;
+  var t = (el2.value || "").replace(/[\u0660-\u0669]/g, function(d){ return String(d.charCodeAt(0) - 1632); })
+    .replace(/[\u066B\u066C]/g, ".").replace(/[^0-9.]/g, "");
+  return parseFloat(t);
+}
 function seriesOf(k){
   return S.measures.filter(function(e){ return e.v[k] > 0; }).map(function(e){ return { d:e.d, v:e.v[k] }; });
 }
@@ -1476,16 +1509,82 @@ function deltaTag(first, last, good){
   var okDir = (d < 0) === (good === "down");
   return '<div class="'+(okDir ? "softacc" : "card2 t2")+' tag">'+ar(Math.abs(d),1)+(d < 0 ? "−" : "+")+' سم</div>';
 }
+function bmiInfo(){
+  var w = curWeight(), h = S.profile.h / 100, v = w / (h*h);
+  var cat = v < 18.5 ? ["نحيف","var(--c)"] : v < 25 ? ["وزن طبيعي","var(--p)"] : v < 30 ? ["وزن زائد","var(--f)"] : ["سمنة","var(--f)"];
+  return { v:v, name:cat[0], color:cat[1], pos: Math.max(0, Math.min(100, (v - 15) / 25 * 100)) };
+}
+function bmiCard(){
+  var b = bmiInfo();
+  return '<div class="card" style="padding:16px;display:flex;flex-direction:column;gap:14px">'+
+    '<div class="between" style="align-items:flex-start">'+
+      '<div class="col" style="gap:3px"><div class="cap t3">كتلة الجسم BMI</div>'+
+      '<div class="rowc" style="gap:8px"><div class="num d1 t1">'+ar(b.v,1)+'</div>'+
+      '<div class="b1" style="padding-bottom:6px;color:'+b.color+'">'+b.name+'</div></div></div>'+
+      '<div class="col" style="gap:2px;align-items:flex-end"><div class="num b2 t2">'+ar(showMass(curWeight()),1)+' '+massU()+'</div>'+
+      '<div class="num b2 t3">'+ar(showLen(S.profile.h),0)+' '+lenU()+'</div></div>'+
+    '</div>'+
+    '<div style="position:relative;padding-top:6px">'+
+      '<div style="height:8px;border-radius:99px;display:flex;overflow:hidden">'+
+        '<div style="width:14%;background:var(--c);opacity:.65"></div>'+
+        '<div style="width:26%;background:var(--p)"></div>'+
+        '<div style="width:20%;background:var(--f);opacity:.8"></div>'+
+        '<div style="width:40%;background:var(--f);opacity:.45"></div>'+
+      '</div>'+
+      '<div style="position:absolute;top:0;left:'+(100 - b.pos).toFixed(1)+'%;transform:translateX(50%)">'+
+        '<div style="width:3px;height:20px;border-radius:99px;background:var(--t1)"></div></div>'+
+    '</div>'+
+    '<div class="between"><div class="cap t3">١٥</div><div class="cap t3">١٨٫٥</div><div class="cap t3">٢٥</div><div class="cap t3">٣٠</div><div class="cap t3">٤٠</div></div>'+
+  '</div>';
+}
+function bodyFigure(){
+  function val(k){ var v = lastOf(k); return v ? ar(showLen(v),1) : "—"; }
+  var A0 = "var(--t3)", L = "var(--t2)";
+  return '<div class="card" style="padding:14px 10px 10px">'+
+    '<svg viewBox="0 0 300 340" style="width:100%;height:auto;direction:ltr" aria-label="رسم الجسم بالمقاسات">'+
+      /* figure */
+      '<g fill="none" stroke="var(--acc)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.9">'+
+        '<circle cx="150" cy="34" r="17"></circle>'+
+        '<path d="M143 52h14v10"></path>'+
+        '<path d="M150 62c-14 0-24 4-30 9l-8 44 9 3 5-26v58h48v-58l5 26 9-3-8-44c-6-5-16-9-30-9z"></path>'+
+        '<path d="M120 71l-14 46 6 3M180 71l14 46-6 3"></path>'+
+        '<path d="M133 150v54l-4 56h14l6-56 6 56h14l-4-56v-54"></path>'+
+      '</g>'+
+      /* measurement guides */
+      '<g stroke="var(--track)" stroke-width="1.2" stroke-dasharray="3 4">'+
+        '<path d="M150 58H198M150 74H198M150 96H198M150 140H198M150 166H198"></path>'+
+        '<path d="M116 116H102M138 196H102M136 258H102"></path>'+
+      '</g>'+
+      '<g font-family="Readex Pro, sans-serif" font-size="11.5" fill="'+L+'">'+
+        '<text x="294" y="62" text-anchor="end">الرقبة '+val("neck")+'</text>'+
+        '<text x="294" y="78" text-anchor="end">الكتف '+val("shoulder")+'</text>'+
+        '<text x="294" y="100" text-anchor="end">الصدر '+val("chest")+'</text>'+
+        '<text x="294" y="144" text-anchor="end">الخصر '+val("waist")+'</text>'+
+        '<text x="294" y="170" text-anchor="end">الأرداف '+val("hip")+'</text>'+
+        '<text x="6" y="120">الذراع '+val("arm")+'</text>'+
+        '<text x="6" y="200">الفخذ '+val("thigh")+'</text>'+
+        '<text x="6" y="262">السمانة '+val("calf")+'</text>'+
+      '</g>'+
+      '<g fill="var(--acc)">'+
+        '<circle cx="150" cy="58" r="3"></circle><circle cx="150" cy="74" r="3"></circle>'+
+        '<circle cx="150" cy="96" r="3"></circle><circle cx="150" cy="140" r="3"></circle>'+
+        '<circle cx="150" cy="166" r="3"></circle><circle cx="116" cy="116" r="3"></circle>'+
+        '<circle cx="138" cy="196" r="3"></circle><circle cx="136" cy="258" r="3"></circle>'+
+      '</g>'+
+    '</svg>'+
+    '<div class="cap t3" style="text-align:center;padding-bottom:4px">القياسات بالـ'+lenU()+'</div>'+
+  '</div>';
+}
 function vMeasures(){
   if (!S.measures.length) return '<div class="card" style="padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">'+
       '<div class="card2 sq" style="width:64px;height:64px;border-radius:20px">'+svg("scale")+'</div>'+
       '<div class="h2 t1">ما سجّلت مقاساتك بعد</div>'+
       '<div class="b1 t2" style="max-width:280px">المقاس ينزل قبل الوزن كثير — خصرك ينقص وأنت واقف على نفس الرقم. سجّلها مرة كل أسبوعين.</div>'+
       '<button class="fill btn press" data-act="measlog" style="font-weight:600">سجّل مقاساتك الأولى</button>'+
-    '</div>';
+    '</div>'+ bmiCard() + window.__scanCard();
   var fat = navyFat(), n = S.measures.length;
   var waistSeries = seriesOf("waist");
-  return '<div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px">'+
+  return bodyFigure()+ bmiCard() + '<div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px">'+
     '<div class="between" style="align-items:flex-start">'+
       '<div class="col" style="gap:3px"><div class="cap t3">الخصر</div>'+
       '<div class="rowc" style="gap:8px"><div class="num d1 t1">'+(lastOf("waist") ? ar(lastOf("waist"),1) : "—")+'</div>'+
@@ -1513,20 +1612,16 @@ function vMeasures(){
       '</button>';
     }).join("")+
   '</div>'+
+  window.__scanCard()+
   '<button class="fill btn press" data-act="measlog" style="font-weight:600">سجّل مقاسات اليوم</button>';
 }
 function measSheet(vals){
-  return '<div class="grip"></div><div class="h2 t1">مقاسات اليوم</div>'+
+  return '<div class="grip"></div>'+
+  '<div class="between"><div class="h2 t1">مقاسات اليوم</div>'+unitSeg("len")+'</div>'+
   '<div class="b2 t3">قِس في نفس الوقت من اليوم وبنفس الوضعية — الصباح قبل الأكل أدق.</div>'+
-  '<div class="card" style="padding:2px 14px">'+
-    PARTS.map(function(pt, i){
-      return (i ? '<div class="hair"></div>' : "")+
-      '<div class="row" style="min-height:58px"><div class="b1 t1" style="width:64px">'+pt.n+'</div>'+
-      '<div class="rowc" style="gap:10px">'+
-        '<button class="ghost sq press" data-act="mstep" data-k="'+pt.k+'" data-d="-0.5" style="width:40px;height:40px;border-radius:13px" aria-label="أنقص">'+svg("minus","ic14")+'</button>'+
-        '<div class="num h3 t1" id="m_'+pt.k+'" style="min-width:52px;text-align:center">'+ar(vals[pt.k],1)+'</div>'+
-        '<button class="ghost sq press" data-act="mstep" data-k="'+pt.k+'" data-d="0.5" style="width:40px;height:40px;border-radius:13px" aria-label="زد">'+svg("plus","ic14")+'</button>'+
-      '</div></div>';
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
+    PARTS.map(function(pt){
+      return numField("m_"+pt.k, pt.n, showLen(vals[pt.k]), lenU(), 1);
     }).join("")+
   '</div>'+
   '<div class="rowc" style="gap:10px"><button class="ghost btn press" data-act="closesheet" style="flex:1">إلغاء</button>'+
@@ -1566,7 +1661,7 @@ function vProfile(){
   '<div class="card" style="padding:18px;display:flex;align-items:center;gap:14px">'+
     '<div class="card2 sq" style="width:64px;height:64px;border-radius:20px">'+svg("user")+'</div>'+
     '<div class="col" style="gap:3px;flex:1"><div class="h2 t1">'+esc(S.profile.name)+'</div>'+
-    '<div class="b2 t3">'+ar(S.profile.age)+' سنة · '+ar(S.profile.h)+' سم · '+ar(S.profile.w,1)+' كجم</div></div>'+
+    '<div class="b2 t3">'+ar(S.profile.age)+' سنة · '+ar(showLen(S.profile.h),0)+' '+lenU()+' · '+ar(showMass(S.profile.w),1)+' '+massU()+'</div></div>'+
     '<button class="softacc chip press" data-act="go" data-to="bodydata" style="min-height:38px">تعديل</button></div>'+
   '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">'+
     '<div class="card" style="padding:14px 10px;text-align:center"><div class="num h1 t1">'+ar(t.kcal)+'</div><div class="cap t3">سعرة يومياً</div></div>'+
@@ -1602,25 +1697,27 @@ function vProfile(){
 
 function vBodyData(){
   var p = S.profile, t = A.targets();
-  function num(label, val, unit, key, step, dec){
-    return '<div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">'+
+  function fld(key, label, unit, dec){
+    var v = p[key], shown = unit === "mass" ? showMass(v) : unit === "len" ? showLen(v) : v;
+    var u = unit === "mass" ? massU() : unit === "len" ? lenU() : "سنة";
+    return '<div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:6px">'+
       '<div class="cap t3">'+label+'</div>'+
-      '<div class="between"><div class="rowc" style="gap:6px"><div class="num h1 t1">'+ar(val, dec)+'</div><div class="b2 t3">'+unit+'</div></div>'+
-      '<div class="rowc" style="gap:8px">'+
-        '<button class="ghost sq press" data-act="pnum" data-k="'+key+'" data-d="'+(-step)+'" style="width:40px;height:40px;border-radius:13px" aria-label="أنقص">'+svg("minus","ic14")+'</button>'+
-        '<button class="ghost sq press" data-act="pnum" data-k="'+key+'" data-d="'+step+'" style="width:40px;height:40px;border-radius:13px" aria-label="زد">'+svg("plus","ic14")+'</button>'+
-      '</div></div></div>';
+      '<div style="position:relative">'+
+        '<input class="f num" data-bind="'+key+'" data-unit="'+unit+'" type="text" inputmode="decimal" value="'+ar(shown, dec)+'"'+
+          ' style="padding-inline-end:48px;font-size:17px;background:transparent;border:0;min-height:36px;padding-inline-start:0" autocomplete="off">'+
+        '<div class="b2 t3" style="position:absolute;inset-inline-end:0;top:50%;transform:translateY(-50%)">'+u+'</div>'+
+      '</div></div>';
   }
   return U.backHead("بياناتك وهدفك", "منها تُحسب السعرات والماكروز")+
   '<div class="seg">'+
     '<button data-act="gender" data-v="male" class="'+(p.gender === "male" ? "on" : "")+'">ذكر</button>'+
     '<button data-act="gender" data-v="female" class="'+(p.gender === "female" ? "on" : "")+'">أنثى</button>'+
   '</div>'+
+  '<div class="between"><div class="b2 t3">وحدات القياس</div>'+
+    '<div class="rowc" style="gap:8px">'+window.__views2.unitSeg("len")+window.__views2.unitSeg("mass")+'</div></div>'+
   '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
-    num("العمر", p.age, "سنة", "age", 1)+
-    num("الطول", p.h, "سم", "h", 1)+
-    num("الوزن الحالي", p.w, "كجم", "w", 0.5, 1)+
-    num("الوزن المستهدف", p.target, "كجم", "target", 0.5, 1)+
+    fld("age", "العمر", "none", 0)+fld("h", "الطول", "len", 0)+
+    fld("w", "وزنك الحالي", "mass", 1)+fld("target", "وزنك المستهدف", "mass", 1)+
   '</div>'+
   '<div class="h3 t1">مستوى نشاطك</div>'+
   '<div class="card" style="padding:2px 16px">'+
@@ -1629,28 +1726,27 @@ function vBodyData(){
       return (i ? '<div class="hair"></div>' : "")+
       '<button class="row press" data-act="activity" data-v="'+k+'">'+
         '<div class="col" style="gap:1px;align-items:flex-start"><div class="b1 t1">'+a.n+'</div><div class="b2 t3">'+a.d+'</div></div>'+
-        '<div class="'+(on ? "fill" : "card2")+' sq" style="width:24px;height:24px;border-radius:99px">'+(on ? svg("check","ic14") : "")+'</div>'+
+        '<div class="'+(on ? "fill" : "card2")+' sq" style="width:26px;height:26px;border-radius:99px">'+(on ? svg("check","ic14") : "")+'</div>'+
       '</button>';
     }).join("")+
   '</div>'+
-  '<div class="h3 t1">سرعة التغيير</div>'+
+  (p.goal === "keep" ? "" : '<div class="h3 t1">سرعة '+(p.goal === "gain" ? "الزيادة" : "النزول")+'</div>'+
   '<div class="seg">'+
     [[0.25,"هادئ ٠٫٢٥"],[0.5,"معتدل ٠٫٥"],[0.75,"سريع ٠٫٧٥"]].map(function(r){
       return '<button data-act="rate" data-v="'+r[0]+'" class="'+(p.rate === r[0] ? "on" : "")+'">'+r[1]+'</button>';
-    }).join("")+
-  '</div>'+
+    }).join("")+'</div>')+
   '<div class="card" style="padding:18px;display:flex;flex-direction:column;gap:12px">'+
     '<div class="between"><div class="h3 t1">هدفك بعد التعديل</div><div class="b2 t3">Mifflin-St Jeor</div></div>'+
-    '<div class="rowc" style="gap:10px;align-items:flex-end"><div class="num t1" style="font-size:40px;font-weight:600">'+ar(t.kcal)+'</div>'+
+    '<div class="rowc" style="gap:10px;align-items:flex-end"><div class="num t1" data-live-kcal="1" style="font-size:40px;font-weight:600">'+ar(t.kcal)+'</div>'+
     '<div class="b1 t3" style="padding-bottom:8px">سعرة يومياً</div></div>'+
     '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">'+
       '<div class="card2" style="padding:12px 8px;text-align:center"><div class="num h3 mP">'+ar(t.p)+'</div><div class="cap t3">بروتين جم</div></div>'+
       '<div class="card2" style="padding:12px 8px;text-align:center"><div class="num h3 mC">'+ar(t.c)+'</div><div class="cap t3">كارب جم</div></div>'+
       '<div class="card2" style="padding:12px 8px;text-align:center"><div class="num h3 mF">'+ar(t.f)+'</div><div class="cap t3">دهون جم</div></div>'+
     '</div>'+
-    '<div class="b2 t3">أيض أساسي '+ar(A.bmr())+' · مصروف يومي '+ar(A.tdee())+' · عجز '+ar(S.profile.rate*1000)+' سعرة</div>'+
+    '<div class="b2 t3">أيض أساسي '+ar(A.bmr())+' · مصروف يومي '+ar(A.tdee())+'</div>'+
   '</div>'+
-  '<button class="fill btn press" data-act="back" style="font-weight:600">تم — احفظ</button>';
+  '<button class="fill btn press" data-act="back" style="font-weight:600">تم</button>';
 }
 
 function vCoachPlan(){
@@ -1685,7 +1781,7 @@ function vCoachPlan(){
 }
 
 function route(){ return window.__nav.getRoute(); }
-window.__views2 = { vMeasures:vMeasures, measSheet:measSheet, partSheet:partSheet, PARTS:PARTS,
+window.__views2 = { vMeasures:vMeasures, unitSeg:unitSeg, numField:numField, readNum:readNum, measSheet:measSheet, partSheet:partSheet, PARTS:PARTS,
   setProgTab:function(v){ progTab = v; }, vWorkouts:vWorkouts, vExlog:vExlog, vProgress:vProgress, vScale:vScale, vSteps:vSteps,
   vProfile:vProfile, vBodyData:vBodyData, vCoachPlan:vCoachPlan, setSheet:setSheet, weightSheet:weightSheet,
   setsOf:setsOf, volume:volume, comp:comp, SESSION:SESSION };
@@ -1817,14 +1913,17 @@ function obHead(i, title, sub){
   '<div class="col" style="gap:8px;padding-top:6px"><div class="h1 t1">'+title+'</div>'+
   (sub ? '<div class="b1 t2">'+sub+'</div>' : "")+'</div>';
 }
-function numCard(label, val, unit, key, stp, dec){
+function bindField(key, label, unit, dec){
+  var v = S.profile[key];
+  var shown = unit === "mass" ? A.showMass(v) : unit === "len" ? A.showLen(v) : v;
+  var u = unit === "mass" ? A.massU() : unit === "len" ? A.lenU() : "سنة";
   return '<div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">'+
     '<div class="cap t3">'+label+'</div>'+
-    '<div class="between"><div class="rowc" style="gap:6px"><div class="num h1 t1">'+ar(val, dec)+'</div><div class="b2 t3">'+unit+'</div></div>'+
-    '<div class="rowc" style="gap:8px">'+
-      '<button class="ghost sq press" data-act="pnum" data-k="'+key+'" data-d="'+(-stp)+'" style="width:44px;height:44px;border-radius:14px" aria-label="أنقص">'+svg("minus","ic14")+'</button>'+
-      '<button class="ghost sq press" data-act="pnum" data-k="'+key+'" data-d="'+stp+'" style="width:44px;height:44px;border-radius:14px" aria-label="زد">'+svg("plus","ic14")+'</button>'+
-    '</div></div></div>';
+    '<div style="position:relative">'+
+      '<input class="f num" data-bind="'+key+'" data-unit="'+unit+'" type="text" inputmode="decimal"'+
+        ' value="'+ar(shown, dec)+'" style="padding-inline-end:52px;font-size:17px;background:transparent;border:0;min-height:34px;padding-inline-start:0" autocomplete="off">'+
+      '<div class="b2 t3" style="position:absolute;inset-inline-end:0;top:50%;transform:translateY(-50%)">'+u+'</div>'+
+    '</div></div>';
 }
 function vOnboard(){
   var i = step(), p = S.profile, t = A.targets();
@@ -1847,11 +1946,12 @@ function vOnboard(){
         '<button data-act="gender" data-v="male" class="'+(p.gender === "male" ? "on" : "")+'">ذكر</button>'+
         '<button data-act="gender" data-v="female" class="'+(p.gender === "female" ? "on" : "")+'">أنثى</button>'+
       '</div>'+
+      '<div class="rowc" style="gap:8px;flex-wrap:wrap">'+window.__views2.unitSeg("len")+window.__views2.unitSeg("mass")+'</div>'+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
-        numCard("العمر", p.age, "سنة", "age", 1)+
-        numCard("الطول", p.h, "سم", "h", 1)+
-        numCard("وزنك الحالي", p.w, "كجم", "w", 0.5, 1)+
-        numCard("وزنك المستهدف", p.target, "كجم", "target", 0.5, 1)+
+        bindField("age", "العمر", "none", 0)+
+        bindField("h", "الطول", "len", 0)+
+        bindField("w", "وزنك الحالي", "mass", 1)+
+        bindField("target", "وزنك المستهدف", "mass", 1)+
       '</div>'+
       '<div style="flex:1"></div>'+
       '<button class="fill btn press" data-act="obnext" style="font-weight:600">التالي</button>';
@@ -2211,6 +2311,7 @@ var VIEWS = {
   cassign:vAssign, ccheckin:vCheckin, cchat:vChat, caddclient:vAddClient,
   welcome:V3.vWelcome, login:V3.vLogin, signup:V3.vSignup, ob:V3.vOnboard
 };
+window.__VIEWS = VIEWS;
 var AUTH_VIEWS = ["welcome","login","signup","ob"];
 function isAuthView(n){ return AUTH_VIEWS.indexOf(n) >= 0; }
 function signedIn(){ return S.auth && S.auth.status === "in"; }
@@ -2243,8 +2344,23 @@ window.render = function(){
   if (q){
     q.addEventListener("input", function(){ N.setSearch(q.value); window.render(); var n = document.getElementById("q"); if (n){ n.focus(); n.setSelectionRange(n.value.length, n.value.length); } });
   }
+  Array.prototype.forEach.call(els.screen.querySelectorAll("input[data-bind]"), function(inp){
+    inp.addEventListener("input", function(){
+      var raw = (inp.value || "").replace(/[\u0660-\u0669]/g, function(d){ return String(d.charCodeAt(0) - 1632); })
+        .replace(/[\u066B\u066C]/g, ".").replace(/[^0-9.]/g, "");
+      var v = parseFloat(raw);
+      if (isNaN(v) || v <= 0) return;
+      var k = inp.getAttribute("data-bind"), u = inp.getAttribute("data-unit");
+      S.profile[k] = u === "mass" ? Math.round(A.toKg(v) * 10) / 10 : u === "len" ? Math.round(A.toCm(v) * 10) / 10 : Math.round(v);
+      if (k === "w" && S.weights.length) S.weights[S.weights.length-1].kg = S.profile.w;
+      A.save();
+      var live = els.screen.querySelector("[data-live-kcal]");
+      if (live) live.textContent = ar(A.targets().kcal);
+    });
+  });
   var rng = document.getElementById("stepRange");
   if (rng) rng.addEventListener("input", function(){ S.day.steps = +rng.value; A.save(); window.render(); document.getElementById("stepRange").focus(); });
+  if (window.__afterRender) window.__afterRender();
 };
 
 /* ================= interactions ================= */
@@ -2255,6 +2371,17 @@ function addItem(f, qty, meal){
   S.day.meals[meal] = S.day.meals[meal] || [];
   S.day.meals[meal].push(it);
   A.save();
+}
+function readOpenInputs(){
+  if (sheetState.kind === "meas" && document.getElementById("m_waist")){
+    V2.PARTS.forEach(function(pt){
+      var v = V2.readNum("m_" + pt.k);
+      if (!isNaN(v) && v > 0) sheetState.meas[pt.k] = Math.round(A.toCm(v) * 10) / 10;
+    });
+  } else if (sheetState.kind === "weight" && document.getElementById("wIn")){
+    var w = V2.readNum("wIn");
+    if (!isNaN(w) && w > 0) sheetState.weight = Math.round(A.toKg(w) * 10) / 10;
+  }
 }
 function act(name, ds, target){
   var R = N.getRoute();
@@ -2352,18 +2479,21 @@ function act(name, ds, target){
     case "progtab": V2.setProgTab(ds.v); window.render(); els.scroll.scrollTop = 0; break;
     case "measlog": {
       var lastM = S.measures.length ? S.measures[S.measures.length-1].v : {};
-      sheetState.meas = {};
+      sheetState.meas = {}; sheetState.kind = "meas";
       V2.PARTS.forEach(function(pt){ sheetState.meas[pt.k] = lastM[pt.k] || pt.dflt; });
       N.closeSheet(); N.openSheet(V2.measSheet(sheetState.meas)); break;
     }
-    case "mstep": {
-      var mk = ds.k, mv = Math.max(10, Math.round((sheetState.meas[mk] + parseFloat(ds.d)) * 10) / 10);
-      sheetState.meas[mk] = mv;
-      var cell = document.getElementById("m_" + mk);
-      if (cell) cell.textContent = ar(mv, 1);
+    case "setunit": {
+      readOpenInputs();
+      if (ds.kind === "mass") S.units.mass = ds.v; else S.units.len = ds.v;
+      A.save();
+      if (sheetState.kind === "meas"){ N.closeSheet(); N.openSheet(V2.measSheet(sheetState.meas)); }
+      else if (sheetState.kind === "weight"){ N.closeSheet(); N.openSheet(V2.weightSheet()); }
+      else window.render();
       break;
     }
     case "msave": {
+      readOpenInputs();
       var vals = {}; Object.keys(sheetState.meas).forEach(function(k){ vals[k] = sheetState.meas[k]; });
       S.measures.push({ d:"اليوم", v:vals });
       if (S.measures.length > 24) S.measures.shift();
@@ -2372,13 +2502,11 @@ function act(name, ds, target){
     }
     case "measpart": N.openSheet(V2.partSheet(ds.k)); break;
     case "weighin":
-      sheetState.weight = A.curWeight();
+      sheetState.weight = A.curWeight(); sheetState.kind = "weight";
       N.openSheet(V2.weightSheet()); break;
-    case "wv": {
-      sheetState.weight = Math.max(30, Math.round((sheetState.weight + parseFloat(ds.d)) * 10) / 10);
-      var wv = document.getElementById("wv"); if (wv) wv.textContent = ar(sheetState.weight, 1); break;
-    }
     case "savew":
+      readOpenInputs();
+      if (!(sheetState.weight > 20)){ N.toast("اكتب وزناً صحيحاً"); break; }
       S.weights.push({ d:"اليوم", kg:sheetState.weight }); S.profile.w = sheetState.weight;
       if (S.weights.length > 12) S.weights.shift();
       A.save(); N.closeSheet(); window.render(); N.toast("انحفظ وزنك"); break;
@@ -2494,6 +2622,8 @@ function act(name, ds, target){
     case "reset":
       try { localStorage.removeItem(A.KEY); } catch(e){}
       location.reload(); break;
+    default:
+      if (window.__extraAct) window.__extraAct(name, ds);
   }
 }
 
@@ -2547,5 +2677,190 @@ document.addEventListener("keydown", function(e){
   }
   window.render();
 })();
+})();
+</script>
+
+<script>
+/* ---------- read an InBody / body-composition report from a photo ---------- */
+(function(){
+"use strict";
+var A = window.__app, U = window.__ui, N = window.__nav, V2 = window.__views2;
+var ar = window.__ar, svg = window.__svg, esc = window.__esc;
+var S = A.S;
+
+var scan = { file:null, url:"", status:"idle", data:null, err:"", can:null };
+
+var FIELDS = [
+  {k:"weight_kg",                n:"الوزن",             u:"كجم", dec:1},
+  {k:"skeletal_muscle_kg",       n:"كتلة العضل الهيكلي", u:"كجم", dec:1},
+  {k:"body_fat_kg",              n:"كتلة الدهون",       u:"كجم", dec:1},
+  {k:"body_fat_percent",         n:"نسبة الدهون",       u:"٪",   dec:1},
+  {k:"bmi",                      n:"كتلة الجسم BMI",    u:"",    dec:1},
+  {k:"total_body_water_l",       n:"ماء الجسم",         u:"لتر", dec:1},
+  {k:"protein_kg",               n:"البروتين",          u:"كجم", dec:1},
+  {k:"minerals_kg",              n:"المعادن",           u:"كجم", dec:1},
+  {k:"visceral_fat_level",       n:"الدهون الحشوية",    u:"",    dec:0},
+  {k:"basal_metabolic_rate_kcal",n:"الأيض الأساسي",     u:"سعرة",dec:0}
+];
+
+window.__scanCard = function(){
+  return '<button class="card press" data-act="go" data-to="scan" style="padding:14px 16px;display:flex;align-items:center;gap:12px">'+
+    '<div class="softacc sq" style="width:44px;height:44px;border-radius:14px">'+svg("cam","ic18")+'</div>'+
+    '<div class="col" style="gap:2px;flex:1;align-items:flex-start"><div class="h3 t1">عندك تقرير InBody؟</div>'+
+    '<div class="b2 t3">صوّره ونقرأ أرقامه ونسجّلها لك</div></div>'+svg("next","ic14")+'</button>';
+};
+
+function statRow(f, v){
+  return '<div class="row" style="min-height:48px"><div class="b1 t2">'+f.n+'</div>'+
+    '<div class="num b1 t1">'+ar(v, f.dec)+(f.u ? ' '+f.u : "")+'</div></div>';
+}
+function vScan(){
+  var found = scan.data ? FIELDS.filter(function(f){ return typeof scan.data[f.k] === "number" && isFinite(scan.data[f.k]); }) : [];
+  return U.backHead("قراءة تقرير InBody", "صوّر الورقة أو اختر صورتها")+
+  (scan.url
+    ? '<div class="card" style="padding:10px;display:flex;flex-direction:column;gap:10px">'+
+        '<img src="'+scan.url+'" alt="تقرير InBody" style="width:100%;border-radius:14px;max-height:230px;object-fit:cover">'+
+        '<div class="rowc" style="gap:10px">'+
+          '<button class="ghost btn press" data-act="scanpick" style="flex:1;min-height:46px;font-size:13.5px">صورة ثانية</button>'+
+          (scan.status === "reading"
+            ? '<div class="fill btn" style="flex:1.4;min-height:46px;font-size:13.5px;opacity:.75">جاري القراءة…</div>'
+            : '<button class="fill btn press" data-act="scanread" style="flex:1.4;min-height:46px;font-size:13.5px;font-weight:600">استخرج الأرقام</button>')+
+        '</div>'+
+      '</div>'
+    : '<div class="card" style="padding:26px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">'+
+        '<div class="card2 sq" style="width:64px;height:64px;border-radius:20px">'+svg("cam")+'</div>'+
+        '<div class="h2 t1">صوّر ورقة التقرير</div>'+
+        '<div class="b1 t2" style="max-width:280px">خلّ الورقة كاملة وواضحة في الصورة. نقرأ الوزن ونسبة الدهون وكتلة العضل والماء والـBMI ونسجّلها في حسابك.</div>'+
+        '<button class="fill btn press" data-act="scanpick" style="font-weight:600">اختر صورة التقرير</button>'+
+      '</div>')+
+  (scan.err ? '<div class="card" style="padding:14px 16px;display:flex;gap:12px;border-color:var(--f)">'+
+      '<span class="mF" style="padding-top:2px">'+svg("close","ic18")+'</span>'+
+      '<div class="b1 t2" style="flex:1">'+esc(scan.err)+'</div></div>' : "")+
+  (found.length
+    ? '<div class="between"><div class="h2 t1">اللي قرأناه</div><div class="softacc tag">'+ar(found.length)+' قيمة</div></div>'+
+      '<div class="card" style="padding:2px 16px">'+found.map(function(f, i){
+        return (i ? '<div class="hair"></div>' : "")+statRow(f, scan.data[f.k]);
+      }).join("")+'</div>'+
+      '<div class="b2 t3">راجع الأرقام قبل الحفظ — القراءة من صورة ممكن تخطئ.</div>'+
+      '<button class="fill btn press" data-act="scansave" style="font-weight:600">احفظها في حسابي</button>'
+    : "")+
+  '<button class="ghost btn press" data-act="scanmanual">أدخل أرقام التقرير يدوياً</button>'+
+  (S.scans.length
+    ? '<div class="h2 t1">تقاريرك السابقة</div>'+
+      '<div class="card" style="padding:2px 16px">'+S.scans.slice().reverse().slice(0,5).map(function(r, i){
+        return (i ? '<div class="hair"></div>' : "")+
+        '<div class="row" style="min-height:52px"><div class="col" style="gap:1px"><div class="b1 t1">'+esc(r.d)+'</div>'+
+        '<div class="b2 t3">'+(r.v.body_fat_percent != null ? "دهون "+ar(r.v.body_fat_percent,1)+"٪" : "بدون نسبة دهون")+'</div></div>'+
+        '<div class="num b1 t2">'+(r.v.weight_kg != null ? ar(A.showMass(r.v.weight_kg),1)+" "+A.massU() : "—")+'</div></div>';
+      }).join("")+'</div>'
+    : "");
+}
+function manualSheet(){
+  return '<div class="grip"></div><div class="h2 t1">أرقام التقرير</div>'+
+  '<div class="b2 t3">اكتب اللي عندك، واترك الباقي فاضي.</div>'+
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
+    FIELDS.slice(0,6).map(function(f){
+      return V2.numField("sc_"+f.k, f.n, "", f.u || "—", f.dec);
+    }).join("")+
+  '</div>'+
+  '<div class="rowc" style="gap:10px"><button class="ghost btn press" data-act="closesheet" style="flex:1">إلغاء</button>'+
+  '<button class="fill btn press" data-act="scanmanualsave" style="flex:1.6;font-weight:600">احفظ</button></div>';
+}
+
+/* shrink a photo so it fits the image cap without losing the print */
+function prepare(file, maxBytes){
+  return new Promise(function(resolve){
+    if (!maxBytes || file.size <= maxBytes) return resolve(file);
+    var img = new Image(), fr = new FileReader();
+    fr.onload = function(){ img.src = fr.result; };
+    img.onload = function(){
+      var scale = Math.min(1, 1800 / Math.max(img.width, img.height));
+      var c = document.createElement("canvas");
+      c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(function(b){ resolve(b || file); }, "image/jpeg", 0.85);
+    };
+    img.onerror = function(){ resolve(file); };
+    fr.readAsDataURL(file);
+  });
+}
+
+var PROMPT =
+  "هذه صورة تقرير تحليل تركيب الجسم (InBody أو ما يشابهه).\n" +
+  "استخرج القيم الرقمية فقط وأعد JSON واحداً بلا أي نص آخر وبهذه المفاتيح:\n" +
+  '{"weight_kg":number|null,"skeletal_muscle_kg":number|null,"body_fat_kg":number|null,' +
+  '"body_fat_percent":number|null,"bmi":number|null,"total_body_water_l":number|null,' +
+  '"protein_kg":number|null,"minerals_kg":number|null,"visceral_fat_level":number|null,' +
+  '"basal_metabolic_rate_kcal":number|null}\n' +
+  "حوّل الأرطال إلى كيلوغرامات. أي قيمة غير ظاهرة أو غير واضحة اجعلها null. لا تخمّن.";
+
+function setErr(msg){ scan.err = msg; scan.status = "error"; window.render(); }
+
+window.__extraAct = function(name, ds){
+  if (name === "scanpick"){ var inp = document.getElementById("scanFile"); if (inp) inp.click(); return; }
+  if (name === "scanmanual"){ N.openSheet(manualSheet()); return; }
+  if (name === "scanmanualsave"){
+    var v = {};
+    FIELDS.slice(0,6).forEach(function(f){ var n = V2.readNum("sc_"+f.k); if (!isNaN(n) && n > 0) v[f.k] = n; });
+    if (!Object.keys(v).length){ N.toast("ما كتبت أي رقم"); return; }
+    scan.data = v; scan.err = ""; scan.status = "done"; N.closeSheet(); window.render(); return;
+  }
+  if (name === "scansave"){
+    var d = scan.data || {};
+    S.scans.push({ d:"اليوم", v:d });
+    if (d.weight_kg > 20){
+      S.weights.push({ d:"تقرير InBody", kg:Math.round(d.weight_kg * 10) / 10 });
+      S.profile.w = Math.round(d.weight_kg * 10) / 10;
+    }
+    A.save(); scan.data = null; scan.url = ""; scan.file = null; scan.status = "idle";
+    V2.setProgTab("size"); N.tab("progress"); N.toast("انحفظ التقرير في حسابك"); return;
+  }
+  if (name === "scanread"){
+    if (!scan.file) return;
+    scan.status = "reading"; scan.err = ""; window.render();
+    (async function(){
+      try {
+        var sampler = window.claude && window.claude.use ? await window.claude.use("sample") : null;
+        if (!sampler){ setErr("قراءة الصور غير متاحة في هذا العرض — تقدر تدخل الأرقام يدوياً."); return; }
+        var lim = null;
+        try { lim = await sampler.limits(); } catch(e){}
+        if (!lim || !lim.images){ setErr("هذا العرض ما يسمح بإرسال الصور — أدخل الأرقام يدوياً."); return; }
+        var blob = await prepare(scan.file, lim.images.maxBytes);
+        var data = await sampler.json(PROMPT, { images:[blob], modelTier:"default" });
+        if (!data || typeof data !== "object"){ setErr("ما قدرنا نقرأ التقرير — جرّب صورة أوضح."); return; }
+        scan.data = data; scan.status = "done"; scan.err = "";
+        var got = FIELDS.filter(function(f){ return typeof data[f.k] === "number"; }).length;
+        window.render();
+        N.toast(got ? "قرأنا " + ar(got) + " قيمة" : "ما لقينا أرقاماً واضحة");
+      } catch (e){
+        var code = e && e.code;
+        setErr(code === "not_granted" ? "لازم تسمح للتطبيق يسأل Claude عشان يقرأ الصورة."
+          : code === "rate_limited" ? "طلبات كثيرة — جرّب بعد دقيقة."
+          : code === "images_unavailable" || code === "image_rejected" ? "الصورة ما انقبلت — جرّب صورة JPG أوضح وأصغر."
+          : "ما قدرنا نقرأ التقرير — جرّب صورة أوضح أو أدخل الأرقام يدوياً.");
+      }
+    })();
+    return;
+  }
+};
+
+window.__VIEWS.scan = vScan;
+
+window.__afterRender = function(){
+  if (!document.getElementById("scanFile")){
+    var inp = document.createElement("input");
+    inp.type = "file"; inp.accept = "image/*"; inp.id = "scanFile"; inp.hidden = true;
+    inp.setAttribute("capture", "environment");
+    inp.addEventListener("change", function(){
+      var f = inp.files && inp.files[0];
+      if (!f) return;
+      if (scan.url) try { URL.revokeObjectURL(scan.url); } catch(e){}
+      scan.file = f; scan.url = URL.createObjectURL(f); scan.data = null; scan.err = ""; scan.status = "idle";
+      inp.value = "";
+      window.render();
+    });
+    document.body.appendChild(inp);
+  }
+};
 })();
 </script>
