@@ -635,6 +635,7 @@ function seed(){
     stepDays: [0,0,0,0,0,0,0],
     chat: [],
     shop: {},
+    measures: [],
     coachDemo: false
   };
 }
@@ -661,6 +662,11 @@ function demoData(){
     {me:false, t:"كوتش، اليوم بديت أحس بجوع بالليل. أزيد بروتين العشاء؟"},
     {me:true,  t:"زد ٣٠ جم بروتين على العشاء وخلّ الدهون زي ماهي. عدّلت لك الخطة توّي — شيّكها."}
   ];
+  d.measures = [
+    { d:"١ يوليو",   v:{ neck:40, shoulder:118, chest:106, arm:36.5, waist:98, hip:104, thigh:60, calf:39 } },
+    { d:"٢٩ يوليو",  v:{ neck:39.5, shoulder:118, chest:104, arm:36.5, waist:94, hip:102, thigh:59.5, calf:39 } },
+    { d:"اليوم",     v:{ neck:39, shoulder:119, chest:103, arm:37, waist:90, hip:100, thigh:59, calf:39.5 } }
+  ];
   d.coachDemo = true;
   d.theme = S ? S.theme : null;
   return d;
@@ -675,6 +681,7 @@ if (!S.profile || !S.day) S = seed();
 if (!S.auth) S.auth = { status:"in", name:S.profile.name || "", email:"" };
 if (!S.profile.goal) S.profile.goal = "lose";
 if (!S.history) S.history = {};
+if (!S.measures) S.measures = [];
 if (!S.shop) S.shop = {};
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 
@@ -1304,8 +1311,15 @@ function comp(w){
   return { bmi:bmi, fat:fat, muscle:lean*0.85, water:(100-fat)*0.72, bone:lean*0.042, visc:Math.max(1, (bmi-14)*1.1), bmr:A.bmr() };
 }
 function vProgress(){
+  var seg = '<div class="head"><div class="h1 t1">التقدّم</div>'+
+    U.iconBtn("scale","go2scale","الميزان")+'</div>'+
+    '<div class="seg">'+
+      '<button data-act="progtab" data-v="weight" class="'+(progTab === "weight" ? "on" : "")+'">الوزن</button>'+
+      '<button data-act="progtab" data-v="size" class="'+(progTab === "size" ? "on" : "")+'">المقاسات</button>'+
+    '</div>';
+  if (progTab === "size") return seg + vMeasures();
   var ws = S.weights;
-  if (!ws.length) return '<div class="head"><div class="h1 t1">التقدّم</div></div>'+
+  if (!ws.length) return seg+
     '<div class="card" style="padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">'+
       '<div class="card2 sq" style="width:64px;height:64px;border-radius:20px">'+svg("chart")+'</div>'+
       '<div class="h2 t1">ما سجّلت وزنك بعد</div>'+
@@ -1318,8 +1332,7 @@ function vProgress(){
       '<div class="b2 t3">اربطه وتجيك القراءة وتركيب الجسم تلقائياً</div></div>'+svg("next","ic14")+'</button>';
   var cur = ws[ws.length-1].kg, first = ws[0].kg, c = comp(cur);
   var toGo = cur - S.profile.target;
-  return '<div class="head"><div class="h1 t1">التقدّم</div>'+
-    U.iconBtn("scale","go2scale","الميزان")+'</div>'+
+  return seg+
   '<div class="card" style="padding:18px 16px 12px;display:flex;flex-direction:column;gap:12px">'+
     '<div class="between" style="align-items:flex-start">'+
       '<div class="col" style="gap:3px"><div class="cap t3">الوزن الحالي</div>'+
@@ -1418,6 +1431,130 @@ function vSteps(){
 }
 
 /* ---------- profile / body data / coach plan ---------- */
+var PARTS = [
+  {k:"neck",     n:"الرقبة",  dflt:38,  good:"down"},
+  {k:"shoulder", n:"الكتف",   dflt:115, good:"up"},
+  {k:"chest",    n:"الصدر",   dflt:100, good:"up"},
+  {k:"arm",      n:"الذراع",  dflt:35,  good:"up"},
+  {k:"waist",    n:"الخصر",   dflt:90,  good:"down"},
+  {k:"hip",      n:"الأرداف", dflt:100, good:"down"},
+  {k:"thigh",    n:"الفخذ",   dflt:58,  good:"up"},
+  {k:"calf",     n:"السمانة", dflt:38,  good:"up"}
+];
+var PART_BY_K = {}; PARTS.forEach(function(x){ PART_BY_K[x.k] = x; });
+var progTab = "weight";
+
+function seriesOf(k){
+  return S.measures.filter(function(e){ return e.v[k] > 0; }).map(function(e){ return { d:e.d, v:e.v[k] }; });
+}
+function lastOf(k){ var a = seriesOf(k); return a.length ? a[a.length-1].v : 0; }
+function navyFat(){
+  var last = S.measures.length ? S.measures[S.measures.length-1].v : null;
+  if (!last) return null;
+  var h = S.profile.h, male = S.profile.gender === "male";
+  if (!last.waist || !last.neck || (!male && !last.hip)) return null;
+  var v = male
+    ? 495 / (1.0324 - 0.19077*Math.log(last.waist - last.neck)/Math.LN10 + 0.15456*Math.log(h)/Math.LN10) - 450
+    : 495 / (1.29579 - 0.35004*Math.log(last.waist + last.hip - last.neck)/Math.LN10 + 0.22100*Math.log(h)/Math.LN10) - 450;
+  return (v > 3 && v < 60) ? v : null;
+}
+function spark(vals, good){
+  if (vals.length < 2) return '<div class="b2 t3" style="min-width:86px;text-align:center">—</div>';
+  var w = 86, h = 28, min = Math.min.apply(null, vals), max = Math.max.apply(null, vals), pad = (max - min) || 1;
+  var pts = vals.map(function(v, i){
+    return [ (i * (w - 6) / (vals.length - 1) + 3).toFixed(1), (h - 4 - (v - min) / pad * (h - 8)).toFixed(1) ];
+  });
+  var dir = vals[vals.length-1] - vals[0];
+  var col = dir === 0 ? "var(--t3)" : ((dir < 0) === (good === "down") ? "var(--acc)" : "var(--f)");
+  return '<svg viewBox="0 0 '+w+' '+h+'" style="width:'+w+'px;height:'+h+'px;flex:none" aria-hidden="true">'+
+    '<polyline points="'+pts.map(function(p){ return p.join(","); }).join(" ")+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></polyline>'+
+    '<circle cx="'+pts[pts.length-1][0]+'" cy="'+pts[pts.length-1][1]+'" r="2.6" fill="'+col+'"></circle></svg>';
+}
+function deltaTag(first, last, good){
+  var d = last - first;
+  if (!d) return '<div class="card2 tag t3">ثابت</div>';
+  var okDir = (d < 0) === (good === "down");
+  return '<div class="'+(okDir ? "softacc" : "card2 t2")+' tag">'+ar(Math.abs(d),1)+(d < 0 ? "−" : "+")+' سم</div>';
+}
+function vMeasures(){
+  if (!S.measures.length) return '<div class="card" style="padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">'+
+      '<div class="card2 sq" style="width:64px;height:64px;border-radius:20px">'+svg("scale")+'</div>'+
+      '<div class="h2 t1">ما سجّلت مقاساتك بعد</div>'+
+      '<div class="b1 t2" style="max-width:280px">المقاس ينزل قبل الوزن كثير — خصرك ينقص وأنت واقف على نفس الرقم. سجّلها مرة كل أسبوعين.</div>'+
+      '<button class="fill btn press" data-act="measlog" style="font-weight:600">سجّل مقاساتك الأولى</button>'+
+    '</div>';
+  var fat = navyFat(), n = S.measures.length;
+  var waistSeries = seriesOf("waist");
+  return '<div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px">'+
+    '<div class="between" style="align-items:flex-start">'+
+      '<div class="col" style="gap:3px"><div class="cap t3">الخصر</div>'+
+      '<div class="rowc" style="gap:8px"><div class="num d1 t1">'+(lastOf("waist") ? ar(lastOf("waist"),1) : "—")+'</div>'+
+      '<div class="b1 t3" style="padding-bottom:6px">سم</div></div></div>'+
+      (waistSeries.length > 1 ? deltaTag(waistSeries[0].v, waistSeries[waistSeries.length-1].v, "down") : "")+
+    '</div>'+
+    (waistSeries.length > 1
+      ? U.lineChart(waistSeries.map(function(x){ return x.v; }), 320, 118, waistSeries[waistSeries.length-1].d, waistSeries[0].d)
+      : '<div class="b2 t3">سجّل مرة ثانية بعد أسبوعين عشان يبدأ المنحنى.</div>')+
+  '</div>'+
+  (fat !== null ? '<div class="card" style="padding:16px;display:flex;align-items:center;gap:14px">'+
+    '<div class="softacc sq" style="width:46px;height:46px;border-radius:15px">'+svg("chart")+'</div>'+
+    '<div class="col" style="gap:2px;flex:1"><div class="h3 t1">نسبة الدهون التقديرية '+ar(fat,1)+'٪</div>'+
+    '<div class="b2 t3">محسوبة من الخصر والرقبة والطول (معادلة البحرية الأمريكية)</div></div></div>' : "")+
+  '<div class="between"><div class="h2 t1">كل المناطق</div><div class="b2 t3">'+ar(n)+' تسجيل</div></div>'+
+  '<div class="card" style="padding:2px 14px">'+
+    PARTS.map(function(pt, i){
+      var ser = seriesOf(pt.k), cur = ser.length ? ser[ser.length-1].v : 0;
+      return (i ? '<div class="hair"></div>' : "")+
+      '<button class="row press" data-act="measpart" data-k="'+pt.k+'" style="min-height:64px">'+
+        '<div class="col" style="gap:2px;align-items:flex-start;width:74px"><div class="h3 t1">'+pt.n+'</div>'+
+        '<div class="num b2 t3">'+(cur ? ar(cur,1)+" سم" : "—")+'</div></div>'+
+        spark(ser.map(function(x){ return x.v; }), pt.good)+
+        (ser.length > 1 ? deltaTag(ser[0].v, cur, pt.good) : '<div class="card2 tag t3">جديد</div>')+
+      '</button>';
+    }).join("")+
+  '</div>'+
+  '<button class="fill btn press" data-act="measlog" style="font-weight:600">سجّل مقاسات اليوم</button>';
+}
+function measSheet(vals){
+  return '<div class="grip"></div><div class="h2 t1">مقاسات اليوم</div>'+
+  '<div class="b2 t3">قِس في نفس الوقت من اليوم وبنفس الوضعية — الصباح قبل الأكل أدق.</div>'+
+  '<div class="card" style="padding:2px 14px">'+
+    PARTS.map(function(pt, i){
+      return (i ? '<div class="hair"></div>' : "")+
+      '<div class="row" style="min-height:58px"><div class="b1 t1" style="width:64px">'+pt.n+'</div>'+
+      '<div class="rowc" style="gap:10px">'+
+        '<button class="ghost sq press" data-act="mstep" data-k="'+pt.k+'" data-d="-0.5" style="width:40px;height:40px;border-radius:13px" aria-label="أنقص">'+svg("minus","ic14")+'</button>'+
+        '<div class="num h3 t1" id="m_'+pt.k+'" style="min-width:52px;text-align:center">'+ar(vals[pt.k],1)+'</div>'+
+        '<button class="ghost sq press" data-act="mstep" data-k="'+pt.k+'" data-d="0.5" style="width:40px;height:40px;border-radius:13px" aria-label="زد">'+svg("plus","ic14")+'</button>'+
+      '</div></div>';
+    }).join("")+
+  '</div>'+
+  '<div class="rowc" style="gap:10px"><button class="ghost btn press" data-act="closesheet" style="flex:1">إلغاء</button>'+
+  '<button class="fill btn press" data-act="msave" style="flex:1.6;font-weight:600">احفظ المقاسات</button></div>';
+}
+function partSheet(k){
+  var pt = PART_BY_K[k], ser = seriesOf(k);
+  return '<div class="grip"></div>'+
+  '<div class="between"><div class="h2 t1">'+pt.n+'</div>'+
+    (ser.length > 1 ? deltaTag(ser[0].v, ser[ser.length-1].v, pt.good) : "")+'</div>'+
+  (ser.length > 1
+    ? U.lineChart(ser.map(function(x){ return x.v; }), 320, 128, ser[ser.length-1].d, ser[0].d)
+    : '<div class="b1 t2">تحتاج تسجيلين على الأقل عشان يظهر المنحنى.</div>')+
+  '<div class="card2" style="padding:2px 14px">'+
+    (ser.length ? ser.slice().reverse().slice(0,6).map(function(x, i, a){
+      var prev = a[i+1];
+      return (i ? '<div class="hair"></div>' : "")+
+      '<div class="row" style="min-height:44px"><div class="b1 t2">'+esc(x.d)+'</div>'+
+      '<div class="rowc" style="gap:10px"><div class="num b1 t1">'+ar(x.v,1)+' سم</div>'+
+      (prev ? '<div class="num b2 '+((x.v - prev.v < 0) === (pt.good === "down") ? "acc" : "t3")+'" style="width:46px;text-align:start">'+
+        ar(Math.abs(x.v-prev.v),1)+(x.v < prev.v ? "−" : "+")+'</div>' : '<div style="width:46px"></div>')+
+      '</div></div>';
+    }).join("") : '<div class="b2 t3" style="padding:12px 0">ما فيه تسجيلات.</div>')+
+  '</div>'+
+  '<div class="rowc" style="gap:10px"><button class="ghost btn press" data-act="closesheet" style="flex:1">إغلاق</button>'+
+  '<button class="fill btn press" data-act="measlog" style="flex:1.6;font-weight:600">سجّل قياساً جديداً</button></div>';
+}
+
 function vProfile(){
   var t = A.targets(), c = comp(curWeight());
   function row(icon, label, val, act, to){
@@ -1440,6 +1577,7 @@ function vProfile(){
     row("star","هدفي وبياناتي", ar(S.profile.rate,1)+" كجم/أسبوع", "go", "bodydata").replace('<div class="hair"></div>',"")+
     row("flame","نظامي الغذائي", esc(DIET_BY_ID[S.profile.diet].n), "go", "diets")+
     row("scale","الميزان الذكي", "XG Scale", "go", "scale")+
+    row("chart","مقاساتي", (S.measures.length ? ar(S.measures.length)+" تسجيل" : "ما سجّلت بعد"), "gomeas")+
     row("chatbub","خطتي من المدرّب", "الكوتش سعد", "go", "coachplan")+
     row("users","وضع المدرّب", "إدارة متدربين", "role")+
   '</div>'+
@@ -1547,7 +1685,8 @@ function vCoachPlan(){
 }
 
 function route(){ return window.__nav.getRoute(); }
-window.__views2 = { vWorkouts:vWorkouts, vExlog:vExlog, vProgress:vProgress, vScale:vScale, vSteps:vSteps,
+window.__views2 = { vMeasures:vMeasures, measSheet:measSheet, partSheet:partSheet, PARTS:PARTS,
+  setProgTab:function(v){ progTab = v; }, vWorkouts:vWorkouts, vExlog:vExlog, vProgress:vProgress, vScale:vScale, vSteps:vSteps,
   vProfile:vProfile, vBodyData:vBodyData, vCoachPlan:vCoachPlan, setSheet:setSheet, weightSheet:weightSheet,
   setsOf:setsOf, volume:volume, comp:comp, SESSION:SESSION };
 })();
@@ -2127,6 +2266,7 @@ function act(name, ds, target){
     case "client": N.go("client", { id: ds.id }); break;
     case "tabchat": N.tab("cchat"); break;
     case "go2scale": N.go("scale", {}); break;
+    case "gomeas": V2.setProgTab("size"); N.tab("progress"); break;
 
     case "addto":
       N.go("add", { meal: ds.meal || nextMeal() }); break;
@@ -2209,6 +2349,28 @@ function act(name, ds, target){
       S.profile.diet = ds.id; A.save(); window.render();
       N.toast("فعّلنا " + DIET_BY_ID[ds.id].n + " وحدّثنا ماكروزك"); break;
 
+    case "progtab": V2.setProgTab(ds.v); window.render(); els.scroll.scrollTop = 0; break;
+    case "measlog": {
+      var lastM = S.measures.length ? S.measures[S.measures.length-1].v : {};
+      sheetState.meas = {};
+      V2.PARTS.forEach(function(pt){ sheetState.meas[pt.k] = lastM[pt.k] || pt.dflt; });
+      N.closeSheet(); N.openSheet(V2.measSheet(sheetState.meas)); break;
+    }
+    case "mstep": {
+      var mk = ds.k, mv = Math.max(10, Math.round((sheetState.meas[mk] + parseFloat(ds.d)) * 10) / 10);
+      sheetState.meas[mk] = mv;
+      var cell = document.getElementById("m_" + mk);
+      if (cell) cell.textContent = ar(mv, 1);
+      break;
+    }
+    case "msave": {
+      var vals = {}; Object.keys(sheetState.meas).forEach(function(k){ vals[k] = sheetState.meas[k]; });
+      S.measures.push({ d:"اليوم", v:vals });
+      if (S.measures.length > 24) S.measures.shift();
+      A.save(); N.closeSheet(); V2.setProgTab("size"); window.render();
+      N.toast("انحفظت مقاساتك"); break;
+    }
+    case "measpart": N.openSheet(V2.partSheet(ds.k)); break;
     case "weighin":
       sheetState.weight = A.curWeight();
       N.openSheet(V2.weightSheet()); break;
