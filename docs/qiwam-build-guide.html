@@ -111,6 +111,7 @@
     <a href="#how">كيف تستخدم البرومتات</a>
     <a href="#style">برومت الستايل</a>
     <a href="#p-auth">برومتات الشاشات</a>
+    <a href="#logo">برومت الشعار</a>
   </div>
 
   <section id="idea">
@@ -700,6 +701,58 @@ A form card with rows separated by hairlines, each a label on the right and a mu
 Section heading دعوات بانتظار القبول with ٢ on the left, then a card of two rows, each with a name, a muted line أُرسلت أمس, and a bordered chip تذكير on the left.
 Bottom: a full width lime button أضف المتدرب.</pre>
     </div>
+  </section>
+
+
+  <section id="logo">
+    <div class="eyebrow">١٢ · الشعار</div>
+    <h2>دمج شعار جاهز بدون ما يتغيّر شكله</h2>
+    <p>المشكلة إن ملف الشعار خلفيته سوداء محروقة داخل الصورة، فأي أداة تحطّه على موقع فاتح يطلع مربع أسود — ولمّا تطلب منها «تدمجه» تفهمها إعادة رسم فتغيّر الحروف والألوان. الحل جزءان: <strong>ملف شفاف</strong> أولاً، ثم <strong>أمر واضح إنه أصل نهائي ما ينرسم من جديد</strong>.</p>
+
+    <div class="prompt">
+      <header><div class="name">أ · اطلب ملفاً شفافاً (لأداة صور)</div><button class="copy">نسخ</button></header>
+      <pre>This is a FINAL logo asset, not a design brief. Do not redraw, redesign, re-letter, re-color, re-space or regenerate any part of it.
+
+Task: remove the solid black background and return the same artwork on a fully transparent background.
+- Output a PNG with a real alpha channel, 2048px wide, plus an SVG trace if you can produce one.
+- Keep every glyph, stroke weight, spacing and proportion byte-for-byte identical to the input.
+- Keep the exact colors: the lime green and the white strokes as they are. Do not brighten, saturate or shift any hue.
+- Keep the anti-aliased edges clean: no black halo or grey fringe left around the letters, no hard jagged cutout.
+- The thin dark outlines that are PART of the artwork stay. Only the flat black canvas behind the whole logo is removed.
+- Do not add a background, container, frame, border, shadow, glow or padding.
+Also return a second version where the white parts are replaced by near-black #101512 for use on light backgrounds — same shapes, only that one color swapped.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">ب · اطلب وضعه في الموقع (لأداة بناء المواقع)</div><button class="copy">نسخ</button></header>
+      <pre>Use the attached logo file EXACTLY as delivered. It is a finished brand asset, not something to interpret.
+
+Hard rules:
+- Never redraw, trace, restyle, recolor, crop, stretch or regenerate the logo. Place the image file itself.
+- Never put it inside a black box, colored container, card, circle, border, shadow or gradient. The page background must show straight through its transparent areas.
+- Never invert it, never apply filters, never change its aspect ratio.
+
+Placement:
+- Top navigation bar, aligned to the start of the bar, height 36px on desktop and 28px on mobile, width auto.
+- Keep clear space around it equal to at least half its height. Nothing overlaps it.
+- The site background stays exactly as designed; the logo sits on top of it.
+- On a light background use the dark version of the file; on a dark background use the original. Swap the file, never a CSS filter.
+- Favicon and app icon: use the compact mark only, centered with 12 percent padding, on a transparent background.
+
+The logo colors are fixed: lime green and white. Take the site accent color FROM the logo, do not push the site palette onto the logo.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">ج · حل مؤقت لو ما عندك إلا الملف الأسود</div><button class="copy">نسخ</button></header>
+      <pre>The logo file still has a baked-in black background. Until a transparent file exists, place it with CSS blending so the black disappears on dark sections:
+
+.logo{ mix-blend-mode: screen; height: 36px; width: auto; display: block; }
+
+This works ONLY on dark backgrounds. Do not use it on white or light sections — there the black square will come back. On light sections use the dark-ink version of the logo file instead.
+Do not try to fake transparency with opacity, a black overlay, or a filter: those wash out the colors.</pre>
+    </div>
+
+    <div class="note">أفضل حل نهائي: نسخة <strong>SVG</strong> للشعار. ما تحتاج لا خلفية ولا حلول وسط — تكبّر لأي مقاس، تتغيّر ألوانها بسطر واحد، وحجمها أصغر من PNG.</div>
   </section>
 
   <footer>
