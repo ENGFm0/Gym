@@ -1,0 +1,732 @@
+<title>دليل بناء قِوام</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@200;300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#F4F6F1; --surface:#FFFFFF; --surface2:#EDF1E7; --line:rgba(16,21,18,.10);
+    --t1:#101512; --t2:#48534D; --t3:#78837C;
+    --acc:#C8F751; --accInk:#0A0C0B; --accText:#4C7A0B; --accSoft:rgba(139,194,32,.16);
+    --p:#6F9E0E; --c:#1E86BE; --f:#B8760D;
+    --code:#121714; --codeT:#E7EDE5; --codeLine:rgba(255,255,255,.09);
+    --shadow:0 1px 2px rgba(16,21,18,.05), 0 10px 30px rgba(16,21,18,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --bg:#0A0C0B; --surface:#131715; --surface2:#1A201D; --line:rgba(255,255,255,.08);
+      --t1:#EDF2EE; --t2:#A9B5AE; --t3:#74807A;
+      --accText:#C8F751; --accSoft:rgba(200,247,81,.12);
+      --p:#C8F751; --c:#7FD4FF; --f:#FFC46B;
+      --code:#0E1211; --codeT:#E7EDE5; --codeLine:rgba(255,255,255,.08);
+      --shadow:0 18px 50px rgba(0,0,0,.45);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --bg:#0A0C0B; --surface:#131715; --surface2:#1A201D; --line:rgba(255,255,255,.08);
+    --t1:#EDF2EE; --t2:#A9B5AE; --t3:#74807A;
+    --accText:#C8F751; --accSoft:rgba(200,247,81,.12);
+    --p:#C8F751; --c:#7FD4FF; --f:#FFC46B;
+    --code:#0E1211; --codeT:#E7EDE5; --codeLine:rgba(255,255,255,.08);
+    --shadow:0 18px 50px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--t1);font-family:'Readex Pro','Segoe UI',system-ui,sans-serif;font-weight:300;line-height:1.7;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:860px;margin:0 auto;padding:36px 20px 80px}
+  .num{font-family:'Space Grotesk','Readex Pro',system-ui,sans-serif;font-variant-numeric:tabular-nums}
+  h1,h2,h3{font-weight:600;line-height:1.25;margin:0;text-wrap:balance}
+  h1{font-size:34px;letter-spacing:-.02em}
+  h2{font-size:22px;letter-spacing:-.01em}
+  h3{font-size:16px}
+  p{margin:0;color:var(--t2);font-size:15px}
+  a{color:var(--accText)}
+  .head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:26px}
+  .mark{width:52px;height:52px;border-radius:17px;background:var(--acc);color:var(--accInk);display:flex;align-items:center;justify-content:center;flex:none}
+  .lede{font-size:17px;color:var(--t2);max-width:58ch;margin-top:10px}
+  section{margin-top:44px;display:flex;flex-direction:column;gap:16px}
+  .eyebrow{font-size:11px;letter-spacing:.12em;color:var(--t3);font-weight:400}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow)}
+  .grid{display:grid;gap:14px}
+  @media(min-width:640px){ .g2{grid-template-columns:1fr 1fr} .g3{grid-template-columns:repeat(3,1fr)} }
+  ul{margin:0;padding-inline-start:20px;color:var(--t2);font-size:15px}
+  li{margin:4px 0}
+  li strong{color:var(--t1);font-weight:500}
+  .kv{display:flex;flex-direction:column;gap:10px}
+  .kv .row{display:flex;gap:12px;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:10px}
+  .kv .row:last-child{border:0;padding-bottom:0}
+  .kv .k{min-width:130px;color:var(--t1);font-weight:500;font-size:14px}
+  .kv .v{color:var(--t2);font-size:14px;flex:1}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--accSoft);color:var(--accText);border-radius:9px;padding:4px 10px;font-size:12px}
+  .tag{display:inline-flex;background:var(--surface2);color:var(--t2);border-radius:8px;padding:3px 9px;font-size:11.5px}
+  .toc{display:flex;flex-wrap:wrap;gap:8px}
+  .toc a{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 12px;font-size:13px;color:var(--t2);text-decoration:none}
+  .toc a:hover{border-color:var(--accText);color:var(--accText)}
+  .prompt{background:var(--code);border:1px solid var(--codeLine);border-radius:16px;overflow:hidden}
+  .prompt header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--codeLine)}
+  .prompt .name{color:#E7EDE5;font-size:13.5px;font-weight:500}
+  .prompt .idx{font-size:11px;color:#8E9A93;font-family:'Space Grotesk',sans-serif}
+  .prompt pre{margin:0;padding:16px;color:var(--codeT);font-family:'Space Grotesk',ui-monospace,monospace;font-size:12.5px;line-height:1.75;white-space:pre-wrap;word-break:break-word;direction:ltr;text-align:left}
+  .prompt pre.ar{direction:rtl;text-align:right;font-family:'Readex Pro',sans-serif}
+  .copy{background:var(--acc);color:var(--accInk);border:0;border-radius:9px;padding:7px 14px;font:inherit;font-size:12.5px;font-weight:500;cursor:pointer;flex:none}
+  .copy:active{transform:scale(.97)}
+  .copy.done{background:#8DC22A}
+  .note{border-inline-start:3px solid var(--acc);padding-inline-start:14px;color:var(--t2);font-size:14.5px}
+  .steps{counter-reset:s;display:flex;flex-direction:column;gap:12px}
+  .steps .s{display:flex;gap:12px;align-items:flex-start}
+  .steps .s b{flex:none;width:26px;height:26px;border-radius:8px;background:var(--accSoft);color:var(--accText);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;font-family:'Space Grotesk',sans-serif}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:var(--t3);font-size:13px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap" dir="rtl">
+
+  <div class="head">
+    <div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <div class="mark">
+          <svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true">
+            <circle cx="32" cy="40" r="17" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-dasharray="78 107" transform="rotate(128 32 40)"></circle>
+            <circle cx="24.5" cy="12" r="3.8" fill="currentColor"></circle>
+            <circle cx="39.5" cy="12" r="3.8" fill="currentColor"></circle>
+          </svg>
+        </div>
+        <div>
+          <h1>قِوام</h1>
+          <div class="eyebrow" style="margin-top:4px">فكرة المشروع كاملة + برومتات جاهزة لـ Stitch</div>
+        </div>
+      </div>
+      <p class="lede">تطبيق عربي لتتبّع الدايت والتمارين: تختار نظامك الغذائي، تسجّل أكلك بالباركود أو البحث، تتابع أوزانك ومقاساتك وتطوّر تمارينك — ومدرّبك يتابعك من داخل نفس التطبيق.</p>
+    </div>
+  </div>
+
+  <div class="toc">
+    <a href="#idea">الفكرة</a>
+    <a href="#users">المستخدمون</a>
+    <a href="#screens">الشاشات</a>
+    <a href="#data">البيانات والحسابات</a>
+    <a href="#integrations">التكاملات</a>
+    <a href="#ds">نظام التصميم</a>
+    <a href="#roadmap">خطة الإصدارات</a>
+    <a href="#money">الربح</a>
+    <a href="#how">كيف تستخدم البرومتات</a>
+    <a href="#style">برومت الستايل</a>
+    <a href="#p-auth">برومتات الشاشات</a>
+  </div>
+
+  <section id="idea">
+    <div class="eyebrow">١ · الفكرة</div>
+    <h2>المشكلة والحل</h2>
+    <div class="grid g2">
+      <div class="card">
+        <h3>المشكلة</h3>
+        <ul style="margin-top:10px">
+          <li>تطبيقات التتبّع العالمية إنجليزية، وقاعدة أصنافها ما تعرف الكبسة ولا التمر السكري ولا منتجات المراعي.</li>
+          <li>أنظمة الدايت مبعثرة في مقالات ويوتيوب — بدون <strong>وش آكل، وش أتجنّب، وين أشتري</strong>.</li>
+          <li>المدرّب يتابع متدربيه بالواتساب: صور وجبات وأرقام مبعثرة وما فيه صورة واضحة للالتزام.</li>
+          <li>الناس تقيس الوزن فقط، فتحبط لمّا يثبت — وهي أصلاً ناقصة سنتيمترات من خصرها.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>الحل</h3>
+        <ul style="margin-top:10px">
+          <li>تطبيق <strong>عربي RTL أولاً</strong> بقاعدة أصناف خليجية + عالمية وباركود المنتجات المحلية.</li>
+          <li>مكتبة <strong>أنظمة دايت</strong> كل نظام فيها: الماكروز على سعراتك، المسموح والممنوع بالسبب، يوم نموذجي، وجبات جاهزة تُسجّل بضغطة، وقائمة تسوّق ومتاجرها.</li>
+          <li><strong>وحدة مدرّب كاملة</strong>: خطة أكل تُرسل للمتدرب، ويومه يرجع للمدرّب كـ«مطابق / بديل مقبول / خارج الخطة».</li>
+          <li>تتبّع <strong>الجسم</strong> لا الوزن فقط: ٨ مقاسات، BMI، دهون تقديرية، ميزان ذكي، وقراءة تقرير InBody من صورة.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note">الجملة الواحدة: <strong>«اختر نظامك، سجّل أكلك بضغطة، وشوف جسمك يتغيّر بالأرقام — ومدرّبك معك في نفس الشاشة.»</strong></div>
+  </section>
+
+  <section id="users">
+    <div class="eyebrow">٢ · المستخدمون</div>
+    <h2>مسارَان داخل تطبيق واحد</h2>
+    <div class="grid g2">
+      <div class="card">
+        <h3>المتدرب</h3>
+        <p style="margin-top:8px">يسجّل حسابه، يحدد هدفه وبياناته، يختار نظاماً غذائياً، ثم يومه: سجّل أكل ← سجّل تمرين ← سجّل وزن ومقاسات ← شوف التقدّم.</p>
+        <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">
+          <span class="tag">تسجيل الوجبات</span><span class="tag">الماكروز</span><span class="tag">التمارين</span>
+          <span class="tag">الوزن والمقاسات</span><span class="tag">خطة المدرّب</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3>المدرّب</h3>
+        <p style="margin-top:8px">يضيف متدربيه بكود دعوة، يبني لهم خطط أكل ببدائل مسموحة، يشوف يومهم مقابل الخطة، يستلم المراجعة الأسبوعية بالصور والمقاسات، ويرد من داخل المحادثة.</p>
+        <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">
+          <span class="tag">لوحة الالتزام</span><span class="tag">خطط الأكل</span><span class="tag">خطة مقابل الفعلي</span>
+          <span class="tag">المراجعة الأسبوعية</span><span class="tag">المحادثة</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screens">
+    <div class="eyebrow">٣ · الشاشات</div>
+    <h2>خريطة التطبيق — ٣٢ شاشة</h2>
+    <div class="grid g2">
+      <div class="card">
+        <h3>الحساب والتهيئة <span class="chip">٨</span></h3>
+        <ul style="margin-top:10px">
+          <li>الترحيب · إنشاء حساب · تسجيل دخول</li>
+          <li>التهيئة: الهدف ← بياناتك ← نشاطك ← نظامك ← خطتك جاهزة</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>الأكل <span class="chip">٧</span></h3>
+        <ul style="margin-top:10px">
+          <li>الرئيسية (حلقة السعرات والماكروز)</li>
+          <li>اليوميات · صفحة النظام (وجبات جاهزة)</li>
+          <li>مكتبة الأنظمة · تفاصيل النظام</li>
+          <li>إضافة طعام · ماسح الباركود · تفاصيل الصنف</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>الجسم والتمرين <span class="chip">٩</span></h3>
+        <ul style="margin-top:10px">
+          <li>التمارين · تسجيل المجموعات</li>
+          <li>التقدّم: الوزن · المقاسات مع رسم الجسم و BMI</li>
+          <li>قراءة تقرير InBody · الميزان الذكي · المشي</li>
+          <li>حسابي والإعدادات</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>المدرّب <span class="chip">٨</span></h3>
+        <ul style="margin-top:10px">
+          <li>لوحة المدرّب · المتدربون · ملف المتدرب</li>
+          <li>يومه: الخطة مقابل الفعلي · بناء خطة أكل</li>
+          <li>المراجعة الأسبوعية · المحادثة · إضافة متدرب</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="data">
+    <div class="eyebrow">٤ · البيانات والحسابات</div>
+    <h2>الكيانات والمعادلات</h2>
+    <div class="card kv">
+      <div class="row"><div class="k">User</div><div class="v">الاسم، البريد/الجوال، الدور (متدرب/مدرّب)، الوحدات (كجم/رطل · سم/إنش)، اللغة، المظهر</div></div>
+      <div class="row"><div class="k">Profile</div><div class="v">الجنس، العمر، الطول، الوزن، الوزن المستهدف، النشاط، الهدف (نزول/ثبات/زيادة)، السرعة كجم/أسبوع، النظام الغذائي</div></div>
+      <div class="row"><div class="k">Food</div><div class="v">الاسم، الماركة، الباركود، وحدة الحصة، الأساس، سعرات/بروتين/كارب/دهون/ألياف/صوديوم، المصدر (قاعدة · مستخدم · وصفة)</div></div>
+      <div class="row"><div class="k">LogEntry</div><div class="v">التاريخ، الوجبة (فطور/غداء/سناك/عشاء)، الصنف، الكمية، طريقة الإدخال (بحث · باركود · يدوي · وجبة نظام · خطة مدرّب)</div></div>
+      <div class="row"><div class="k">Diet</div><div class="v">الاسم، الوصف، توزيع الماكروز، المسموح مصنّف، الممنوع مع السبب، الباعتدال، يوم نموذجي، وجبات جاهزة، منتجات ومتاجر</div></div>
+      <div class="row"><div class="k">Workout / SetLog</div><div class="v">الجلسة، التمرين، المجموعة (وزن × عدات)، الحمل الكلي، تاريخ الجلسة</div></div>
+      <div class="row"><div class="k">WeightEntry · Measurement · Scan</div><div class="v">الوزن بالتاريخ · ٨ مقاسات بالتاريخ · تقرير InBody (وزن، عضل، دهون، ماء، بروتين، معادن، حشوية، أيض)</div></div>
+      <div class="row"><div class="k">CoachLink · MealPlan · CheckIn · Message</div><div class="v">ربط مدرّب بمتدرب، خطة أكل ببدائل، مراجعة أسبوعية بالصور والمقاسات، رسائل ومرفقات</div></div>
+    </div>
+    <div class="card kv">
+      <div class="row"><div class="k">الأيض الأساسي</div><div class="v"><span class="num" dir="ltr">BMR = 10×كجم + 6.25×سم − 5×العمر + (5 للذكر / −161 للأنثى)</span> — Mifflin-St Jeor</div></div>
+      <div class="row"><div class="k">المصروف اليومي</div><div class="v"><span class="num" dir="ltr">TDEE = BMR × (1.375 خفيف · 1.55 متوسط · 1.725 عالي)</span></div></div>
+      <div class="row"><div class="k">هدف السعرات</div><div class="v">نزول: <span class="num" dir="ltr">TDEE − (كجم/أسبوع × 1000)</span> · ثبات: TDEE · زيادة: <span class="num" dir="ltr">TDEE + (كجم/أسبوع × 1000)</span></div></div>
+      <div class="row"><div class="k">الماكروز</div><div class="v">حسب توزيع النظام: <span class="num" dir="ltr">جم = (السعرات × النسبة) ÷ 4</span> للبروتين والكارب، <span class="num" dir="ltr">÷ 9</span> للدهون</div></div>
+      <div class="row"><div class="k">BMI</div><div class="v"><span class="num" dir="ltr">كجم ÷ (م)²</span> — نحيف تحت ١٨٫٥ · طبيعي ١٨٫٥–٢٥ · زائد ٢٥–٣٠ · سمنة فوق ٣٠</div></div>
+      <div class="row"><div class="k">الدهون التقديرية</div><div class="v">معادلة البحرية الأمريكية من الخصر والرقبة والطول (وتضاف الأرداف للنساء)</div></div>
+      <div class="row"><div class="k">حمل التمرين</div><div class="v"><span class="num" dir="ltr">Σ (وزن × عدات)</span> للمجموعات المكتملة، ويقارَن بالأسابيع السابقة نسبةً مئوية</div></div>
+      <div class="row"><div class="k">سعرات المشي</div><div class="v">تقدير من الخطوات ووزن المستخدم، وتضاف للمتبقي اليومي إذا فعّل الخيار</div></div>
+    </div>
+  </section>
+
+  <section id="integrations">
+    <div class="eyebrow">٥ · التكاملات</div>
+    <h2>ما يحتاج ربطاً خارجياً</h2>
+    <div class="grid g2">
+      <div class="card"><h3>الباركود</h3><p style="margin-top:8px">كاميرا الجهاز + قاعدة منتجات (محلية خاصة بك + مصدر عالمي مثل Open Food Facts)، مع إمكانية إضافة منتج ناقص يراجعه فريقك.</p></div>
+      <div class="card"><h3>الخطوات والنشاط</h3><p style="margin-top:8px">Apple HealthKit و Google Fit — قراءة الخطوات والمسافة والسعرات النشطة، وكتابة الوزن والسعرات المستهلكة.</p></div>
+      <div class="card"><h3>الميزان الذكي</h3><p style="margin-top:8px">بلوتوث BLE لموازين مثل XG Scale — الوزن ونسبة الدهون والعضل والماء تُسحب تلقائياً وتُسجَّل كقياس.</p></div>
+      <div class="card"><h3>قراءة InBody</h3><p style="margin-top:8px">تصوير ورقة التقرير واستخراج القيم بنموذج رؤية، مع شاشة مراجعة قبل الحفظ ومدخل يدوي كبديل دائم.</p></div>
+    </div>
+  </section>
+
+  <section id="ds">
+    <div class="eyebrow">٦ · نظام التصميم</div>
+    <h2>الأساسيات التي تُبنى عليها كل شاشة</h2>
+    <div class="card kv">
+      <div class="row"><div class="k">الخلفيات</div><div class="v"><span class="num" dir="ltr">#0A0C0B</span> الصفحة · <span class="num" dir="ltr">#131715</span> البطاقة · <span class="num" dir="ltr">#1A201D</span> سطح داخلي · حدود <span class="num" dir="ltr">rgba(255,255,255,.07)</span></div></div>
+      <div class="row"><div class="k">اللون الأساسي</div><div class="v"><span class="num" dir="ltr">#C8F751</span> ليموني — للأزرار الرئيسية (نص أسود عليه) والحلقات والحالة النشطة</div></div>
+      <div class="row"><div class="k">الماكروز</div><div class="v">بروتين <span class="num" dir="ltr">#C8F751</span> · كارب <span class="num" dir="ltr">#7FD4FF</span> · دهون <span class="num" dir="ltr">#FFC46B</span></div></div>
+      <div class="row"><div class="k">النصوص</div><div class="v"><span class="num" dir="ltr">#EDF2EE</span> أساسي · <span class="num" dir="ltr">#A9B5AE</span> ثانوي · <span class="num" dir="ltr">#74807A</span> خافت</div></div>
+      <div class="row"><div class="k">الخطوط</div><div class="v">Readex Pro للنص العربي والإنجليزي · Space Grotesk للأرقام (تبولار)</div></div>
+      <div class="row"><div class="k">المقاسات</div><div class="v">عنوان ٢٢/٦٠٠ · قسم ١٦٫٥/٦٠٠ · صف ١٤٫٥/٥٠٠ · نص ١٣٫٥/٣٠٠ · تسمية ١٠٫٥</div></div>
+      <div class="row"><div class="k">المسافات</div><div class="v">هوامش جانبية ٢٠ · فراغ بين البطاقات ١٤ · نصف قطر ٢٢ للبطاقة و١٦ للداخلي و١٢ للشريحة</div></div>
+      <div class="row"><div class="k">اللمس</div><div class="v">أصغر هدف ٤٤×٤٤ · تبويب سفلي ٨٤ بخمس خانات وزر + مرفوع في الوسط</div></div>
+      <div class="row"><div class="k">الأيقونات</div><div class="v">خطوط فقط بسمك ١٫٦ على شبكة ٢٤ بأطراف دائرية — بدون إيموجي وبدون تعبئة</div></div>
+    </div>
+  </section>
+
+  <section id="roadmap">
+    <div class="eyebrow">٧ · خطة الإصدارات</div>
+    <h2>من نسخة تشتغل إلى منتج</h2>
+    <div class="card steps">
+      <div class="s"><b>١</b><div><strong>MVP (٦–٨ أسابيع):</strong> حساب وتهيئة، حساب السعرات والماكروز، بحث الأصناف وتسجيل الوجبات، الوزن والتقدّم، نظام دايت واحد أو اثنان. بدون مدرّب وبدون باركود.</div></div>
+      <div class="s"><b>٢</b><div><strong>v1:</strong> الباركود، مكتبة الأنظمة الثمانية بوجباتها الجاهزة، التمارين وتسجيل المجموعات، المقاسات و BMI، الخطوات من صحة الجهاز.</div></div>
+      <div class="s"><b>٣</b><div><strong>v2:</strong> وحدة المدرّب كاملة (خطط، خطة مقابل الفعلي، مراجعة أسبوعية، محادثة)، الميزان الذكي، قراءة InBody، النسخة الإنجليزية.</div></div>
+      <div class="s"><b>٤</b><div><strong>v3:</strong> وصفات المستخدمين، تحدّيات ومجموعات، لوحة تحليلات للمدرّب، ويب للمدربين، إشعارات ذكية للتذكير.</div></div>
+    </div>
+  </section>
+
+  <section id="money">
+    <div class="eyebrow">٨ · الربح</div>
+    <h2>ثلاثة مصادر</h2>
+    <div class="grid g3">
+      <div class="card"><h3>اشتراك المتدرب</h3><p style="margin-top:8px">مجاني للتتبّع الأساسي · «برو» شهري/سنوي: تحليلات متقدّمة، خطط وجبات، تصدير التقارير، بدون إعلانات.</p></div>
+      <div class="card"><h3>اشتراك المدرّب</h3><p style="margin-top:8px">تسعير بعدد المتدربين النشطين — لوحة كاملة، خطط غير محدودة، مراجعات أسبوعية، هويّة المدرّب.</p></div>
+      <div class="card"><h3>شراكات</h3><p style="margin-top:8px">متاجر المكملات والمطاعم الصحية: منتجات موصى بها داخل قوائم التسوّق، وكوبونات داخل التطبيق.</p></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="eyebrow">٩ · الاستخدام</div>
+    <h2>كيف تشغّل هذي البرومتات في Stitch</h2>
+    <div class="card steps">
+      <div class="s"><b>١</b><div>افتح Stitch واختر <strong>Mobile</strong>، والصق <strong>برومت الستايل</strong> أول شي كوصف للتطبيق — هذا يثبّت الألوان والخطوط واتجاه RTL.</div></div>
+      <div class="s"><b>٢</b><div>بعدها الصق برومت كل شاشة لحالها. كل برومت مستقل ويعيد ذكر الستايل باختصار، فلو فتحت جلسة جديدة يبقى التصميم متسقاً.</div></div>
+      <div class="s"><b>٣</b><div>لو طلعت الشاشة بالإنجليزي، أضف في آخر البرومت: <span class="num" dir="ltr">All UI text must be exactly the Arabic strings given, right-to-left.</span></div></div>
+      <div class="s"><b>٤</b><div>عدّل بالمحادثة بعد التوليد: «كبّر حلقة السعرات»، «خلّ البطاقات أقرب»، «شِل الظل». التعديل الصغير أنظف من إعادة التوليد.</div></div>
+      <div class="s"><b>٥</b><div>ابدأ بالشاشات الخمس الأساسية (الرئيسية، اليوميات، إضافة طعام، تفاصيل النظام، التقدّم) — منها يتحدد شكل التطبيق كله.</div></div>
+    </div>
+    <div class="note">الأرقام في البرومتات مكتوبة بالعربية عمداً (٧٤٠ · ١٬٩٥٠) عشان الشاشات تطلع بأرقام عربية مثل التطبيق. لو تبي أرقاماً لاتينية، بدّلها في البرومت.</div>
+  </section>
+
+  <section id="style">
+    <div class="eyebrow">١٠ · الأساس</div>
+    <h2>برومت الستايل — الصقه أولاً</h2>
+    <div class="prompt">
+      <header><div class="name">Style system · قِوام</div><button class="copy">نسخ</button></header>
+      <pre>Design a mobile app called قِوام (Qiwam), an Arabic diet and fitness tracker for Saudi and Gulf users. Every screen is Arabic and fully right-to-left: text right-aligned, rows mirrored, back chevrons point right, forward chevrons point left.
+
+Visual language: dark, premium, athletic — think a serious training app, not a playful one.
+- Page background #0A0C0B. Cards #131715, corner radius 22, 1px border rgba(255,255,255,0.07). Inner surfaces #1A201D, radius 16. No gradients anywhere except one soft lime glow blurred behind the top-right of the header.
+- Single accent: lime #C8F751. Primary buttons are solid lime with near-black #0A0C0B text, radius 18, height 52. Secondary buttons are transparent with a 1px rgba(255,255,255,0.09) border. Chips radius 12, height 38.
+- Macro colors, used only for macros: protein #C8F751, carbs #7FD4FF, fat #FFC46B.
+- Text: primary #EDF2EE, secondary #A9B5AE, muted #74807A.
+- Typography: Readex Pro for all Arabic and Latin text; numbers in Space Grotesk with tabular figures. Screen title 22/600, section heading 16.5/600, list row 14.5/500, body 13.5/300, caption 10.5 with letter-spacing.
+- Layout: 20px side padding, 14px vertical gap between blocks, minimum touch target 44x44.
+- Bottom tab bar: height 84, background rgba(10,12,11,0.94), 1px top border, five slots — الرئيسية, الوجبات, a raised 56x56 lime + button in the middle, التمارين, التقدّم. Active item is lime, inactive muted.
+- Icons: stroke only, 1.6px, 24px grid, rounded caps, no fills, no emoji.
+- Do not draw a fake iOS status bar or a fake keyboard.
+Numbers in the UI are written in Arabic-Indic digits.</pre>
+    </div>
+  </section>
+
+  <section id="p-auth">
+    <div class="eyebrow">١١ · برومتات الشاشات</div>
+    <h2>الحساب والتهيئة</h2>
+
+    <div class="prompt">
+      <header><div class="name">١ · الترحيب</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam onboarding welcome screen. Arabic RTL, dark #0A0C0B, lime #C8F751 accent, Readex Pro.
+A soft lime glow blurred behind the top-right corner.
+Top: a 76x76 lime rounded square (radius 24) holding the logo mark — an open thick ring like a progress ring with two dots above it, drawn in near-black.
+Under it the wordmark قِوام at 40px weight 600, then one line of body copy: دايتك وتمرينك ووزنك في مكان واحد — والسعرات والماكروز تنحسب لك تلقائياً.
+Middle: three rows, each a small lime-tinted 30x30 rounded square with a check icon plus one line of text: سجّل أكلك بالبحث أو الباركود / تابع أوزانك وتطوّر تمارينك / خطة مدرّبك تجيك داخل التطبيق.
+Bottom: a full width lime button أنشئ حسابك, under it a bordered button عندي حساب — سجّل الدخول, and a tiny muted line نموذج تجريبي — حسابك يُحفظ في هذا المتصفح فقط.
+No bottom tab bar on this screen.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٢ · إنشاء حساب</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam sign up screen. Arabic RTL, dark #0A0C0B, lime accent, Readex Pro.
+Header row: a back chevron pointing right, then a small 36x36 lime logo tile and the wordmark قِوام.
+Title أنشئ حسابك at 34px weight 600, subtitle دقيقة وحدة وتبدأ تسجّل.
+Three fields, each a caption label above a filled input (#1A201D, radius 14, height 48, 1px border): الاسم, البريد أو الجوال, كلمة المرور with placeholder ٦ خانات على الأقل.
+Under them a lime primary button التالي.
+Then a divider line with أو in the middle, and two bordered buttons side by side: تابع بـ Apple and تابع بـ Google.
+At the bottom, centered: عندك حساب؟ followed by a lime text link سجّل الدخول.
+No bottom tab bar.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٣ · تسجيل الدخول</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam log in screen. Arabic RTL, dark, lime accent, Readex Pro.
+Same header as sign up: right-pointing back chevron, lime logo tile, wordmark قِوام.
+Title أهلاً من جديد, subtitle سجّل دخولك وتكمل من وين وقفت.
+Two filled inputs: البريد أو الجوال and كلمة المرور, with a small muted text link نسيت كلمة المرور؟ aligned to the left under them.
+Full width lime button دخول.
+Bottom centered: ما لك حساب؟ with a lime link أنشئ واحد.
+No bottom tab bar.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٤ · التهيئة — الهدف</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam onboarding step 1 of 5. Arabic RTL, dark, lime accent.
+Top row: back chevron pointing right, centered muted caption الخطوة ١ من ٥.
+Under it a progress bar made of five equal segments with the first one lime and the rest dark.
+Title وش هدفك؟ and subtitle منه نحدد سعراتك وتوزيع الماكروز.
+Three large selectable cards stacked with 10px gap, each 16px padding: a 46x46 rounded icon tile on the right, then a bold title and a muted line, and on the far left a round check badge on the selected one. The cards: أنزل وزني / عجز حراري محسوب — أثبّت وزني / سعرات الاتزان — أزيد عضل / فائض حراري خفيف. The first card is selected: lime border and lime-tinted icon tile.
+Bottom: full width lime button التالي.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٥ · التهيئة — بياناتك</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam onboarding step 2 of 5. Arabic RTL, dark, lime accent.
+Back chevron pointing right, caption الخطوة ٢ من ٥, five-segment progress bar with two lime segments.
+Title بياناتك الجسدية, subtitle نحسب فيها أيضك الأساسي بمعادلة Mifflin-St Jeor.
+A two-option segmented control: ذكر selected in lime with black text, أنثى inactive.
+A row of two small unit switchers, each a segmented pill: سم / إنش and كجم / رطل.
+A 2x2 grid of four cards. Each card has a caption label on top and a large editable number typed by keyboard with its unit in muted text at the far left inside the field: العمر ٢٩ سنة, الطول ١٧٨ سم, وزنك الحالي ٨١٫٤ كجم, وزنك المستهدف ٧٤ كجم. These are text fields, not steppers — no plus or minus buttons anywhere.
+Bottom: lime button التالي.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٦ · التهيئة — النشاط</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam onboarding step 3 of 5. Arabic RTL, dark, lime accent.
+Back chevron pointing right, caption الخطوة ٣ من ٥, progress bar with three lime segments.
+Title كم تتحرك باليوم؟, subtitle بدونها السعرات تطلع غلط.
+One card containing three rows separated by hairlines, each row: a title and a muted description on the right, a round radio on the left, the middle one selected as a filled lime circle with a black check. Rows: خفيف / مكتبي · أقل من ٥٬٠٠٠ خطوة — متوسط / تمرين ٣–٤ أيام بالأسبوع — عالي / تمرين يومي أو عمل بدني.
+Below: heading سرعة النزول and a three-option segmented control: هادئ ٠٫٢٥, معتدل ٠٫٥ selected, سريع ٠٫٧٥, with a muted line كجم في الأسبوع.
+Bottom: lime button التالي.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٧ · التهيئة — النظام الغذائي</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam onboarding step 4 of 5. Arabic RTL, dark, lime accent.
+Back chevron pointing right, caption الخطوة ٤ من ٥, progress bar with four lime segments.
+Title اختر نظامك الغذائي, subtitle تقدر تبدّله في أي وقت من الوجبات.
+One card holding eight rows separated by hairlines. Each row: a 42x42 rounded icon tile, then the diet name in 14.5/500 and a muted subtitle, and on the far left a muted percentage label. The selected row has a lime-tinted tile with a check icon.
+Rows: الكيتو دايت / دهون عالية · كارب منخفض جداً · ٢٥٪ بروتين — الصيام المتقطع ١٦:٨ / نافذة أكل ٨ ساعات — حمية البحر المتوسط / الأفضل لصحة القلب — عالي البروتين / ٢ جم لكل كجم من وزنك — نباتي كامل / بدون منتجات حيوانية — باليو / أكل غير مصنّع — تضخيم نظيف / فائض حراري محسوب — متوازن / بدون تقييد نوع الأكل.
+Bottom: lime button التالي.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٨ · التهيئة — خطتك جاهزة</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam onboarding final step. Arabic RTL, dark, lime accent.
+Back chevron pointing right, caption الخطوة ٥ من ٥, full lime progress bar.
+Title خطتك جاهزة, subtitle محسوبة على بياناتك ونظامك — تقدر تعدّلها لاحقاً.
+A hero card with a lime border, centered content: caption هدفك اليومي, then a huge number ١٩٥٠ in Space Grotesk 52px weight 600 with the word سعرة beside it in muted text, and under it a lime-tinted pill الكيتو دايت · عجز ٥٠٠ سعرة.
+Below: three equal cards side by side showing big numbers and captions: ١٥٢ جم / دهون in #FFC46B, ١٢٢ جم / بروتين in #C8F751, ٢٤ جم / كارب in #7FD4FF.
+Then a plain card with two muted lines: أيض أساسي ١٬٧٨٧ سعرة · مصروفك اليومي ٢٬٤٥٦ سعرة, and ابدأ بتسجيل أول وجبة — كل شي بعدها يُحسب لك تلقائياً.
+Bottom: large lime button ابدأ.</pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>الأكل</h2>
+
+    <div class="prompt">
+      <header><div class="name">٩ · الرئيسية</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam home dashboard. Arabic RTL, dark #0A0C0B, lime #C8F751, Readex Pro, numbers in Space Grotesk. Soft lime glow behind the top-right.
+Header: أهلاً فهد at 22/600, under it a tappable muted line الكيتو دايت · هدفك ١٩٥٠ سعرة with a small chevron; on the far left a 44x44 rounded square button with a person icon.
+Main card: on the right a 158px lime progress ring, about two thirds filled, thick 13px stroke with rounded ends, dark track; inside it the number ٧٤٠ at 34px and under it سعرة متبقية. On the left of the ring three stacked label-value pairs separated by hairlines: الهدف اليومي ١٩٥٠, تناولت ١٤٢٠, حرقت بالمشي ٢١٠ in lime.
+Under them inside the same card, three macro columns, each a label, a value like ٩٦ / ١٤٠ جم, and a thin 6px progress bar: بروتين lime, كارب #7FD4FF, دهون #FFC46B.
+Next: a card with a lime border — caption نظامك الغذائي, title الكيتو دايت, a lime-tinted pill بدّله on the left, a full-width segmented bar split 70/25/5 in fat/protein/carb colors, and under it the three percentages ٧٠٪ دهون · ٢٥٪ بروتين · ٥٪ كارب.
+Then a horizontal scrolling row of bordered chips: الميزان الذكي, المشي, خطة المدرّب.
+Then two small cards side by side: خطوات اليوم ٧٬٤٢٠ with a progress bar, and الماء ١٫٦ لتر with small minus and plus buttons and a segmented bar.
+Then section heading وجبات اليوم with a lime text link عرض اليوميات, and a card of four rows: الفطور with a green check tile and بيض مقلي بالزبدة · أفوكادو and ٤٢٠ on the left, الغداء ٦٤٠, سناك ٣٦٢, العشاء greyed with a dashed plus tile and ما سجّلت شي.
+Bottom tab bar with الرئيسية active.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">١٠ · اليوميات</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam food diary screen. Arabic RTL, dark, lime accent.
+Header: title الوجبات, and a 44x44 rounded button with a chart icon on the left.
+Under the header a two-option segmented control: يومياتي selected in lime with black text, النظام inactive.
+A centered row of five day pills: سبت ٤, أحد ٥, إثنين ٦, ثلاثاء ٧, and أربعاء ٨ filled lime with black text.
+A summary card: four label-value pairs in one row — ١٩٥٠ الهدف, ١٤٢٠ أكل, ٢١٠ حركة in lime, ٧٤٠ متبقي — and under them an 8px bar split into three colored parts for protein, carbs and fat.
+Then four meal cards, each: the meal name and its total calories on the left, then its logged items as rows with the item name, a muted line like ٣ حبات · ١٥٠ جم · ١٨ بروتين, the calories, and a small close icon to delete; each card ends with a lime row أضف لـالفطور with a plus icon. Meals: الفطور ٤٢٠, الغداء ٦٤٠, سناك ٣٦٢, العشاء empty with the muted line ما سجّلت شي في العشاء.
+Last card: النشاط with مشي ٧٬٤٢٠ خطوة and ٢١٠− in lime.
+Bottom tab bar with الوجبات active.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">١١ · صفحة النظام داخل الوجبات</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam diet page, the second page of the meals tab. Arabic RTL, dark, lime accent.
+Header: title الوجبات, then the two-option segmented control with النظام selected in lime.
+Row: the diet name الكيتو دايت at 16.5/600 with a muted subtitle دهون عالية · كارب منخفض جداً, and a lime-tinted chip بدّل النظام on the left.
+One line of body text describing the diet.
+A card: heading ماكروزك على هذا النظام with ١٩٥٠ سعرة on the left, and three inner tiles: ١٥٢ جم دهون ٧٠٪, ١٢٢ جم بروتين ٢٥٪, ٢٤ جم كارب ٥٪ in their macro colors.
+A horizontally scrolling row of five chips, the first filled lime: وجبات جاهزة, وش آكل, وش أتجنّب, يوم نموذجي, وين أشتري.
+Then the ready meals list: cards each holding a meal name, a muted line of its items with amounts, a dark chip on the left with the meal type, a row of four small tiles showing ٤٢٥ سعرة, ٢٠ بروتين, ٩ كارب, ٣٦ دهون in macro colors, and a full-width lime button أضف لـالفطور.
+Show two meals: فطور الكيتو السريع (بيض مقلي بالزبدة ٣ حبة · أفوكادو ٧٠ جم · قهوة عربية) and دجاج مشوي وسلطة (صدر دجاج مشوي ٢٠٠ جم · سلطة يونانية).
+Bottom tab bar with الوجبات active.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">١٢ · مكتبة الأنظمة</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam diet library screen. Arabic RTL, dark, lime accent.
+Header: title أنظمة الدايت with a muted line ٨ أنظمة · فعّل أي واحد ويتحدّث ماكروزك.
+One card holding eight rows separated by hairlines. Each row: a 44x44 rounded icon tile on the right, the diet name, a muted subtitle, and a third muted line with the macro split like ٧٠٪ دهون · ٢٥٪ بروتين · ٥٪ كارب; on the left a chevron pointing left.
+The active diet الكيتو دايت is first: lime-tinted tile with a check icon and a lime pill نشط instead of the chevron.
+Other rows: الصيام المتقطع ١٦:٨, حمية البحر المتوسط, عالي البروتين, نباتي كامل, باليو, تضخيم نظيف, متوازن.
+Bottom tab bar with الوجبات active.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">١٣ · تفاصيل النظام — وش آكل ووش أتجنّب</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam diet detail screen. Arabic RTL, dark, lime accent.
+Header: back chevron pointing right, centered title الكيتو دايت with a muted subtitle دهون عالية · كارب منخفض جداً.
+A paragraph of body copy explaining the diet in two lines.
+Macros card: heading ماكروزك على هذا النظام, ١٩٥٠ سعرة on the left, three inner tiles with ١٥٢ جم دهون ٧٠٪, ١٢٢ جم بروتين ٢٥٪, ٢٤ جم كارب ٥٪.
+Scrolling chip row with وش آكل selected in lime.
+Then grouped cards of allowed foods: each card has a lime check icon, a group name, and lime-tinted chips wrapped in rows. Groups: بروتين (لحم بقري وغنم, دجاج بالجلد, سمك وسلمون, بيض, روبيان), دهون (زبدة وسمن بلدي, زيت زيتون, أفوكادو, مايونيز بدون سكر), خضار (خس وسبانخ, قرنبيط وبروكلي, كوسا, خيار, فطر).
+Then a card titled تجنّبه with rows, each an x icon, a bold item and a muted reason under it: أرز ومعكرونة وخبز — رغيف واحد يستهلك حصتك اليومية كاملة; تمر وموز وعنب — سكر سريع يوقف الحرق الكيتوني; سكر وعسل ومربى — سكر صافي.
+Bottom: a full width lime button فعّل الكيتو وحدّث الماكروز.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">١٤ · تفاصيل النظام — وين أشتري</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam diet shopping screen, the وين أشتري tab of a diet. Arabic RTL, dark, lime accent.
+Header: back chevron pointing right, title الكيتو دايت.
+Scrolling chip row with وين أشتري selected in lime.
+First card: heading سوبرماركت and a wrapped set of bordered chips: بنده, العثيم, التميمي, دانوب, لولو, كارفور, المزرعة. A hairline, then heading تطبيقات ومتاجر أونلاين with chips: نعناع, نينجا, أمازون السعودية, نون, آي هيرب.
+Section heading منتجات أساسية لهذا النظام with a lime pill ٢ في القائمة on the left.
+A card of product rows separated by hairlines. Each row: product name in 14.5/500, under it a lime line with a small search icon showing where to buy, under that a muted note, and on the left a 32x32 square that is a dark plus for un-added items and a filled lime check for added ones.
+Products: زيت جوز الهند البكر — دانوب · آي هيرب — للطبخ والقلي بحرارة عالية; دقيق اللوز ودقيق جوز الهند — العثيم · أمازون السعودية — بديل الطحين للخبز الكيتوني; محلّي ستيفيا — لولو · آي هيرب — بدل السكر في القهوة; شرائط قياس الكيتون — صيدليات النهدي والدواء — تتأكد إنك داخل الحالة الكيتونية.
+Bottom: a bordered button فرّغ قائمة التسوّق.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">١٥ · إضافة طعام</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam add food screen. Arabic RTL, dark, lime accent.
+Header: back chevron pointing right, centered title إضافة إلى الغداء.
+A filled search input with a magnifier icon and placeholder ابحث عن صنف أو ماركة…
+A row of three equal cards, each a centered stroke icon above a caption: باركود with the icon in lime, يدوي, تكرار أمس.
+A muted line الأكثر استخداماً.
+Then a results card with rows separated by hairlines. Each row: the food name in 14.5/500, a muted second line like ١٠٠ جم · ١٦٥ سعرة · ٣١ بروتين, and on the left a 40x40 lime-tinted rounded square with a plus icon.
+Rows: صدر دجاج مشوي, لبن يوناني ٠٪ — المراعي, خبز عربي أسمر — لوزين, تمر سكري, كبسة دجاج, شاورما دجاج.
+No bottom tab bar on this screen.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">١٦ · ماسح الباركود</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam barcode scanner screen. Arabic RTL, very dark #050706 camera view.
+Top row: a close x icon on the right, centered title امسح الباركود, a flash icon on the left, all in white.
+Center: a 270x190 scan frame drawn only as four thick lime corner brackets with rounded corners, a lime horizontal scan line glowing across the middle, and a faint barcode shape behind it. Under the frame a centered muted line وجّه الكاميرا على باركود المنتج — يتعرف عليه تلقائياً.
+Bottom sheet card #131715 with radius 26 on the top corners: a small grip bar, then a row with a 56x56 product placeholder tile, the product name حليب المراعي قليل الدسم with the barcode number under it in Space Grotesk, and a lime-tinted pill مناسب on the left.
+Under it four small tiles: ١٤٠ سعرة, ٨ بروتين, ١٢ كارب, ٥ دهون in macro colors.
+Two buttons in a row: bordered تعديل الحصة and lime أضف للغداء.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">١٧ · تفاصيل الصنف</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam food detail screen. Arabic RTL, dark, lime accent.
+Header: back chevron pointing right, muted caption تفاصيل الصنف, a star icon on the left.
+Title صدر دجاج مشوي بدون جلد at 22/600, under it a muted line قاعدة بيانات موثّقة and a lime-tinted pill مطابق للكيتو.
+A card: on the right a 120px donut chart made of protein and fat arcs with ٣٣٠ and سعرة in its center; on the left three macro rows each with a label, a value like ٦٢ جم and a thin colored bar: بروتين, كارب, دهون.
+Then two cards side by side: وحدة الحصة with جرام and a small chevron, and الكمية with a large number ٢٠٠ typed as a text field with جم in muted text — a keyboard field, not a stepper.
+A scrolling chip row of quick amounts with ٢٠٠ جم selected in lime: ١٠٠ جم, ٢٠٠ جم, صدر كامل, حصة.
+A nutrient card with four rows separated by hairlines: ألياف ٠ جم, سكريات ٠ جم, صوديوم ١٤٨ ملجم, بوتاسيوم ٥٦٠ ملجم.
+Bottom row: a bordered button showing الغداء with a chevron, and a wider lime button أضف للوجبة.</pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>الجسم والتمرين</h2>
+
+    <div class="prompt">
+      <header><div class="name">١٨ · التمارين</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam workouts screen. Arabic RTL, dark, lime accent.
+Header: title التمارين with a muted line جلسة اليوم · ظهر وبايسبس, and a 44x44 button with a chart icon on the left.
+Hero card: caption جلسة اليوم in lime, title ظهر وبايسبس at 22/600, a 48x48 lime-tinted tile with a dumbbell icon on the left. Under them three stats separated by thin vertical lines: ٤ تمارين, ٥ /٢٢ مجموعات, ١٬٢٥٠ كجم مرفوعة in lime.
+Then a card of exercise rows separated by hairlines, each: an index number in muted, the exercise name, a muted line like ٤ × ١٠ · آخر مرة ٢٬٣٨٠ كجم, and on the left either a chevron pointing left or a lime pill ٢ من ٤ for started exercises.
+Exercises: سحب أمامي بالكيبل, تجديف بالبار, بنش برس, مرجحة بايسبس.
+Last card: heading حجم تمرين الظهر أسبوعياً with a muted كجم مرفوعة, and a bar chart of six bars labeled أ١ أ٢ أ٣ أ٤ أ٥ اليوم, the last bar lime and the rest dark grey.
+Bottom tab bar with التمارين active.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">١٩ · تسجيل المجموعات</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam exercise set logging screen. Arabic RTL, dark, lime accent.
+Header: back chevron pointing right, centered title سحب أمامي بالكيبل with a muted subtitle ظهر · ٤ × ١٠.
+A card: heading الحمل الكلي اليوم with a lime-tinted pill ١٢٪+ عن آخر مرة on the left; under it a bar chart of six bars labeled أ١ to أ٥ and اليوم with the last bar lime; under the chart two muted lines: ٢٬٦٥٠ كجم اليوم and آخر مرة ٢٬٣٨٠ كجم.
+Then a card of set rows separated by hairlines. Each row: the set number on the right, the entered weight and reps as a title like ٦٥ كجم × ١٠ عدة, a muted second line ٦٥٠ كجم حمل, and on the left a 38x38 rounded square that is lime-tinted with a check for completed sets and plain dark for empty ones. Empty sets show the muted title اضغط لتسجيل المجموعة.
+Show four sets, the first two completed.
+The card ends with a lime row أضف مجموعة with a plus icon.
+No bottom tab bar.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٢٠ · التقدّم — الوزن</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam weight progress screen. Arabic RTL, dark, lime accent.
+Header: title التقدّم with a 44x44 button carrying a scale icon on the left.
+A two-option segmented control: الوزن selected in lime, المقاسات inactive.
+Chart card: caption الوزن الحالي with a big number ٨١٫٤ at 34px and كجم beside it, and a lime-tinted pill ٤٫٢− كجم منذ البداية on the left. Under them a line chart descending from left to right with a soft lime area fill under the line, three faint horizontal grid lines, and a lime dot on the last point; date captions at both ends: ١ يوليو and اليوم.
+Then three small cards in a row: نسبة الدهون ٢١٫٣٪, كتلة العضل ٥٨٫٦ كجم, باقي للهدف ٧٫٤ كجم إلى ٧٤.
+Then a card سجل الأوزان listing five dated rows, each with the weight and a small lime delta like ٠٫٥− on the left.
+Bottom: a full width lime button سجّل وزن اليوم.
+Bottom tab bar with التقدّم active.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٢١ · التقدّم — المقاسات</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam body measurements screen. Arabic RTL, dark, lime accent.
+Header: title التقدّم, scale icon button on the left, then the segmented control with المقاسات selected in lime.
+First card: a front-facing human figure drawn as a clean lime outline, stroke 2.4, centered — head circle, torso, arms, legs, no fill. Lime dots sit on the neck, shoulders, chest, waist and hips, plus one on the arm, thigh and calf. Thin dashed grey guide lines run from each dot to a label at the edge of the card, and the labels never overlap the body: الرقبة ٣٩٫٠, الكتف ١١٩٫٠, الصدر ١٠٣٫٠, الخصر ٩٠٫٠, الأرداف ١٠٠٫٠ on one side; الذراع ٣٧٫٠, الفخذ ٥٩٫٠, السمانة ٣٩٫٥ on the other. Under the figure a tiny centered caption القياسات بالـسم.
+Second card: caption كتلة الجسم BMI, a big number ٢٦٫١ and beside it the category وزن زائد in amber; on the left two small lines ٨٤٫٥ كجم and ١٨٠ سم. Under them a horizontal banded scale bar in blue, lime, amber and faded amber with a white marker pin on the current value, and five small labels underneath: ١٥, ١٨٫٥, ٢٥, ٣٠, ٤٠.
+Third card: a lime-tinted tile with a chart icon, نسبة الدهون التقديرية ١٩٫٤٪ and a muted line محسوبة من الخصر والرقبة والطول.
+Section heading كل المناطق with ٣ تسجيل on the left, then a card of eight rows: the site name with its current value under it, a small sparkline in the middle, and a change pill on the left — lime when the change is in the wanted direction for that site, neutral otherwise.
+Bottom: a card صوّر تقرير InBody and a full width lime button سجّل مقاسات اليوم.
+Bottom tab bar with التقدّم active.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٢٢ · تسجيل المقاسات (Sheet)</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam measurement entry bottom sheet over a dark screen. Arabic RTL, lime accent.
+The sheet is #131715 with 26px top corners, a small grip bar at the top.
+Header row: title مقاسات اليوم on the right and a two-option unit segmented pill on the left: سم selected in lime, إنش inactive.
+A muted line قِس في نفس الوقت من اليوم وبنفس الوضعية — الصباح قبل الأكل أدق.
+A 2x4 grid of typed input fields. Each field: a small caption label above, then a filled input #1A201D radius 14 height 48 holding a number typed from the keyboard with the unit سم in muted text at the far left inside the field. No plus or minus buttons anywhere.
+Fields: الرقبة ٣٩٫٠, الكتف ١١٩٫٠, الصدر ١٠٣٫٠, الذراع ٣٧٫٠, الخصر ٩٠٫٠, الأرداف ١٠٠٫٠, الفخذ ٥٩٫٠, السمانة ٣٩٫٥.
+Bottom: two buttons in a row — bordered إلغاء and a wider lime احفظ المقاسات.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٢٣ · قراءة تقرير InBody</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam InBody report reader screen. Arabic RTL, dark, lime accent.
+Header: back chevron pointing right, centered title قراءة تقرير InBody with a muted subtitle صوّر الورقة أو اختر صورتها.
+Empty state card, centered: a 64x64 dark rounded square with a camera icon, a title صوّر ورقة التقرير, a body line خلّ الورقة كاملة وواضحة في الصورة. نقرأ الوزن ونسبة الدهون وكتلة العضل والماء والـBMI ونسجّلها في حسابك, and a lime button اختر صورة التقرير.
+Second variant shown below it: a card holding a photo thumbnail of a report with rounded corners, and under it two buttons — bordered صورة ثانية and lime استخرج الأرقام.
+Then a section heading اللي قرأناه with a lime pill ٦ قيمة, and a card of extracted values as rows separated by hairlines: الوزن ٨٣٫٠ كجم, كتلة العضل الهيكلي ٣٦٫٤ كجم, كتلة الدهون ١٧٫٨ كجم, نسبة الدهون ٢١٫٤٪, كتلة الجسم BMI ٢٥٫٦, ماء الجسم ٤٢٫٣ لتر.
+A muted line راجع الأرقام قبل الحفظ — القراءة من صورة ممكن تخطئ, then a lime button احفظها في حسابي and a bordered button أدخل أرقام التقرير يدوياً.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٢٤ · الميزان الذكي</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam smart scale screen. Arabic RTL, dark, lime accent.
+Header: back chevron pointing right, centered title الميزان الذكي with muted subtitle XG Scale, a gear icon on the left.
+Connection card: a lime-tinted 48x48 tile with a scale icon, then XG Scale · متصل with a muted line بلوتوث · يقرأ الوزن وتركيب الجسم, and a small lime dot on the left.
+Reading card, centered: caption آخر قياس, a very large ٨١٫٤ at 52px with كجم beside it, and a lime-tinted pill ٠٫٦− كجم عن القياس السابق.
+A 2x2 grid of composition cards, each with a label and a colored value, a thin progress bar and a tiny muted range note: نسبة الدهون ٢١٫٣٪ amber المدى الصحي ١٠–٢٠٪, كتلة العضل ٥٨٫٦ كجم lime, نسبة الماء ٥٤٫٢٪ blue, دهون حشوية ٩ amber آمن تحت ١٠.
+A card of four rows: كتلة الجسم BMI ٢٥٫١, الأيض الأساسي BMR ١٬٧٨٧ سعرة, كتلة العظام ٣٫٢ كجم, السعرات المقدّرة اليوم ٢٬٤٥٦ سعرة.
+Bottom: a lime button اقرأ قياساً جديداً من الميزان.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٢٥ · المشي والنشاط</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam steps and activity screen. Arabic RTL, dark, lime accent, with a soft blue glow behind the top-left.
+Header: back chevron pointing right, centered title المشي والنشاط, a calendar icon on the left.
+Hero card, centered: a large 186px lime progress ring about three quarters full, inside it a small footsteps icon, the number ٧٬٤٢٠ at 38px and a muted line من هدف ١٠٬٠٠٠ خطوة. Under the ring three stats separated by thin vertical lines: ٥٫٤ كم, ٢١٠ سعرة, ٦٨ دقيقة حركة.
+Then a card: heading آخر ٧ أيام with a muted المتوسط ٨٬١٠٠ on the left, and a bar chart of seven bars labeled س ح ن ث ر خ اليوم with the last bar lime.
+Then a settings card row: خصم سعرات المشي من الهدف with a muted line مفعّل — يزيد المتبقي لك اليوم and a lime toggle switch on the left, turned on.
+No bottom tab bar.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٢٦ · حسابي</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam profile and settings screen. Arabic RTL, dark, lime accent.
+Header: title حسابي.
+Profile card: a 64x64 dark rounded square with a person icon, then the name فهد and a muted line ٢٩ سنة · ١٧٨ سم · ٨١٫٤ كجم, with a lime-tinted chip تعديل on the left.
+Three small stat cards in a row: ١٩٥٠ سعرة يومياً, ٢٥٫٧ BMI, ٨ قياس وزن.
+A settings card with rows separated by hairlines, each: a stroke icon and a label on the right, a muted value and a chevron pointing left on the left. Rows: هدفي وبياناتي ٠٫٥ كجم/أسبوع, نظامي الغذائي الكيتو دايت, الميزان الذكي XG Scale, مقاساتي ٣ تسجيل, خطتي من المدرّب الكوتش سعد, وضع المدرّب إدارة متدربين.
+A second card with rows: المظهر داكن, الوحدات كجم · سم, حمّل بيانات تجريبية, فرّغ يومي, تسجيل الخروج, امسح كل شي وابدأ من جديد.
+Bottom tab bar, no item active.</pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>وحدة المدرّب</h2>
+
+    <div class="prompt">
+      <header><div class="name">٢٧ · لوحة المدرّب</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam coach dashboard. Arabic RTL, dark, lime accent, soft lime glow top-right.
+The bottom tab bar here is the coach one: اللوحة, المتدربون, a raised lime + button, الخطط, الرسائل — with اللوحة active.
+Header: title لوحة المدرّب with a muted line ٢٤ متدرباً نشطاً, and a 44x44 button with a chat icon on the left.
+Three stat cards in a row: ٢٤ متدرب نشط, ٣ يحتاجون متابعة in amber, ٧٨٪ التزام المجموعة in lime.
+A card: heading التزام المجموعة هذا الأسبوع with ٧٨٪ in lime on the left, and a seven-bar chart labeled س ح ن ث ر خ ج with today's bar lime and the future days faded.
+Section heading يحتاجون انتباهك with a lime text link الكل.
+A card of three rows separated by hairlines, each: a 44x44 rounded square holding the first letter of the name, the client name, a colored status line under it, and a pill on the left. Rows: عبدالله القحطاني — ما سجّل وجباته من ٣ أيام in amber with a lime-tinted pill تابع; خالد العتيبي — تجاوز سعراته ٤ أيام هالأسبوع in amber with تابع; سلطان الحربي — رفع صور المراجعة الأسبوعية in lime with a solid lime pill افتح.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٢٨ · المتدربون</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam clients list for the coach. Arabic RTL, dark, lime accent, coach bottom tab bar with المتدربون active.
+Header: title المتدربون with a muted line ٢٤ نشط · ٢ بانتظار القبول.
+A filled search input with placeholder ابحث باسم المتدرب.
+A card of client rows separated by hairlines. Each row: a 44x44 rounded square with the first letter — lime-tinted for committed clients, plain dark for the struggling ones; then the name, a muted line like كيتو · ٢٢٠٠ سعرة · ٩٢٫٦ كجم, and a third line with a thin 76px progress bar plus a small percentage label ٨٦٪ التزام in lime or amber; on the left a weight delta like ٣٫٤− كجم in lime and a caption ٦ أسابيع.
+Clients: سلطان الحربي ٨٦٪, ريم الدوسري ٩٤٪, عبدالله القحطاني ٤٥٪ in amber with ٠٫٤+ كجم, منيرة الشمري ٧٢٪, خالد العتيبي ٦٨٪ with ١٫٢+ كجم.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٢٩ · ملف المتدرب</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam client profile seen by the coach. Arabic RTL, dark, lime accent.
+Header: back chevron pointing right, centered title سلطان الحربي with a muted subtitle كيتو · الأسبوع ٦.
+Chart card: caption وزنه الحالي, a big ٩٢٫٦ with كجم beside it, a lime-tinted pill ٣٫٤− كجم في ٦ أسابيع on the left, and under them a descending line chart with a soft lime fill, captions الأسبوع ١ and الأسبوع ٦ at the ends.
+Two cards side by side: الالتزام بالخطة ٨٦٪ with a lime bar and a caption من أيام الشهر; حضور التمارين ١٨/٢٤ with a bar and a caption آخر ٦ أسابيع.
+A card: heading متوسط ماكروزه مقابل خطته with آخر ٧ أيام on the left, then three rows each with a label, a value like ١٥٨ من ١٦٥ جم and a colored bar — the carbs row is over target so its value and bar are amber: ٣٨ من ٣٠ جم.
+A card of three navigation rows: وجباته اليوم مقابل الخطة, المراجعة الأسبوعية والصور, المحادثة — each with an icon and a chevron pointing left.
+Bottom: a lime button عدّل خطة أكله.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٣٠ · يومه: الخطة مقابل الفعلي</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam coach view of a client's day, plan versus what they actually ate. Arabic RTL, dark, lime accent.
+Header: back chevron pointing right, centered title سلطان · اليوم with a muted subtitle الخطة مقابل اللي أكله.
+Summary card: heading مطابقة الخطة اليوم with ٥٠٪ in lime on the left, an 8px bar split into a lime part and an amber part, and two muted lines: ٢ مطابقة · ١ خارج الخطة · ١ ما سُجّلت and ٢٬٤١٠ / ٢٢٠٠ سعرة.
+Then one card per meal. Each card: the meal name on the right and a status pill on the left, then two equal boxes side by side — the right box is الخطة with the planned items and calories in muted text, the left box is سجّل with what was logged. The matched meal's logged box has a lime border and lime caption; the off-plan meal's whole card has an amber border and its calories are amber.
+Meals: الفطور pill مطابق للخطة — plan ٤ بيضات · أفوكادو ٥٢٠ سعرة, logged the same; الغداء pill بديل مقبول — plan ٢٠٠ جم لحم · سلطة ٧٤٠ سعرة, logged ٢٢٠ جم سمك · سلطة ٦٩٠ سعرة; سناك pill خارج الخطة — plan لا يوجد سناك ٠ سعرة, logged ٦ تمرات · قهوة بحليب ٣٤٠ سعرة; العشاء pill لم يُسجّل بعد.
+Bottom: two buttons — bordered عدّل خطته and lime أرسل ملاحظة.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٣١ · بناء خطة أكل</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam meal plan builder for a coach. Arabic RTL, dark, lime accent.
+Header: back chevron pointing right, centered title خطة أكل لـسلطان with a muted subtitle كيتو · ٢٢٠٠ سعرة.
+Three macro cards in a row: ١٦٥ بروتين جم in lime, ٣٠ كارب جم in blue, ١٦٠ دهون جم in amber.
+Then one card per meal. Each: the meal name with its total calories on the left, then item rows separated by hairlines with the item text and a small x icon on the left, and a final lime row أضف صنف with a plus icon.
+Meals: الفطور ٥٢٠ سعرة (بيض مقلي بالزبدة · ٤ حبات, أفوكادو · نصف حبة); الغداء ٧٤٠ سعرة (لحم بقري · ٢٠٠ جم, سلطة خضراء بزيت الزيتون); العشاء ٤٤٠ سعرة (صدر دجاج · ١٥٠ جم, بروكلي · ١٥٠ جم).
+A card: heading بدائل مسموحة with a lime link إضافة, and lime-tinted chips: سمك بدل اللحم, جبن بدل البيض, مكسرات ٣٠ جم.
+Bottom: a full width lime button أرسل الخطة لـسلطان.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٣٢ · المراجعة الأسبوعية</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam weekly check-in screen for a coach. Arabic RTL, dark, lime accent.
+Header: back chevron pointing right, centered title مراجعة الأسبوع ٦ with a muted subtitle سلطان الحربي.
+Row: heading صور التقدّم with a muted أمامي · جانبي · خلفي on the left.
+Two photo cards side by side, each 158px tall with a person placeholder icon and a caption: the right one الأسبوع ١ with a dark pill ٩٦٫٠ كجم in its corner, the left one اليوم with a lime border, a lime caption and a lime-tinted pill ٩٢٫٦ كجم.
+A card of four comparison rows separated by hairlines, each: a label, the current value, and a small lime delta on the left — الوزن ٩٢٫٦ كجم ٣٫٤−, نسبة الدهون ٢٤٫١٪ ٢٫٠−, الخصر ٩٦ سم ٥−, الالتزام ٨٦٪ ٩+.
+A note card: a 30x30 avatar circle with the letter س and a muted caption ملاحظة سلطان, then his message in body text.
+Bottom: two buttons — bordered عدّل سعراته and lime اعتمد وأرسل ردّك.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٣٣ · المحادثة</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam coach and trainee chat screen. Arabic RTL, dark, lime accent.
+Header: back chevron pointing right, then a 36x36 lime-tinted avatar with the letter س, the name سلطان الحربي and a small lime line متصل الآن; a more icon on the left.
+A centered muted caption اليوم.
+Incoming messages sit on the right in dark bubbles #1A201D with a 1px border, radius 20 with the small notch corner at the bottom right. Outgoing messages sit on the left in solid lime bubbles with near-black text, radius 20 with the notch at the bottom left. Each bubble has a tiny timestamp under it.
+Show: an incoming question about evening hunger, an incoming card-style bubble holding a meal photo thumbnail with a caption line under it, an outgoing lime reply, and an outgoing attachment bubble showing a plan card with a clipboard icon, the title خطة أكل محدّثة and a muted line كيتو · ٢٢٠٠ سعرة · ١٩٥ بروتين.
+Above the input a scrolling row of bordered quick-reply chips: أحسنت، استمر, ذكّره بالتسجيل, أرسلت لك الخطة.
+Bottom: a rounded input bar with placeholder اكتب رسالة… and a 44x44 lime send button.</pre>
+    </div>
+
+    <div class="prompt">
+      <header><div class="name">٣٤ · إضافة متدرب</div><button class="copy">نسخ</button></header>
+      <pre>Qiwam add client screen for a coach. Arabic RTL, dark, lime accent, soft lime glow top-left.
+Header: back chevron pointing right, centered title إضافة متدرب with a muted subtitle كود دعوة أو إضافة يدوية.
+Invite card, centered: caption كود دعوتك, then the code SD-4821 in Space Grotesk 34px weight 600 with wide letter spacing, a muted centered line يدخل المتدرب الكود عند التسجيل، وتوصلك بياناته مباشرة, and two buttons in a row — bordered نسخ الكود and lime شارك الرابط.
+A divider line with أو أضفه يدوياً in the middle.
+A form card with rows separated by hairlines, each a label on the right and a muted value with a chevron on the left: الاسم الكامل, رقم الجوال, الهدف نزول وزن, النظام المبدئي كيتو, الاشتراك شهري · متابعة أسبوعية.
+Section heading دعوات بانتظار القبول with ٢ on the left, then a card of two rows, each with a name, a muted line أُرسلت أمس, and a bordered chip تذكير on the left.
+Bottom: a full width lime button أضف المتدرب.</pre>
+    </div>
+  </section>
+
+  <footer>
+    قِوام · دليل البناء — الشاشات والبرومتات مبنية على النموذج الشغّال، فأي رقم هنا يطابق ما يحسبه التطبيق فعلياً.
+  </footer>
+</div>
+
+<script>
+(function(){
+  document.querySelectorAll(".prompt").forEach(function(box){
+    var btn = box.querySelector(".copy"), pre = box.querySelector("pre");
+    btn.addEventListener("click", function(){
+      var text = pre.textContent;
+      function done(){
+        btn.textContent = "تم النسخ"; btn.classList.add("done");
+        setTimeout(function(){ btn.textContent = "نسخ"; btn.classList.remove("done"); }, 1600);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done, select);
+      } else select();
+      function select(){
+        var r = document.createRange(); r.selectNodeContents(pre);
+        var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        try { document.execCommand("copy"); done(); }
+        catch(e){ btn.textContent = "انسخ يدوياً"; setTimeout(function(){ btn.textContent = "نسخ"; }, 2200); }
+      }
+    });
+  });
+})();
+</script>
