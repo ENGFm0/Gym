@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="398.90000000000003 42.00000000000001 126.8 126.8" width="128" height="128" role="img" aria-label="FitCore"><title>FitCore</title>
+  <g fill="none" stroke="#101512" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="462.3" cy="105.4" r="47.4" stroke-width="9"/>
+    <path d="M 462.3 58.00000000000001 V 152.8 M 414.90000000000003 105.4 H 509.7" stroke-width="4" opacity="0.75"/>
+    <path d="M 432.3 93.4 c 0 -13 10 -21 22 -21 0 13 -9 21 -22 21 z" stroke-width="4.5"/>
+    <path d="M 478.3 83.4 v 20 M 468.3 93.4 h 20" stroke-width="4.5"/>
+    <path d="M 435.3 134.4 l 18 -18" stroke-width="4.5"/>
+    <circle cx="437.3" cy="118.4" r="3.4" stroke-width="3.4"/>
+    <circle cx="451.3" cy="132.4" r="3.4" stroke-width="3.4"/>
+    <path d="M 480.3 115.4 c 8 8 8 15 2 20 -6 5 -14 2 -14 -6 0 -6 6 -9 12 -14 z" stroke-width="4.5"/>
+  </g></svg>
