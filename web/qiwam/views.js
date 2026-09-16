@@ -460,118 +460,185 @@ function program(){
   return S.program;
 }
 function vWorkouts(){
-  var en = S.lang === "en", pr = program(), acts = myActivities();
-  var week = sessionsThisWeek();
-  var target = acts.reduce(function(a, x){ return a + (+x.perWeek || 0); }, 0);
-  var doneCount = week.length;
-  var vol = week.reduce(function(a, s){ return a + (s.volume || 0); }, 0);
-  var mins = week.reduce(function(a, s){ return a + (s.min || 0); }, 0);
-  var kcal = week.reduce(function(a, s){ return a + (s.kcal || 0); }, 0);
-  var adh = target ? Math.min(100, Math.round(doneCount / target * 100)) : 0;
-  var days = ["س","ح","ن","ث","ر","خ","ج"], dayEn = ["Sa","Su","Mo","Tu","We","Th","Fr"];
-  var perDay = [0,0,0,0,0,0,0];
-  week.forEach(function(s){ var d = new Date(s.t || Date.now()); perDay[(d.getDay()+1)%7]++; });
-
+  var en = S.lang === "en", tab = S.wkTab || "week";
   return '<div class="flex flex-col gap-4 pt-1">'+
     '<div><div class="font-headline-md text-headline-md text-on-surface">'+(en?"Training":"التمارين")+'</div>'+
-    label(en?"Your week at a glance":"أسبوعك في نظرة")+'</div>'+
+    label(en?"Your week, your program, your log":"أسبوعك، برنامجك، سجلّك")+'</div>'+
+    seg([["week", en?"My week":"أسبوعي"],["prog", en?"Program":"برنامجي"],["log", en?"History":"السجل"]],
+        tab, 'data-act="wktab" data-v="%v"')+
+    (tab === "prog" ? wkProg(en) : tab === "log" ? wkLog(en) : wkWeek(en))+
+  '</div>';
+}
 
-    /* dashboard, same shape as the coach's */
-    card('<div class="grid grid-cols-2 gap-3">'+
-      dashTile(en?"Sessions":"جلسات", ar(doneCount)+" / "+ar(target), adh >= 80 ? "text-primary-fixed" : "text-on-surface")+
-      dashTile(en?"Adherence":"الالتزام", ar(adh)+"٪", adh >= 80 ? "text-primary-fixed" : "text-tertiary-fixed-dim")+
-      dashTile(en?"Volume":"الحمل", arGroup(vol)+(en?" kg":" كجم"), "text-on-surface")+
-      dashTile(en?"Burned":"محروق", arGroup(kcal)+(en?" kcal":" سعرة"), "text-secondary-fixed-dim")+
+/* ---- tab 1: the week at a glance ---- */
+function wkWeek(en){
+  var acts = myActivities(), week = sessionsThisWeek();
+  var target = acts.reduce(function(a, x){ return a + (+x.perWeek || 0); }, 0);
+  var done = week.length;
+  var vol = week.reduce(function(a, s){ return a + (s.volume || 0); }, 0);
+  var kcal = week.reduce(function(a, s){ return a + (s.kcal || 0); }, 0);
+  var adh = target ? Math.min(100, Math.round(done / target * 100)) : 0;
+  var days = ["س","ح","ن","ث","ر","خ","ج"], dayEn = ["Sa","Su","Mo","Tu","We","Th","Fr"];
+  var perDay = [0,0,0,0,0,0,0], today = (new Date().getDay() + 1) % 7;
+  week.forEach(function(s){ var d = new Date(s.t || Date.now()); perDay[(d.getDay()+1)%7]++; });
+  var peak = Math.max.apply(null, perDay) || 1;
+
+  return card(
+    '<div class="flex items-center justify-between gap-4">'+
+      ringSvg(target ? done/target : 0, ar(done), (en?"of ":"من ")+ar(target)+(en?" sessions":" جلسات"))+
+      '<div class="flex-1 flex flex-col gap-3">'+
+        miniRow(en?"Adherence":"الالتزام", ar(adh)+"٪", adh >= 80 ? "text-primary-fixed" : "text-on-surface")+
+        '<div class="h-px bg-outline-variant/50"></div>'+
+        miniRow(en?"Volume":"الحمل", arGroup(vol)+(en?" kg":" كجم"), "text-on-surface")+
+        '<div class="h-px bg-outline-variant/50"></div>'+
+        miniRow(en?"Burned":"المحروق", arGroup(kcal)+(en?" kcal":" سعرة"), "text-primary-fixed")+
+      '</div>'+
     '</div>'+
-    '<div class="mt-4 flex items-end justify-between gap-1.5" style="height:64px">'+
+    '<div class="mt-4 pt-3 border-t border-outline-variant/40 flex items-end justify-between gap-1.5" style="height:56px">'+
       perDay.map(function(n, i){
-        var hgt = Math.max(6, n * 18);
-        return '<div class="flex-1 flex flex-col items-center gap-1">'+
-          '<div class="w-full rounded-md '+(n?"bg-primary-fixed":"bg-surface-container-highest")+'" style="height:'+hgt+'px"></div>'+
-          '<span class="font-label-sm text-label-sm text-on-surface-variant">'+(en?dayEn[i]:days[i])+'</span></div>';
+        var hgt = n ? Math.max(12, Math.round(n / peak * 32)) : 5;
+        return '<div class="flex-1 flex flex-col items-center gap-1.5">'+
+          '<div class="w-2.5 rounded-full '+(n ? "bg-primary-fixed" : "bg-surface-container-highest")+'" style="height:'+hgt+'px"></div>'+
+          '<span class="font-label-sm text-label-sm '+(i === today ? "text-on-surface" : "text-on-surface-variant")+'">'+(en?dayEn[i]:days[i])+'</span></div>';
       }).join("")+
     '</div>')+
 
-    /* my activities, with a weekly target each */
-    '<div class="flex items-center justify-between"><span class="font-title-md text-title-md text-on-surface">'+(en?"My activities":"أنشطتي")+'</span>'+
-      '<button data-act="pickact" class="tap font-label-lg text-label-lg text-primary-fixed">'+(en?"Add":"أضف")+'</button></div>'+
-    '<div class="rounded-2xl bg-surface-container divide-y divide-outline-variant/40">'+
+    '<div class="flex items-center justify-between">'+
+      '<span class="font-title-md text-title-md text-on-surface">'+(en?"My activities":"أنشطتي")+'</span>'+
+      '<button data-act="pickact" class="tap flex items-center gap-1 font-label-lg text-label-lg text-primary-fixed">'+
+        '<span class="material-symbols-outlined text-[18px]">add</span>'+(en?"Add":"أضف")+'</button></div>'+
+
+    (acts.length ? '<div class="rounded-2xl bg-surface-container divide-y divide-outline-variant/40">'+
       acts.map(function(a, i){
         var info = actInfo(a.id);
         var doneA = week.filter(function(s){ return s.act === a.id; }).length;
-        var pcA = a.perWeek ? Math.min(100, doneA / a.perWeek * 100) : 0;
-        return '<div class="px-4 py-3">'+
-          '<div class="flex items-center gap-3">'+
-            '<div class="w-10 h-10 rounded-xl bg-primary-fixed/15 text-primary-fixed flex items-center justify-center shrink-0">'+
-              '<span class="material-symbols-outlined text-[18px]">'+info.icon+'</span></div>'+
-            '<div class="flex-1 min-w-0"><div class="font-label-lg text-label-lg text-on-surface">'+(en?info.en:info.ar)+'</div>'+
-            '<div class="font-label-sm text-label-sm text-on-surface-variant">'+ar(doneA)+' / '+ar(a.perWeek)+(en?" this week":" هذا الأسبوع")+'</div></div>'+
-            '<div class="flex items-center gap-1 shrink-0">'+
-              '<button data-act="actminus" data-i="'+i+'" class="tap w-8 h-8 rounded-lg bg-surface-container-high text-on-surface">−</button>'+
-              '<button data-act="actplus" data-i="'+i+'" class="tap w-8 h-8 rounded-lg bg-surface-container-high text-on-surface">+</button>'+
-              '<button data-act="delact" data-i="'+i+'" class="tap w-8 h-8 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center">'+
-                '<span class="material-symbols-outlined text-[15px]">close</span></button>'+
-            '</div></div>'+
-          '<div class="mt-2">'+bar(doneA, Math.max(1, a.perWeek), "primary-fixed")+'</div>'+
-          '<button data-act="logact" data-id="'+a.id+'" class="tap mt-2 w-full h-10 rounded-xl bg-primary-fixed/15 text-primary-fixed font-label-lg text-label-lg">'+
-            (a.id === "gym" ? (en?"Open program":"افتح البرنامج") : (en?"Log a session":"سجّل جلسة"))+'</button>'+
-        '</div>';
-      }).join("")+
-    '</div>'+
+        var hit = a.perWeek && doneA >= a.perWeek;
+        return '<button data-act="actsheet" data-i="'+i+'" class="tap w-full text-start px-4 py-3 flex items-center gap-3">'+
+          '<span class="w-10 h-10 rounded-xl '+(hit?"bg-primary-fixed text-on-primary-fixed":"bg-primary-fixed/15 text-primary-fixed")+' flex items-center justify-center shrink-0">'+
+            '<span class="material-symbols-outlined text-[18px]">'+info.icon+'</span></span>'+
+          '<span class="flex-1 min-w-0">'+
+            '<span class="flex items-baseline justify-between gap-2">'+
+              '<span class="font-label-lg text-label-lg text-on-surface truncate">'+(en?info.en:info.ar)+'</span>'+
+              '<span class="font-label-sm text-label-sm tabular-nums shrink-0 '+(hit?"text-primary-fixed":"text-on-surface-variant")+'">'+ar(doneA)+(en?" of ":" من ")+ar(a.perWeek)+'</span></span>'+
+            '<span class="block mt-1.5">'+bar(doneA, Math.max(1, a.perWeek), "primary-fixed")+'</span>'+
+          '</span>'+
+          '<span class="material-symbols-outlined text-[18px] text-on-surface-variant rtl:rotate-180 shrink-0">chevron_right</span>'+
+        '</button>';
+      }).join("")+'</div>'
+      : card('<div class="text-center py-2">'+
+          '<div class="font-label-lg text-label-lg text-on-surface">'+(en?"Nothing tracked yet":"ما عندك أنشطة")+'</div>'+
+          '<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">'+(en?"Iron, swimming, running — add what you actually do.":"حديد، سباحة، ركض — أضف اللي تسويه فعلاً.")+'</div></div>'))+
 
-    /* the iron program */
-    '<div class="flex items-center justify-between"><span class="font-title-md text-title-md text-on-surface">'+(en?"Weights program":"برنامج الحديد")+'</span>'+
-      '<span class="font-label-sm text-label-sm text-on-surface-variant">'+ar(pr.perWeek)+(en?" days/week":" أيام/أسبوع")+'</span></div>'+
-    '<div>'+seg([[3,"٣"],[4,"٤"],[5,"٥"],[6,"٦"]].map(function(xx){ return [String(xx[0]), en?String(xx[0]):xx[1]]; }),
-        String(pr.perWeek), 'data-act="perweek" data-v="%v"')+'</div>'+
-    pr.days.map(function(d, i){
-      return '<div class="rounded-2xl bg-surface-container overflow-hidden">'+
-        '<div class="flex items-center justify-between px-4 py-3">'+
-          '<div class="flex items-center gap-2"><span class="w-7 h-7 rounded-lg bg-primary-fixed/15 text-primary-fixed flex items-center justify-center font-label-sm text-label-sm">'+ar(i+1)+'</span>'+
-          '<span class="font-title-md text-title-md text-on-surface">'+(en?d.en:d.ar)+'</span></div>'+
-          '<span class="font-label-sm text-label-sm text-on-surface-variant">'+ar(d.ex.length)+(en?" exercises":" تمارين")+'</span></div>'+
-        (d.ex.length ? d.ex.map(function(e, j){
-          return '<div class="flex items-center justify-between px-4 py-3 border-t border-outline-variant/40">'+
-            '<div><div class="font-label-lg text-label-lg text-on-surface">'+(en?e.en:e.ar)+'</div>'+
-            '<div class="font-label-sm text-label-sm text-on-surface-variant">'+ar(e.sets)+(en?" sets × ":" جولات × ")+ar(e.reps)+(en?" reps":" تكرار")+'</div></div>'+
-            '<button data-act="delex" data-d="'+i+'" data-j="'+j+'" class="tap w-9 h-9 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center">'+
-            '<span class="material-symbols-outlined text-[16px]">close</span></button></div>';
-        }).join("") : '<div class="px-4 py-3 border-t border-outline-variant/40 font-label-sm text-label-sm text-on-surface-variant">'+(en?"no exercises yet":"ما أضفت تمارين")+'</div>')+
-        '<div class="flex border-t border-outline-variant/40">'+
-          '<button data-act="addex" data-d="'+i+'" class="tap flex-1 flex items-center justify-center gap-2 py-3.5 text-primary-fixed">'+
-            '<span class="material-symbols-outlined text-[18px]">add</span><span class="font-label-lg text-label-lg">'+(en?"Add exercise":"أضف تمرين")+'</span></button>'+
-          (d.ex.length ? '<button data-act="startday" data-d="'+i+'" class="tap flex-1 flex items-center justify-center gap-2 py-3.5 bg-primary-fixed text-on-primary-fixed">'+
-            '<span class="material-symbols-outlined text-[18px]">play_arrow</span><span class="font-label-lg text-label-lg">'+(en?"Start":"ابدأ")+'</span></button>' : "")+
-        '</div></div>';
-    }).join("")+
+    (acts.length ? btn((en?"Log a session":"سجّل جلسة"), 'data-act="quicklog"', "bg-primary-fixed text-on-primary-fixed w-full") : "")+
 
-    /* history */
-    ((S.sessions && S.sessions.length) ? '<div>'+label(en?"Recent sessions":"آخر الجلسات")+
-      '<div class="rounded-2xl bg-surface-container divide-y divide-outline-variant/40 mt-2">'+
-      S.sessions.slice(-8).reverse().map(function(s, i){
-        var info = actInfo(s.act || "gym");
-        return '<div class="flex items-center gap-3 px-4 py-3">'+
-          '<span class="material-symbols-outlined text-[18px] text-on-surface-variant">'+info.icon+'</span>'+
-          '<div class="flex-1 min-w-0"><div class="font-label-lg text-label-lg text-on-surface truncate">'+(en?(s.en||info.en):(s.ar||info.ar))+'</div>'+
-          '<div class="font-label-sm text-label-sm text-on-surface-variant">'+s.d+
-            (s.volume ? ' · '+arGroup(s.volume)+(en?" kg":" كجم") : "")+
-            (s.min ? ' · '+ar(s.min)+(en?" min":" دقيقة") : "")+'</div></div>'+
-          '<span class="font-label-lg text-label-lg text-secondary-fixed-dim tabular-nums shrink-0">'+(s.kcal?arGroup(s.kcal):"—")+'</span>'+
-          '<button data-act="delsession" data-i="'+(S.sessions.length-1-i)+'" class="tap w-8 h-8 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center shrink-0">'+
-            '<span class="material-symbols-outlined text-[15px]">close</span></button></div>';
-      }).join("")+'</div></div>' : "")+
-
-    card('<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center">'+
-      '<span class="material-symbols-outlined text-[18px]">sports</span></div>'+
-      '<div class="flex-1"><div class="font-label-lg text-label-lg text-on-surface">'+(en?"Have a coach?":"عندك مدرّب؟")+'</div>'+
+    card('<div class="flex items-center gap-3">'+
+      '<span class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">'+
+        '<span class="material-symbols-outlined text-[18px]">sports</span></span>'+
+      '<div class="flex-1 min-w-0"><div class="font-label-lg text-label-lg text-on-surface">'+(en?"Have a coach?":"عندك مدرّب؟")+'</div>'+
       '<div class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Their plan shows up here too":"خطته تظهر هنا كمان")+'</div></div>'+
-      '<button data-go="workouts_stitch" class="tap px-3 h-10 rounded-xl bg-surface-container-high text-on-surface font-label-lg text-label-lg">'+(en?"View":"اعرض")+'</button></div>')+
-  '</div>';
+      '<button data-go="workouts_stitch" class="tap px-3 h-10 rounded-xl bg-surface-container-high text-on-surface font-label-lg text-label-lg shrink-0">'+(en?"View":"اعرض")+'</button></div>');
 }
-function dashTile(l, v, tone){
-  return '<div class="rounded-xl bg-surface-container-high p-3">'+
-    '<div class="font-label-sm text-label-sm text-on-surface-variant">'+l+'</div>'+
-    '<div class="font-title-md text-title-md tabular-nums '+(tone||"text-on-surface")+'">'+v+'</div></div>';
+function miniRow(l, v, tone){
+  return '<div class="flex items-center justify-between">'+
+    '<span class="font-label-sm text-label-sm text-on-surface-variant">'+l+'</span>'+
+    '<span class="font-title-md text-title-md tabular-nums '+(tone||"text-on-surface")+'">'+v+'</span></div>';
+}
+
+/* ---- tab 2: the weights program, one day open at a time ---- */
+function wkProg(en){
+  var pr = program(), open = (S.openDay == null) ? 0 : S.openDay;
+  return '<div class="flex items-center justify-between">'+
+      '<span class="font-title-md text-title-md text-on-surface">'+(en?"Days per week":"أيام الأسبوع")+'</span>'+
+      '<span class="font-label-sm text-label-sm text-on-surface-variant tabular-nums">'+ar(pr.perWeek)+(en?" days":" أيام")+'</span></div>'+
+    seg([[3,"٣"],[4,"٤"],[5,"٥"],[6,"٦"]].map(function(x){ return [String(x[0]), en?String(x[0]):x[1]]; }),
+        String(pr.perWeek), 'data-act="perweek" data-v="%v"')+
+    '<div class="rounded-2xl bg-surface-container divide-y divide-outline-variant/40 overflow-hidden">'+
+    pr.days.map(function(d, i){
+      var isOpen = i === open;
+      var summary = d.ex.length
+        ? ar(d.ex.length)+(en?" exercises · ":" تمارين · ")+d.ex.slice(0,2).map(function(e){ return en?e.en:e.ar; }).join(" · ")
+        : (en?"nothing planned yet":"ما أضفت تمارين");
+      return '<div>'+
+        '<button data-act="expday" data-d="'+i+'" class="tap w-full px-4 py-3.5 flex items-center gap-3 text-start">'+
+          '<span class="w-8 h-8 rounded-lg '+(d.ex.length?"bg-primary-fixed/15 text-primary-fixed":"bg-surface-container-high text-on-surface-variant")+' flex items-center justify-center font-label-sm text-label-sm shrink-0">'+ar(i+1)+'</span>'+
+          '<span class="flex-1 min-w-0"><span class="block font-label-lg text-label-lg text-on-surface truncate">'+(en?d.en:d.ar)+'</span>'+
+          '<span class="block font-label-sm text-label-sm text-on-surface-variant truncate">'+summary+'</span></span>'+
+          '<span class="material-symbols-outlined text-[18px] text-on-surface-variant shrink-0 '+(isOpen?"rotate-180":"")+'">expand_more</span>'+
+        '</button>'+
+        (isOpen ?
+          (d.ex.length ? d.ex.map(function(e, j){
+            return '<div class="flex items-center justify-between ps-4 pe-3 py-2.5 border-t border-outline-variant/40 bg-surface-container-low">'+
+              '<div class="min-w-0"><div class="font-label-lg text-label-lg text-on-surface truncate">'+(en?e.en:e.ar)+'</div>'+
+              '<div class="font-label-sm text-label-sm text-on-surface-variant tabular-nums">'+ar(e.sets)+' × '+ar(e.reps)+'</div></div>'+
+              '<button data-act="delex" data-d="'+i+'" data-j="'+j+'" class="tap w-9 h-9 rounded-lg text-on-surface-variant flex items-center justify-center shrink-0">'+
+              '<span class="material-symbols-outlined text-[16px]">close</span></button></div>';
+          }).join("") : "")+
+          '<div class="flex gap-2 p-3 border-t border-outline-variant/40 bg-surface-container-low">'+
+            '<button data-act="addex" data-d="'+i+'" class="tap flex-1 h-11 rounded-xl bg-surface-container-high text-on-surface flex items-center justify-center gap-1.5 font-label-lg text-label-lg">'+
+              '<span class="material-symbols-outlined text-[18px]">add</span>'+(en?"Add exercise":"أضف تمرين")+'</button>'+
+            (d.ex.length ? '<button data-act="startday" data-d="'+i+'" class="tap flex-1 h-11 rounded-xl bg-primary-fixed text-on-primary-fixed flex items-center justify-center gap-1.5 font-label-lg text-label-lg">'+
+              '<span class="material-symbols-outlined text-[18px]">play_arrow</span>'+(en?"Start":"ابدأ")+'</button>' : "")+
+          '</div>' : "")+
+      '</div>';
+    }).join("")+'</div>';
+}
+
+/* ---- tab 3: everything you have logged ---- */
+function wkLog(en){
+  var all = (S.sessions || []).slice().reverse();
+  if (!all.length) return card('<div class="text-center py-4">'+
+    '<div class="font-label-lg text-label-lg text-on-surface">'+(en?"No sessions yet":"ما فيه جلسات")+'</div>'+
+    '<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">'+(en?"Your first logged session lands here.":"أول جلسة تسجّلها تظهر هنا.")+'</div></div>');
+  var kcal = all.reduce(function(a, s){ return a + (s.kcal||0); }, 0);
+  var mins = all.reduce(function(a, s){ return a + (s.min||0); }, 0);
+  return card('<div class="flex items-center justify-between gap-2">'+
+      stat(en?"Sessions":"جلسات", ar(all.length))+
+      stat(en?"Minutes":"دقائق", arGroup(mins))+
+      stat(en?"Burned":"المحروق", arGroup(kcal), "text-primary-fixed")+'</div>')+
+    '<div class="rounded-2xl bg-surface-container divide-y divide-outline-variant/40">'+
+    all.slice(0, 30).map(function(s, i){
+      var info = actInfo(s.act || "gym");
+      var meta = [s.d];
+      if (s.min) meta.push(ar(s.min)+(en?" min":" دقيقة"));
+      if (s.volume) meta.push(arGroup(s.volume)+(en?" kg":" كجم"));
+      if (s.km) meta.push(arDec(s.km,1)+(en?" km":" كم"));
+      return '<div class="flex items-center gap-3 px-4 py-3">'+
+        '<span class="w-9 h-9 rounded-xl bg-surface-container-high text-on-surface-variant flex items-center justify-center shrink-0">'+
+          '<span class="material-symbols-outlined text-[17px]">'+info.icon+'</span></span>'+
+        '<div class="flex-1 min-w-0"><div class="font-label-lg text-label-lg text-on-surface truncate">'+(en?(s.en||info.en):(s.ar||info.ar))+'</div>'+
+        '<div class="font-label-sm text-label-sm text-on-surface-variant truncate">'+meta.join(" · ")+'</div></div>'+
+        '<span class="font-label-lg text-label-lg text-primary-fixed tabular-nums shrink-0">'+(s.kcal?arGroup(s.kcal):"—")+'</span>'+
+        '<button data-act="delsession" data-i="'+(S.sessions.length-1-i)+'" class="tap w-8 h-8 rounded-lg text-on-surface-variant flex items-center justify-center shrink-0">'+
+          '<span class="material-symbols-outlined text-[15px]">close</span></button></div>';
+    }).join("")+'</div>';
+}
+
+/* ---- one sheet per activity: target, log, remove ---- */
+function actSheet(i){
+  var en = S.lang === "en", a = myActivities()[i];
+  if (!a) return;
+  var info = actInfo(a.id);
+  var doneA = sessionsThisWeek().filter(function(s){ return s.act === a.id; }).length;
+  openPanel(
+    '<div class="flex items-center gap-3 mb-4">'+
+      '<span class="w-11 h-11 rounded-xl bg-primary-fixed/15 text-primary-fixed flex items-center justify-center shrink-0">'+
+        '<span class="material-symbols-outlined text-[20px]">'+info.icon+'</span></span>'+
+      '<div class="flex-1 min-w-0"><div class="font-title-md text-title-md text-on-surface truncate">'+(en?info.en:info.ar)+'</div>'+
+      '<div class="font-label-sm text-label-sm text-on-surface-variant">'+(en?("done "+ar(doneA)+" of "+ar(a.perWeek)+" this week"):("سويت "+ar(doneA)+" من "+ar(a.perWeek)+" هذا الأسبوع"))+'</div></div></div>'+
+    '<div class="rounded-2xl bg-surface-container-high p-4">'+
+      '<div class="font-label-sm text-label-sm text-on-surface-variant text-center">'+(en?"Times per week":"كم مرة بالأسبوع")+'</div>'+
+      '<div class="flex items-center justify-center gap-6 mt-1">'+
+        '<button data-act="actminus" data-i="'+i+'" class="tap w-11 h-11 rounded-xl bg-surface-container text-on-surface font-title-md text-title-md">−</button>'+
+        '<span class="font-metric-display-mobile text-metric-display-mobile font-bold text-on-surface tabular-nums w-12 text-center">'+ar(a.perWeek)+'</span>'+
+        '<button data-act="actplus" data-i="'+i+'" class="tap w-11 h-11 rounded-xl bg-primary-fixed text-on-primary-fixed font-title-md text-title-md">+</button>'+
+      '</div>'+
+      '<div class="mt-3">'+bar(doneA, Math.max(1, a.perWeek), "primary-fixed")+'</div>'+
+    '</div>'+
+    '<div class="mt-3">'+btn(a.id === "gym" ? (en?"Open the program":"افتح البرنامج") : (en?"Log a session":"سجّل جلسة"),
+      a.id === "gym" ? 'data-act="openprog"' : 'data-act="logact" data-id="'+a.id+'"',
+      "bg-primary-fixed text-on-primary-fixed w-full")+'</div>'+
+    '<div class="mt-2">'+btn(en?"Remove activity":"احذف النشاط", 'data-act="delact" data-i="'+i+'"',
+      "bg-surface-container-high text-on-surface-variant w-full")+'</div>');
 }
 function vSession(){
   var en = S.lang === "en", pr = program(), i = S.sessionDay || 0, d = pr.days[i] || pr.days[0];
@@ -893,7 +960,7 @@ function dynamicAct(name, ds){
     case "addact": {
       var acts0 = myActivities();
       if (!acts0.filter(function(x){ return x.id === ds.id; }).length) acts0.push({ id: ds.id, perWeek: 3 });
-      save(); closePanel(); go("workouts"); toast(en?"Activity added":"أُضيف النشاط"); return true;
+      S.wkTab = "week"; save(); closePanel(); go("workouts"); toast(en?"Activity added":"أُضيف النشاط"); return true;
     }
     case "customact": {
       openPanel('<div class="font-title-md text-title-md text-on-surface mb-3">'+(en?"Your own activity":"نشاطك أنت")+'</div>'+
@@ -919,21 +986,36 @@ function dynamicAct(name, ds){
       S.customActs[cid] = { id:cid, ar:caN, en:caN, met: mEl ? +mEl.value : 6, unit:"min", icon:"exercise" };
       var pw = num("ca-w");
       myActivities().push({ id: cid, perWeek: Math.max(1, Math.round(isNaN(pw) ? 3 : pw)) });
-      save(); closePanel(); go("workouts"); toast(en?"Activity added":"أُضيف النشاط"); return true;
+      S.wkTab = "week"; save(); closePanel(); go("workouts"); toast(en?"Activity added":"أُضيف النشاط"); return true;
     }
-    case "actplus": { var ap = myActivities()[+ds.i]; if (ap) ap.perWeek = Math.min(14, (+ap.perWeek||0)+1); save(); render(current, true); return true; }
-    case "actminus": { var am = myActivities()[+ds.i]; if (am) am.perWeek = Math.max(0, (+am.perWeek||0)-1); save(); render(current, true); return true; }
+    case "wktab": S.wkTab = ds.v; save(); render(current, true); return true;
+    case "expday": S.openDay = (S.openDay === +ds.d) ? -1 : +ds.d; save(); render(current, true); return true;
+    case "actsheet": actSheet(+ds.i); return true;
+    case "openprog": S.wkTab = "prog"; save(); closePanel(); go("workouts"); return true;
+    case "quicklog": {
+      var mine2 = myActivities();
+      openPanel('<div class="font-title-md text-title-md text-on-surface mb-1">'+(en?"Log a session":"سجّل جلسة")+'</div>'+
+        '<div class="font-label-sm text-label-sm text-on-surface-variant mb-3">'+(en?"Which one did you do?":"وش سويت؟")+'</div>'+
+        '<div class="rounded-2xl bg-surface-container-high divide-y divide-outline-variant/40 overflow-hidden">'+
+        mine2.map(function(a, i){
+          var nf = actInfo(a.id);
+          return '<button data-act="'+(a.id === "gym" ? "openprog" : "logact")+'" data-id="'+a.id+'" class="tap w-full flex items-center gap-3 px-4 py-3 text-start">'+
+            '<span class="material-symbols-outlined text-[18px] text-primary-fixed shrink-0">'+nf.icon+'</span>'+
+            '<span class="flex-1 font-label-lg text-label-lg text-on-surface truncate">'+(en?nf.en:nf.ar)+'</span>'+
+            '<span class="material-symbols-outlined text-[18px] text-on-surface-variant rtl:rotate-180 shrink-0">chevron_right</span></button>';
+        }).join("")+'</div>');
+      return true;
+    }
+    case "actplus": { var ap = myActivities()[+ds.i]; if (ap) ap.perWeek = Math.min(14, (+ap.perWeek||0)+1); save(); render(current, true); actSheet(+ds.i); return true; }
+    case "actminus": { var am = myActivities()[+ds.i]; if (am) am.perWeek = Math.max(1, (+am.perWeek||0)-1); save(); render(current, true); actSheet(+ds.i); return true; }
     case "delact": {
       var gone = myActivities().splice(+ds.i, 1)[0];
       if (gone && S.customActs) delete S.customActs[gone.id];
-      save(); render(current, true); toast(en?"Removed":"انحذف"); return true;
+      save(); closePanel(); render(current, true); toast(en?"Removed":"انحذف"); return true;
     }
     case "logact": {
-      if (ds.id === "gym"){
-        var seg0 = document.querySelector('[data-act="perweek"]');
-        if (seg0 && seg0.scrollIntoView) seg0.scrollIntoView({ behavior:"smooth", block:"center" });
-        toast(en?"Pick a day and start":"اختر يوم وابدأ"); return true;
-      }
+      if (ds.id === "gym"){ S.wkTab = "prog"; save(); closePanel(); go("workouts");
+        toast(en?"Pick a day and start":"اختر يوم وابدأ"); return true; }
       var inf = actInfo(ds.id);
       openPanel('<div class="flex items-center gap-2 mb-1">'+
           '<span class="material-symbols-outlined text-[20px] text-primary-fixed">'+inf.icon+'</span>'+
@@ -955,7 +1037,7 @@ function dynamicAct(name, ds){
       S.sessions.push({ d: stamp(), t: Date.now(), act: inf2.id, ar: inf2.ar, en: inf2.en,
         min: Math.round(mn), km: isNaN(km) ? 0 : km, kcal: kc2 });
       if (S.sessions.length > 200) S.sessions.shift();
-      save(); closePanel(); render(current, true);
+      S.wkTab = "week"; save(); closePanel(); render(current, true);
       toast((en?"Logged · ":"انسجلت · ")+arGroup(kc2)+(en?" kcal":" سعرة")); return true;
     }
     case "delsession": { (S.sessions||[]).splice(+ds.i, 1); save(); render(current, true); return true; }
@@ -1011,7 +1093,7 @@ function dynamicAct(name, ds){
       S.sessions.push({ d: stamp(), t: Date.now(), act: "gym", ar: d3.ar, en: d3.en,
         volume: Math.round(vol), sets: done, min: mins3, kcal: metKcal(5.0, mins3) });
       if (S.sessions.length > 200) S.sessions.shift();
-      S.sessionLog = {}; S.sessionStart = 0; save(); go("workouts");
+      S.sessionLog = {}; S.sessionStart = 0; S.wkTab = "log"; save(); go("workouts");
       toast((en?"Session saved · ":"انحفظت الجلسة · ")+arGroup(vol)+(en?" kg":" كجم")); return true;
     }
   }
