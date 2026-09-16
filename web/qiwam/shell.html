@@ -101,8 +101,14 @@ function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){
 
 /* ---------------- numbers ---------------- */
 var AR = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
-function ar(n){ return String(Math.round(n)).replace(/[0-9]/g, function(d){ return AR[+d]; }); }
-function arGroup(n){ return Math.round(n).toLocaleString("en-US").replace(/,/g,"٬").replace(/[0-9]/g,function(d){ return AR[+d]; }); }
+function ar(n){
+  var s = String(Math.round(n));
+  return (S && S.lang === "en") ? s : s.replace(/[0-9]/g, function(d){ return AR[+d]; });
+}
+function arGroup(n){
+  var s = Math.round(n).toLocaleString("en-US");
+  return (S && S.lang === "en") ? s : s.replace(/,/g,"٬").replace(/[0-9]/g,function(d){ return AR[+d]; });
+}
 
 /* ---------------- plan maths (same as the prototype) ---------------- */
 var ACT = { light:1.375, moderate:1.55, high:1.725 };
@@ -178,6 +184,10 @@ function setTheme(t){
 /* ---------------- toast ---------------- */
 var toastEl = document.getElementById("toast"), toastT;
 function toast(msg){
+  var dr = document.getElementById("drawer");
+  var panelOpen = dr && !dr.classList.contains("hidden");
+  if (panelOpen){ toastEl.style.top = "88px"; toastEl.style.bottom = "auto"; }   /* clear of an open sheet */
+  else { toastEl.style.top = "auto"; toastEl.style.bottom = ""; }
   toastEl.textContent = msg; toastEl.hidden = false; toastEl.classList.remove("hidden");
   clearTimeout(toastT);
   toastT = setTimeout(function(){ toastEl.classList.add("hidden"); }, 1800);
