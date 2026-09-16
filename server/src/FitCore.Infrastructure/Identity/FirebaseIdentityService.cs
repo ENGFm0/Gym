@@ -33,9 +33,7 @@ public sealed class FirebaseIdentityService : IIdentityService
             FirebaseApp.Create(new AppOptions
             {
                 ProjectId = _options.ProjectId,
-                Credential = string.IsNullOrWhiteSpace(_options.CredentialsJson)
-                    ? GoogleCredential.GetApplicationDefault()
-                    : GoogleCredential.FromJson(_options.CredentialsJson)
+                Credential = FirebaseCredentials.Resolve(_options.CredentialsJson)
             });
         }
     }

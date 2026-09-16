@@ -20,9 +20,7 @@ public sealed class FirebasePhotoStorage : IPhotoStorage
     {
         _options = options.Value;
 
-        var credential = string.IsNullOrWhiteSpace(_options.CredentialsJson)
-            ? GoogleCredential.GetApplicationDefault()
-            : GoogleCredential.FromJson(_options.CredentialsJson);
+        var credential = FirebaseCredentials.Resolve(_options.CredentialsJson);
 
         _signer = UrlSigner.FromCredential(credential);
         _storage = StorageClient.Create(credential);

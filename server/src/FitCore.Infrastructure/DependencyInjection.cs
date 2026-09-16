@@ -29,8 +29,10 @@ public static class DependencyInjection
                 throw new InvalidOperationException("Firebase:ProjectId is not configured.");
 
             var builder = new FirestoreDbBuilder { ProjectId = options.ProjectId };
+            // Left unset without a key so the builder finds the ambient credentials itself,
+            // which is how it runs on Cloud Run.
             if (!string.IsNullOrWhiteSpace(options.CredentialsJson))
-                builder.JsonCredentials = options.CredentialsJson;
+                builder.GoogleCredential = FirebaseCredentials.FromJson(options.CredentialsJson);
 
             return builder.Build();
         });

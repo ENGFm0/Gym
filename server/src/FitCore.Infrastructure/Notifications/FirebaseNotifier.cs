@@ -25,12 +25,17 @@ public sealed class FirebaseNotifier(
         {
             try
             {
+                // Token is marked obsolete in favour of Fid, but they are different fields on the
+                // wire and what the browser hands us is an FCM registration token, not an
+                // installation id. Moving to Fid would send the wrong thing.
+#pragma warning disable CS0618
                 await FirebaseMessaging.DefaultInstance.SendAsync(new Message
                 {
                     Token = token,
                     Notification = new Notification { Title = title, Body = body },
                     Data = message.Route is null ? null : new Dictionary<string, string> { ["route"] = message.Route }
                 }, ct);
+#pragma warning restore CS0618
             }
             catch (FirebaseMessagingException e) when (
                 e.MessagingErrorCode is MessagingErrorCode.Unregistered or MessagingErrorCode.InvalidArgument)
