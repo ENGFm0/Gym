@@ -43,7 +43,7 @@
       <span class="material-symbols-outlined text-[20px] rtl:rotate-180">arrow_back</span>
     </button>
     <a href="#home" class="tap flex items-center shrink-0" aria-label="FitCore">
-      <svg class="w-auto" style="height:26px" viewBox="0 0 780 215" role="img" aria-label="FitCore"><use href="#brand-logo"></use></svg>
+      <svg id="topbar-logo" class="w-auto" style="height:26px" viewBox="0 0 780 215" role="img" aria-label="FitCore"><use href="#brand-logo"></use></svg>
     </a>
     <div class="flex-1 min-w-0 text-center">
       <h1 id="screen-title" class="font-title-md text-title-md text-on-surface truncate hidden sm:block"></h1>
@@ -164,6 +164,8 @@ function setLang(l){
 /* ---------------- theme ---------------- */
 function setTheme(t){
   S.theme = t; save();
+  var use = document.querySelector("#topbar-logo use") || document.querySelector("header use");
+  if (use) use.setAttribute("href", t === "light" ? "#brand-logo-ink" : "#brand-logo");
   document.documentElement.classList.toggle("light", t === "light");
   document.documentElement.classList.toggle("dark", t !== "light");
   document.getElementById("theme-icon").textContent = t === "light" ? "dark_mode" : "light_mode";
@@ -529,7 +531,7 @@ document.documentElement.dir  = S.lang === "en" ? "ltr" : "rtl";
 document.getElementById("lang-label").textContent = S.lang === "en" ? "AR" : "EN";
 var start = location.hash.slice(1);
 render(byId[start] ? start : (S.profile.weight ? "home" : "signup"), true);
-window.__app = { go:go, state:S, plan:plan };
+window.__app = { go:go, state:S, plan:plan, day:day, setTheme:setTheme, setLang:setLang, burnToday:burnToday, render:function(){ render(current, true); } };
 })();
 </script>
 </body>

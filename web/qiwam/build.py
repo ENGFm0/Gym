@@ -141,10 +141,14 @@ def palette_css():
     return f":root{{\n{dark}\n  }}\n  html.light{{\n{light}\n  }}"
 
 def logo_symbol():
-    svg = LOGO.read_text()
-    inner = svg.split(">", 1)[1].rsplit("</svg>", 1)[0].replace("<title>FitCore</title>", "").strip()
+    def inner_of(p):
+        svg = p.read_text()
+        return svg.split(">", 1)[1].rsplit("</svg>", 1)[0].replace("<title>FitCore</title>", "").strip()
+    dark_bg = inner_of(LOGO)                                   # white letters — for dark surfaces
+    light_bg = inner_of(LOGO.with_name("fitcore-logo-dark.svg"))  # ink letters — for light surfaces
     return ('<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">'
-            f'<symbol id="brand-logo" viewBox="0 0 780 215">{inner}</symbol></svg>')
+            f'<symbol id="brand-logo" viewBox="0 0 780 215">{dark_bg}</symbol>'
+            f'<symbol id="brand-logo-ink" viewBox="0 0 780 215">{light_bg}</symbol></svg>')
 
 def build():
     screens = []

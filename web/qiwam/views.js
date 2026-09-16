@@ -129,14 +129,15 @@ function bar(val, max, colorVar){
 /* ===================== HOME ===================== */
 function vHome(){
   var en = S.lang === "en", t = plan(), d = dayTotals(), dd = day();
-  var burn = Math.round((dd.steps || 0) * 0.04);
+  pedoResume();
+  var burn = burnToday();
   var left = Math.round(t.kcal - d.kcal + burn);
   var name = S.profile.name || (en ? "there" : "بك");
   return '<div class="flex flex-col gap-4 pt-1">'+
     '<div class="flex items-start justify-between gap-3">'+
       '<div><div class="font-headline-md text-headline-md text-on-surface">'+(en?"Hey ":"أهلاً ")+name+'</div>'+
       '<button data-go="dietinfo" class="tap font-label-lg text-label-lg text-on-surface-variant">'+
-        (S.profile.diet || (en?"Balanced":"متوازن"))+' · '+(en?"target ":"هدفك ")+arGroup(t.kcal)+(en?" kcal":" سعرة")+'</button></div>'+
+        dietName()+' · '+(en?"target ":"هدفك ")+arGroup(t.kcal)+(en?" kcal":" سعرة")+'</button></div>'+
       '<button data-go="profile" class="tap w-11 h-11 rounded-xl bg-surface-container flex items-center justify-center text-on-surface">'+
         '<span class="material-symbols-outlined text-[20px]">person</span></button>'+
     '</div>'+
@@ -149,7 +150,7 @@ function vHome(){
         '<div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Eaten":"تناولت")+'</span>'+
           '<span class="font-title-md text-title-md text-on-surface tabular-nums">'+arGroup(d.kcal)+'</span></div>'+
         '<div class="h-px bg-outline-variant/50"></div>'+
-        '<div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Steps burn":"حرق المشي")+'</span>'+
+        '<div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Burned":"المحروق")+'</span>'+
           '<span class="font-title-md text-title-md text-primary-fixed tabular-nums">'+arGroup(burn)+'</span></div>'+
       '</div></div>'+
       '<div class="grid grid-cols-3 gap-3 mt-4">'+
@@ -159,10 +160,15 @@ function vHome(){
       '</div>')+
     '<div class="grid grid-cols-2 gap-3">'+
       card('<div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Steps":"الخطوات")+'</span>'+
-        '<div class="flex gap-1"><button data-act="steps" data-v="-500" class="tap w-8 h-8 rounded-lg bg-surface-container-high text-on-surface">−</button>'+
-        '<button data-act="steps" data-v="500" class="tap w-8 h-8 rounded-lg bg-primary-fixed text-on-primary-fixed">+</button></div></div>'+
-        '<div class="font-headline-md text-headline-md text-on-surface tabular-nums mt-1">'+arGroup(dd.steps||0)+'</div>'+
-        bar(dd.steps||0, 10000, "primary-fixed"))+
+        '<button data-act="pedo" class="tap px-2.5 h-8 rounded-lg flex items-center gap-1 font-label-sm text-label-sm '+
+          (PEDO.on ? "bg-primary-fixed text-on-primary-fixed" : "bg-surface-container-high text-on-surface-variant")+'">'+
+          '<span class="material-symbols-outlined text-[14px]">'+(PEDO.on?"sensors":"sensors_off")+'</span>'+
+          (PEDO.on ? (en?"Counting":"يعدّ") : (en?"Track":"تتبّع"))+'</button></div>'+
+        '<div id="steps-val" class="font-headline-md text-headline-md text-on-surface tabular-nums mt-1">'+arGroup(dd.steps||0)+'</div>'+
+        bar(dd.steps||0, 10000, "primary-fixed")+
+        '<div class="mt-2 font-label-sm text-label-sm text-on-surface-variant">'+
+          (PEDO.on ? (en?"From your phone sensor":"من حسّاس جوالك") : (en?"Phone sensor":"يسجّلها الجوال"))+' · '+
+          '<button data-act="stepsman" class="tap text-primary-fixed">'+(en?"enter manually":"إدخال يدوي")+'</button></div>')+
       card('<div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Water":"الماء")+'</span>'+
         '<div class="flex gap-1"><button data-act="water" data-v="-0.25" class="tap w-8 h-8 rounded-lg bg-surface-container-high text-on-surface">−</button>'+
         '<button data-act="water" data-v="0.25" class="tap w-8 h-8 rounded-lg bg-primary-fixed text-on-primary-fixed">+</button></div></div>'+
@@ -187,6 +193,66 @@ function vHome(){
       quick(en?"My program":"برنامجي","fitness_center","gotoworkouts")+
     '</div>'+
   '</div>';
+}
+/* ===================== pedometer: the phone counts the steps ===================== */
+var PEDO = { on:false, lastT:0, buf:[], saved:0 };
+function pedoSupported(){
+  return typeof window !== "undefined" && typeof window.DeviceMotionEvent !== "undefined";
+}
+function pedoNeedsTap(){
+  return pedoSupported() && typeof window.DeviceMotionEvent.requestPermission === "function";
+}
+function pedoTick(e){
+  var a = e.accelerationIncludingGravity || e.acceleration;
+  if (!a) return;
+  var m = Math.sqrt((a.x||0)*(a.x||0) + (a.y||0)*(a.y||0) + (a.z||0)*(a.z||0));
+  PEDO.buf.push(m); if (PEDO.buf.length > 10) PEDO.buf.shift();
+  var avg = 0; PEDO.buf.forEach(function(x){ avg += x; }); avg /= PEDO.buf.length;
+  var now = Date.now();
+  if (m - avg > 1.5 && now - PEDO.lastT > 280){          /* one peak = one step */
+    PEDO.lastT = now;
+    var d = day(); d.steps = (d.steps || 0) + 1;
+    var el = document.getElementById("steps-val");
+    if (el) el.textContent = arGroup(d.steps);
+    if (now - PEDO.saved > 4000){ PEDO.saved = now; save(); }
+  }
+}
+function pedoAttach(){
+  window.addEventListener("devicemotion", pedoTick);
+  PEDO.on = true; S.pedo = true; save();
+}
+function pedoStart(){
+  var en = S.lang === "en";
+  if (!pedoSupported()){
+    toast(en?"No motion sensor here — use manual entry":"ما فيه حسّاس حركة — استخدم الإدخال اليدوي");
+    return;
+  }
+  if (pedoNeedsTap()){
+    window.DeviceMotionEvent.requestPermission().then(function(r){
+      if (r === "granted"){ pedoAttach(); render(current, true); toast(en?"Counting your steps":"بدأ عدّ خطواتك"); }
+      else toast(en?"Motion access denied":"ما سمحت بالحركة");
+    })["catch"](function(){ toast(en?"Motion access denied":"ما سمحت بالحركة"); });
+    return;
+  }
+  pedoAttach(); render(current, true); toast(en?"Counting your steps":"بدأ عدّ خطواتك");
+}
+function pedoStop(){
+  window.removeEventListener("devicemotion", pedoTick);
+  PEDO.on = false; S.pedo = false; save(); render(current, true);
+}
+function pedoResume(){                                    /* silent resume where iOS does not need a tap */
+  if (PEDO.on || !S.pedo) return;
+  if (!pedoSupported() || pedoNeedsTap()) return;
+  window.addEventListener("devicemotion", pedoTick); PEDO.on = true;
+}
+function arDec(n, d){
+  var s = dec(n, d);
+  return S.lang === "en" ? s : s.replace(/[0-9]/g, function(x){ return AR[+x]; }).replace(".", "٫");
+}
+function dietName(){
+  var en = S.lang === "en", id = S.profile.diet || "balanced";
+  var d = DIETS.filter(function(x){ return x.id === id; })[0];
+  return d ? (en ? d.en : d.ar) : id;
 }
 function macroCol(name, val, max, color){
   return '<div class="flex flex-col gap-1.5"><div class="flex items-baseline justify-between">'+
@@ -343,19 +409,121 @@ function vBody(){
   '</div>';
 }
 
+
+/* ===================== activities: not just iron ===================== */
+var ACT_LIB = [
+  {id:"gym",   ar:"حديد",        en:"Weights",   met:5.0, unit:"session", icon:"fitness_center"},
+  {id:"run",   ar:"ركض",         en:"Running",   met:9.8, unit:"min",     icon:"directions_run"},
+  {id:"walk",  ar:"مشي",         en:"Walking",   met:3.5, unit:"min",     icon:"directions_walk"},
+  {id:"swim",  ar:"سباحة",       en:"Swimming",  met:7.0, unit:"min",     icon:"pool"},
+  {id:"bike",  ar:"دراجة",       en:"Cycling",   met:7.5, unit:"min",     icon:"pedal_bike"},
+  {id:"cross", ar:"كروسفت",      en:"CrossFit",  met:8.0, unit:"min",     icon:"sports_gymnastics"},
+  {id:"box",   ar:"ملاكمة",      en:"Boxing",    met:9.0, unit:"min",     icon:"sports_mma"},
+  {id:"foot",  ar:"كرة قدم",     en:"Football",  met:7.0, unit:"min",     icon:"sports_soccer"},
+  {id:"pad",   ar:"بادل / تنس",  en:"Padel",     met:6.5, unit:"min",     icon:"sports_tennis"},
+  {id:"yoga",  ar:"يوغا / إطالة", en:"Yoga",      met:3.0, unit:"min",     icon:"self_improvement"},
+  {id:"row",   ar:"تجديف",       en:"Rowing",    met:7.0, unit:"min",     icon:"rowing"},
+  {id:"hike",  ar:"هايكنق",      en:"Hiking",    met:6.0, unit:"min",     icon:"hiking"}
+];
+var ACT_BY_ID = {}; ACT_LIB.forEach(function(a){ ACT_BY_ID[a.id] = a; });
+function myActivities(){
+  if (!S.activities) S.activities = [{ id:"gym", perWeek:4 }];
+  return S.activities;
+}
+function actInfo(id){
+  var c = (S.customActs || {})[id];
+  return c || ACT_BY_ID[id] || { id:id, ar:id, en:id, met:5, unit:"min", icon:"exercise" };
+}
+function weekStart(){
+  var d = new Date(); d.setHours(0,0,0,0);
+  d.setDate(d.getDate() - ((d.getDay() + 1) % 7));   // week starts Saturday
+  return d.getTime();
+}
+function sessionsThisWeek(){
+  var w = weekStart();
+  return (S.sessions || []).filter(function(s){ return (s.t || 0) >= w; });
+}
+function burnToday(){
+  var t0 = new Date(); t0.setHours(0,0,0,0);
+  var fromSessions = (S.sessions || []).filter(function(s){ return (s.t||0) >= t0.getTime(); })
+    .reduce(function(a, s){ return a + (s.kcal || 0); }, 0);
+  return Math.round(fromSessions + (day().steps || 0) * 0.04);
+}
+function metKcal(met, minutes){
+  var w = +S.profile.weight || 80;
+  return Math.round(met * w * (minutes / 60));
+}
+
 /* ===================== MY PROGRAM ===================== */
 function program(){
   if (!S.program) S.program = { perWeek:4, days: DAY_TEMPLATES[4].map(function(d){ return { ar:d[0], en:d[1], ex:[] }; }) };
   return S.program;
 }
 function vWorkouts(){
-  var en = S.lang === "en", pr = program();
+  var en = S.lang === "en", pr = program(), acts = myActivities();
+  var week = sessionsThisWeek();
+  var target = acts.reduce(function(a, x){ return a + (+x.perWeek || 0); }, 0);
+  var doneCount = week.length;
+  var vol = week.reduce(function(a, s){ return a + (s.volume || 0); }, 0);
+  var mins = week.reduce(function(a, s){ return a + (s.min || 0); }, 0);
+  var kcal = week.reduce(function(a, s){ return a + (s.kcal || 0); }, 0);
+  var adh = target ? Math.min(100, Math.round(doneCount / target * 100)) : 0;
+  var days = ["س","ح","ن","ث","ر","خ","ج"], dayEn = ["Sa","Su","Mo","Tu","We","Th","Fr"];
+  var perDay = [0,0,0,0,0,0,0];
+  week.forEach(function(s){ var d = new Date(s.t || Date.now()); perDay[(d.getDay()+1)%7]++; });
+
   return '<div class="flex flex-col gap-4 pt-1">'+
-    '<div><div class="font-headline-md text-headline-md text-on-surface">'+(en?"My program":"برنامجي")+'</div>'+
-    label(en?"Build it yourself — a coach is optional":"ابنِه بنفسك — المدرّب اختياري")+'</div>'+
-    '<div>'+label(en?"Days per week":"كم يوم بالأسبوع")+
-      '<div class="mt-2">'+seg([[3,"٣"],[4,"٤"],[5,"٥"],[6,"٦"]].map(function(x){ return [String(x[0]), en?String(x[0]):x[1]]; }),
-        String(pr.perWeek), 'data-act="perweek" data-v="%v"')+'</div></div>'+
+    '<div><div class="font-headline-md text-headline-md text-on-surface">'+(en?"Training":"التمارين")+'</div>'+
+    label(en?"Your week at a glance":"أسبوعك في نظرة")+'</div>'+
+
+    /* dashboard, same shape as the coach's */
+    card('<div class="grid grid-cols-2 gap-3">'+
+      dashTile(en?"Sessions":"جلسات", ar(doneCount)+" / "+ar(target), adh >= 80 ? "text-primary-fixed" : "text-on-surface")+
+      dashTile(en?"Adherence":"الالتزام", ar(adh)+"٪", adh >= 80 ? "text-primary-fixed" : "text-tertiary-fixed-dim")+
+      dashTile(en?"Volume":"الحمل", arGroup(vol)+(en?" kg":" كجم"), "text-on-surface")+
+      dashTile(en?"Burned":"محروق", arGroup(kcal)+(en?" kcal":" سعرة"), "text-secondary-fixed-dim")+
+    '</div>'+
+    '<div class="mt-4 flex items-end justify-between gap-1.5" style="height:64px">'+
+      perDay.map(function(n, i){
+        var hgt = Math.max(6, n * 18);
+        return '<div class="flex-1 flex flex-col items-center gap-1">'+
+          '<div class="w-full rounded-md '+(n?"bg-primary-fixed":"bg-surface-container-highest")+'" style="height:'+hgt+'px"></div>'+
+          '<span class="font-label-sm text-label-sm text-on-surface-variant">'+(en?dayEn[i]:days[i])+'</span></div>';
+      }).join("")+
+    '</div>')+
+
+    /* my activities, with a weekly target each */
+    '<div class="flex items-center justify-between"><span class="font-title-md text-title-md text-on-surface">'+(en?"My activities":"أنشطتي")+'</span>'+
+      '<button data-act="pickact" class="tap font-label-lg text-label-lg text-primary-fixed">'+(en?"Add":"أضف")+'</button></div>'+
+    '<div class="rounded-2xl bg-surface-container divide-y divide-outline-variant/40">'+
+      acts.map(function(a, i){
+        var info = actInfo(a.id);
+        var doneA = week.filter(function(s){ return s.act === a.id; }).length;
+        var pcA = a.perWeek ? Math.min(100, doneA / a.perWeek * 100) : 0;
+        return '<div class="px-4 py-3">'+
+          '<div class="flex items-center gap-3">'+
+            '<div class="w-10 h-10 rounded-xl bg-primary-fixed/15 text-primary-fixed flex items-center justify-center shrink-0">'+
+              '<span class="material-symbols-outlined text-[18px]">'+info.icon+'</span></div>'+
+            '<div class="flex-1 min-w-0"><div class="font-label-lg text-label-lg text-on-surface">'+(en?info.en:info.ar)+'</div>'+
+            '<div class="font-label-sm text-label-sm text-on-surface-variant">'+ar(doneA)+' / '+ar(a.perWeek)+(en?" this week":" هذا الأسبوع")+'</div></div>'+
+            '<div class="flex items-center gap-1 shrink-0">'+
+              '<button data-act="actminus" data-i="'+i+'" class="tap w-8 h-8 rounded-lg bg-surface-container-high text-on-surface">−</button>'+
+              '<button data-act="actplus" data-i="'+i+'" class="tap w-8 h-8 rounded-lg bg-surface-container-high text-on-surface">+</button>'+
+              '<button data-act="delact" data-i="'+i+'" class="tap w-8 h-8 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center">'+
+                '<span class="material-symbols-outlined text-[15px]">close</span></button>'+
+            '</div></div>'+
+          '<div class="mt-2">'+bar(doneA, Math.max(1, a.perWeek), "primary-fixed")+'</div>'+
+          '<button data-act="logact" data-id="'+a.id+'" class="tap mt-2 w-full h-10 rounded-xl bg-primary-fixed/15 text-primary-fixed font-label-lg text-label-lg">'+
+            (a.id === "gym" ? (en?"Open program":"افتح البرنامج") : (en?"Log a session":"سجّل جلسة"))+'</button>'+
+        '</div>';
+      }).join("")+
+    '</div>'+
+
+    /* the iron program */
+    '<div class="flex items-center justify-between"><span class="font-title-md text-title-md text-on-surface">'+(en?"Weights program":"برنامج الحديد")+'</span>'+
+      '<span class="font-label-sm text-label-sm text-on-surface-variant">'+ar(pr.perWeek)+(en?" days/week":" أيام/أسبوع")+'</span></div>'+
+    '<div>'+seg([[3,"٣"],[4,"٤"],[5,"٥"],[6,"٦"]].map(function(xx){ return [String(xx[0]), en?String(xx[0]):xx[1]]; }),
+        String(pr.perWeek), 'data-act="perweek" data-v="%v"')+'</div>'+
     pr.days.map(function(d, i){
       return '<div class="rounded-2xl bg-surface-container overflow-hidden">'+
         '<div class="flex items-center justify-between px-4 py-3">'+
@@ -376,18 +544,34 @@ function vWorkouts(){
             '<span class="material-symbols-outlined text-[18px]">play_arrow</span><span class="font-label-lg text-label-lg">'+(en?"Start":"ابدأ")+'</span></button>' : "")+
         '</div></div>';
     }).join("")+
+
+    /* history */
+    ((S.sessions && S.sessions.length) ? '<div>'+label(en?"Recent sessions":"آخر الجلسات")+
+      '<div class="rounded-2xl bg-surface-container divide-y divide-outline-variant/40 mt-2">'+
+      S.sessions.slice(-8).reverse().map(function(s, i){
+        var info = actInfo(s.act || "gym");
+        return '<div class="flex items-center gap-3 px-4 py-3">'+
+          '<span class="material-symbols-outlined text-[18px] text-on-surface-variant">'+info.icon+'</span>'+
+          '<div class="flex-1 min-w-0"><div class="font-label-lg text-label-lg text-on-surface truncate">'+(en?(s.en||info.en):(s.ar||info.ar))+'</div>'+
+          '<div class="font-label-sm text-label-sm text-on-surface-variant">'+s.d+
+            (s.volume ? ' · '+arGroup(s.volume)+(en?" kg":" كجم") : "")+
+            (s.min ? ' · '+ar(s.min)+(en?" min":" دقيقة") : "")+'</div></div>'+
+          '<span class="font-label-lg text-label-lg text-secondary-fixed-dim tabular-nums shrink-0">'+(s.kcal?arGroup(s.kcal):"—")+'</span>'+
+          '<button data-act="delsession" data-i="'+(S.sessions.length-1-i)+'" class="tap w-8 h-8 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center shrink-0">'+
+            '<span class="material-symbols-outlined text-[15px]">close</span></button></div>';
+      }).join("")+'</div></div>' : "")+
+
     card('<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center">'+
       '<span class="material-symbols-outlined text-[18px]">sports</span></div>'+
       '<div class="flex-1"><div class="font-label-lg text-label-lg text-on-surface">'+(en?"Have a coach?":"عندك مدرّب؟")+'</div>'+
       '<div class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Their plan shows up here too":"خطته تظهر هنا كمان")+'</div></div>'+
       '<button data-go="workouts_stitch" class="tap px-3 h-10 rounded-xl bg-surface-container-high text-on-surface font-label-lg text-label-lg">'+(en?"View":"اعرض")+'</button></div>')+
-    (S.sessions && S.sessions.length ? '<div>'+label(en?"Recent sessions":"آخر الجلسات")+
-      '<div class="rounded-2xl bg-surface-container divide-y divide-outline-variant/40 mt-2">'+
-      S.sessions.slice(-5).reverse().map(function(s){
-        return '<div class="flex items-center justify-between px-4 py-3"><span class="font-label-lg text-label-lg text-on-surface">'+(en?s.en:s.ar)+'</span>'+
-        '<span class="font-label-sm text-label-sm text-on-surface-variant tabular-nums">'+arGroup(s.volume)+(en?" kg":" كجم")+'</span></div>';
-      }).join("")+'</div></div>' : "")+
   '</div>';
+}
+function dashTile(l, v, tone){
+  return '<div class="rounded-xl bg-surface-container-high p-3">'+
+    '<div class="font-label-sm text-label-sm text-on-surface-variant">'+l+'</div>'+
+    '<div class="font-title-md text-title-md tabular-nums '+(tone||"text-on-surface")+'">'+v+'</div></div>';
 }
 function vSession(){
   var en = S.lang === "en", pr = program(), i = S.sessionDay || 0, d = pr.days[i] || pr.days[0];
@@ -440,11 +624,11 @@ function weightTab(en){
     '<div class="flex items-start justify-between">'+
       '<div><div class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Current weight":"وزنك الحالي")+'</div>'+
       '<div class="flex items-baseline gap-2"><span class="font-metric-display-mobile text-metric-display-mobile font-bold text-on-surface tabular-nums">'+
-      (cur ? dec(showMass(cur.kg),1) : "—")+'</span><span class="font-label-lg text-label-lg text-on-surface-variant">'+massU()+'</span></div>'+
-      (prev ? '<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">'+(en?"Previous: ":"السابق: ")+dec(showMass(prev.kg),1)+' '+massU()+' · '+prev.d+'</div>' : "")+
+      (cur ? arDec(showMass(cur.kg),1) : "—")+'</span><span class="font-label-lg text-label-lg text-on-surface-variant">'+massU()+'</span></div>'+
+      (prev ? '<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">'+(en?"Previous: ":"السابق: ")+arDec(showMass(prev.kg),1)+' '+massU()+' · '+prev.d+'</div>' : "")+
       '</div>'+
       (diff !== null ? '<div class="px-3 py-1.5 rounded-lg '+(diff <= 0 ? "bg-primary-fixed/15 text-primary-fixed" : "bg-tertiary-container text-on-tertiary-container")+' font-label-lg text-label-lg tabular-nums">'+
-        dec(Math.abs(showMass(diff)),1)+(diff <= 0 ? "−" : "+")+' '+massU()+'</div>' : "")+
+        arDec(Math.abs(showMass(diff)),1)+(diff <= 0 ? "−" : "+")+' '+massU()+'</div>' : "")+
     '</div>'+
     '<div class="flex items-end gap-2 mt-4">'+
       '<div class="flex-1 rounded-xl bg-surface-container-high p-3">'+
@@ -459,8 +643,8 @@ function weightTab(en){
       var p2 = arr[i+1], dd = p2 ? x.kg - p2.kg : null;
       return '<div class="flex items-center justify-between py-2.5">'+
         '<span class="font-label-lg text-label-lg text-on-surface-variant">'+x.d+'</span>'+
-        '<div class="flex items-center gap-3"><span class="font-label-lg text-label-lg text-on-surface tabular-nums">'+dec(showMass(x.kg),1)+' '+massU()+'</span>'+
-        (dd !== null ? '<span class="w-14 text-start font-label-sm text-label-sm tabular-nums '+(dd<=0?"text-primary-fixed":"text-on-surface-variant")+'">'+dec(Math.abs(showMass(dd)),1)+(dd<=0?"−":"+")+'</span>' : '<span class="w-14"></span>')+
+        '<div class="flex items-center gap-3"><span class="font-label-lg text-label-lg text-on-surface tabular-nums">'+arDec(showMass(x.kg),1)+' '+massU()+'</span>'+
+        (dd !== null ? '<span class="w-14 text-start font-label-sm text-label-sm tabular-nums '+(dd<=0?"text-primary-fixed":"text-on-surface-variant")+'">'+arDec(Math.abs(showMass(dd)),1)+(dd<=0?"−":"+")+'</span>' : '<span class="w-14"></span>')+
         '</div></div>';
     }).join("")+'</div>' : '<div class="mt-3 font-label-sm text-label-sm text-on-surface-variant">'+(en?"No readings yet — your first one starts the chart.":"ما سجّلت وزن بعد — أول قراءة تبدأ المنحنى.")+'</div>'));
 }
@@ -482,13 +666,31 @@ function sizeTab(en){
       var v = last[p[0]], pv = prev[p[0]], d = (v != null && pv != null) ? v - pv : null;
       return '<div class="rounded-xl bg-surface-container-high p-3">'+
         '<div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">'+(en?p[2]:p[1])+'</span>'+
-        (d !== null && d !== 0 ? '<span class="font-label-sm text-label-sm tabular-nums '+(d<0?"text-primary-fixed":"text-on-surface-variant")+'">'+dec(Math.abs(showLen(d)),1)+(d<0?"−":"+")+'</span>' : "")+'</div>'+
+        (d !== null && d !== 0 ? '<span class="font-label-sm text-label-sm tabular-nums '+(d<0?"text-primary-fixed":"text-on-surface-variant")+'">'+arDec(Math.abs(showLen(d)),1)+(d<0?"−":"+")+'</span>' : "")+'</div>'+
         '<input data-m="'+p[0]+'" inputmode="decimal" value="'+(v != null ? dec(showLen(v),1) : "")+'" placeholder="—"'+
         ' class="w-full bg-transparent border-0 p-0 mt-1 font-title-md text-title-md text-on-surface focus:outline-none tabular-nums"></div>';
     }).join("")+'</div>'+
     '<div class="mt-3">'+btn(en?"Save measurements":"احفظ المقاسات", 'data-act="savemeasures"', "bg-primary-fixed text-on-primary-fixed w-full")+'</div>'+
-    (S.measures && S.measures.length ? '<div class="mt-3 font-label-sm text-label-sm text-on-surface-variant">'+
-      (en?"Last logged: ":"آخر تسجيل: ")+S.measures[S.measures.length-1].d+'</div>' : ""));
+    ((S.measures && S.measures.length) ? '<div class="mt-4 pt-3 border-t border-outline-variant/40">'+
+      label(en?"History — every reading is kept":"السجل — كل قراءة محفوظة")+
+      '<div class="mt-1 divide-y divide-outline-variant/40">'+
+      S.measures.slice().reverse().slice(0, 8).map(function(m, i, arr){
+        var older = arr[i+1];
+        var cells = PARTS.filter(function(pp){ return m.v[pp[0]] != null; }).map(function(pp){
+          var v = m.v[pp[0]], ov = older ? older.v[pp[0]] : null, dd = (ov != null) ? v - ov : null;
+          return '<span class="font-label-sm text-label-sm text-on-surface-variant">'+(en?pp[2]:pp[1])+' '+
+            '<span class="text-on-surface tabular-nums">'+arDec(showLen(v),1)+'</span>'+
+            (dd ? ' <span class="tabular-nums '+(dd<0?"text-primary-fixed":"text-tertiary-fixed-dim")+'">'+
+              arDec(Math.abs(showLen(dd)),1)+(dd<0?"−":"+")+'</span>' : "")+'</span>';
+        }).join("");
+        return '<div class="py-2.5">'+
+          '<div class="flex items-center justify-between">'+
+            '<span class="font-label-lg text-label-lg text-on-surface">'+m.d+'</span>'+
+            '<button data-act="delmeasure" data-i="'+(S.measures.length-1-i)+'" class="tap w-8 h-8 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center">'+
+              '<span class="material-symbols-outlined text-[15px]">close</span></button></div>'+
+          '<div class="mt-1 flex flex-wrap gap-x-3 gap-y-1">'+(cells || '<span class="font-label-sm text-label-sm text-on-surface-variant">—</span>')+'</div>'+
+        '</div>';
+      }).join("")+'</div></div>' : ""));
 }
 function photoTab(en){
   var ph = S.photos || [];
@@ -634,6 +836,21 @@ function dynamicAct(name, ds){
     }
     case "delitem": day().meals[ds.meal].splice(+ds.i, 1); save(); render(current, true); return true;
     case "steps": day().steps = Math.max(0, (day().steps||0) + (+ds.v)); save(); render(current, true); return true;
+    case "pedo": { if (PEDO.on) pedoStop(); else pedoStart(); return true; }
+    case "stepsman": {
+      openPanel('<div class="font-title-md text-title-md text-on-surface mb-1">'+(en?"Steps today":"خطوات اليوم")+'</div>'+
+        '<div class="font-label-sm text-label-sm text-on-surface-variant mb-3">'+
+          (en?"Your phone counts them on its own — type them in only when it was in your bag.":"جوالك يعدّها بنفسه — اكتبها يدوياً فقط إذا كان بالشنطة.")+'</div>'+
+        field("st-n", en?"Steps":"الخطوات", String(day().steps||0), "", "numeric")+
+        '<div class="mt-3">'+btn(en?"Save":"احفظ", 'data-act="savesteps"', "bg-primary-fixed text-on-primary-fixed w-full")+'</div>');
+      return true;
+    }
+    case "savesteps": {
+      var st = num("st-n");
+      if (isNaN(st) || st < 0){ toast(en?"Enter the steps":"اكتب الخطوات"); return true; }
+      day().steps = Math.round(st); save(); closePanel(); render(current, true);
+      toast(en?"Steps updated":"تحدّثت خطواتك"); return true;
+    }
     case "water": day().water = Math.max(0, Math.round(((day().water||0) + parseFloat(ds.v))*100)/100); save(); render(current, true); return true;
     case "weighin": S.progTab = "weight"; save(); go("progress"); return true;
     case "gotoworkouts": go("workouts"); return true;
@@ -659,6 +876,90 @@ function dynamicAct(name, ds){
       return true;
     }
     case "delphoto": (S.photos||[]).splice(+ds.i, 1); save(); render(current, true); return true;
+    case "pickact": {
+      var mine = myActivities().map(function(x){ return x.id; });
+      var pool = ACT_LIB.filter(function(a){ return mine.indexOf(a.id) < 0; });
+      openPanel('<div class="font-title-md text-title-md text-on-surface mb-1">'+(en?"Add an activity":"أضف نشاط")+'</div>'+
+        '<div class="font-label-sm text-label-sm text-on-surface-variant mb-3">'+
+          (en?"Not just iron — pick whatever you actually do.":"مو حديد بس — اختر اللي تسويه فعلاً.")+'</div>'+
+        (pool.length ? '<div class="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">'+pool.map(function(a){
+          return '<button data-act="addact" data-id="'+a.id+'" class="tap rounded-xl bg-surface-container-high p-3 flex items-center gap-2 text-start">'+
+            '<span class="material-symbols-outlined text-[18px] text-primary-fixed shrink-0">'+a.icon+'</span>'+
+            '<span class="font-label-lg text-label-lg text-on-surface truncate">'+(en?a.en:a.ar)+'</span></button>';
+        }).join("")+'</div>' : '<div class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"You already track them all.":"كلها عندك أصلاً.")+'</div>')+
+        '<div class="mt-3">'+btn(en?"Something else":"نشاط من عندك", 'data-act="customact"', "bg-surface-container-high text-on-surface w-full")+'</div>');
+      return true;
+    }
+    case "addact": {
+      var acts0 = myActivities();
+      if (!acts0.filter(function(x){ return x.id === ds.id; }).length) acts0.push({ id: ds.id, perWeek: 3 });
+      save(); closePanel(); go("workouts"); toast(en?"Activity added":"أُضيف النشاط"); return true;
+    }
+    case "customact": {
+      openPanel('<div class="font-title-md text-title-md text-on-surface mb-3">'+(en?"Your own activity":"نشاطك أنت")+'</div>'+
+        field("ca-n", en?"Name":"اسم النشاط", "", "", "text")+
+        '<div class="grid grid-cols-2 gap-2 mt-2">'+
+          field("ca-w", en?"Times per week":"كم مرة بالأسبوع", "3", "", "numeric")+
+          '<div class="rounded-xl bg-surface-container-high p-3 flex flex-col gap-1">'+label(en?"Intensity":"الشدّة")+
+          '<select id="ca-met" class="w-full bg-transparent border-0 p-0 font-title-md text-title-md text-on-surface focus:outline-none">'+
+            '<option value="3.5">'+(en?"Light":"خفيف")+'</option>'+
+            '<option value="6" selected>'+(en?"Moderate":"متوسط")+'</option>'+
+            '<option value="9">'+(en?"Hard":"شديد")+'</option></select></div>'+
+        '</div>'+
+        '<div class="mt-3">'+btn(en?"Add":"أضف", 'data-act="savecustomact"', "bg-primary-fixed text-on-primary-fixed w-full")+'</div>');
+      return true;
+    }
+    case "savecustomact": {
+      var caEl = document.getElementById("ca-n");
+      var caN = caEl ? caEl.value.trim() : "";
+      if (!caN){ toast(en?"Name your activity":"اكتب اسم النشاط"); return true; }
+      var mEl = document.getElementById("ca-met");
+      var cid = "c" + Date.now();
+      S.customActs = S.customActs || {};
+      S.customActs[cid] = { id:cid, ar:caN, en:caN, met: mEl ? +mEl.value : 6, unit:"min", icon:"exercise" };
+      var pw = num("ca-w");
+      myActivities().push({ id: cid, perWeek: Math.max(1, Math.round(isNaN(pw) ? 3 : pw)) });
+      save(); closePanel(); go("workouts"); toast(en?"Activity added":"أُضيف النشاط"); return true;
+    }
+    case "actplus": { var ap = myActivities()[+ds.i]; if (ap) ap.perWeek = Math.min(14, (+ap.perWeek||0)+1); save(); render(current, true); return true; }
+    case "actminus": { var am = myActivities()[+ds.i]; if (am) am.perWeek = Math.max(0, (+am.perWeek||0)-1); save(); render(current, true); return true; }
+    case "delact": {
+      var gone = myActivities().splice(+ds.i, 1)[0];
+      if (gone && S.customActs) delete S.customActs[gone.id];
+      save(); render(current, true); toast(en?"Removed":"انحذف"); return true;
+    }
+    case "logact": {
+      if (ds.id === "gym"){
+        var seg0 = document.querySelector('[data-act="perweek"]');
+        if (seg0 && seg0.scrollIntoView) seg0.scrollIntoView({ behavior:"smooth", block:"center" });
+        toast(en?"Pick a day and start":"اختر يوم وابدأ"); return true;
+      }
+      var inf = actInfo(ds.id);
+      openPanel('<div class="flex items-center gap-2 mb-1">'+
+          '<span class="material-symbols-outlined text-[20px] text-primary-fixed">'+inf.icon+'</span>'+
+          '<span class="font-title-md text-title-md text-on-surface">'+(en?inf.en:inf.ar)+'</span></div>'+
+        '<div class="font-label-sm text-label-sm text-on-surface-variant mb-3">'+
+          (en?"How long did you go for?":"كم استمريت؟")+'</div>'+
+        '<div class="grid grid-cols-2 gap-2">'+
+          field("la-min", en?"Minutes":"الدقائق", "45", "", "numeric")+
+          field("la-km", en?"Distance (optional)":"المسافة (اختياري)", "", en?"km":"كم", "decimal")+
+        '</div>'+
+        '<div class="mt-3">'+btn(en?"Save session":"احفظ الجلسة", 'data-act="savelogact" data-id="'+ds.id+'"', "bg-primary-fixed text-on-primary-fixed w-full")+'</div>');
+      return true;
+    }
+    case "savelogact": {
+      var inf2 = actInfo(ds.id), mn = num("la-min");
+      if (isNaN(mn) || mn <= 0){ toast(en?"Enter the minutes":"اكتب الدقائق"); return true; }
+      var km = num("la-km"), kc2 = metKcal(inf2.met, mn);
+      S.sessions = S.sessions || [];
+      S.sessions.push({ d: stamp(), t: Date.now(), act: inf2.id, ar: inf2.ar, en: inf2.en,
+        min: Math.round(mn), km: isNaN(km) ? 0 : km, kcal: kc2 });
+      if (S.sessions.length > 200) S.sessions.shift();
+      save(); closePanel(); render(current, true);
+      toast((en?"Logged · ":"انسجلت · ")+arGroup(kc2)+(en?" kcal":" سعرة")); return true;
+    }
+    case "delsession": { (S.sessions||[]).splice(+ds.i, 1); save(); render(current, true); return true; }
+    case "delmeasure": { (S.measures||[]).splice(+ds.i, 1); save(); render(current, true); toast(en?"Removed":"انحذف"); return true; }
     case "perweek": {
       var n = +ds.v, pr = program();
       var tpl = DAY_TEMPLATES[n] || DAY_TEMPLATES[4];
@@ -686,7 +987,7 @@ function dynamicAct(name, ds){
       save(); closePanel(); render(current, true); toast(en?"Added":"أُضيف"); return true;
     }
     case "delex": program().days[+ds.d].ex.splice(+ds.j, 1); save(); render(current, true); return true;
-    case "startday": S.sessionDay = +ds.d; S.sessionLog = {}; save(); go("session"); return true;
+    case "startday": S.sessionDay = +ds.d; S.sessionLog = {}; S.sessionStart = Date.now(); save(); go("session"); return true;
     case "doneset": {
       var j = +ds.j, k = +ds.k;
       var wEl = document.querySelector('[data-set="'+j+'-'+k+'-w"]'), rEl = document.querySelector('[data-set="'+j+'-'+k+'-r"]');
@@ -705,8 +1006,12 @@ function dynamicAct(name, ds){
         (S.sessionLog[j]||[]).forEach(function(s){ if (s.done){ vol += (+s.w||0)*(+s.r||0); done++; } });
       });
       S.sessions = S.sessions || [];
-      S.sessions.push({ d: stamp(), ar: d3.ar, en: d3.en, volume: Math.round(vol), sets: done });
-      S.sessionLog = {}; save(); go("workouts");
+      var mins3 = S.sessionStart ? Math.round((Date.now() - S.sessionStart) / 60000) : 0;
+      mins3 = Math.min(180, Math.max(10, mins3 || done * 3));
+      S.sessions.push({ d: stamp(), t: Date.now(), act: "gym", ar: d3.ar, en: d3.en,
+        volume: Math.round(vol), sets: done, min: mins3, kcal: metKcal(5.0, mins3) });
+      if (S.sessions.length > 200) S.sessions.shift();
+      S.sessionLog = {}; S.sessionStart = 0; save(); go("workouts");
       toast((en?"Session saved · ":"انحفظت الجلسة · ")+arGroup(vol)+(en?" kg":" كجم")); return true;
     }
   }
@@ -714,10 +1019,8 @@ function dynamicAct(name, ds){
 }
 function pushWeight(kg){
   S.weights = S.weights || [];
-  var last = S.weights[S.weights.length-1];
-  if (last && last.d === stamp()) last.kg = kg;
-  else S.weights.push({ d: stamp(), kg: kg });
-  if (S.weights.length > 30) S.weights.shift();
+  S.weights.push({ d: stamp(), t: Date.now(), kg: kg });   // always a new row — the old one stays
+  if (S.weights.length > 120) S.weights.shift();
   S.profile.weight = kg;
 }
 var DYNAMIC = { home:vHome, meals:vMeals, addfood:vAddFood, body:vBody, workouts:vWorkouts,
