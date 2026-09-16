@@ -243,6 +243,28 @@ export function ProfileScreen() {
         </button>
       </div>
 
+      <div className="rounded-2xl bg-surface-container divide-y divide-outline-variant/40 overflow-hidden">
+        <button
+          onClick={() => navigate("/legal/privacy")}
+          className="tap w-full flex items-center justify-between px-4 py-3.5 text-start"
+        >
+          <span>
+            <span className="block text-label-lg text-on-surface">{t(lang, "سياسة الخصوصية", "Privacy")}</span>
+            <span className="block text-label-sm text-on-surface-variant">
+              {t(lang, "وش نحفظ، ومين يشوفه", "What we hold, and who sees it")}
+            </span>
+          </span>
+          <Icon name="chevron_right" className="text-on-surface-variant rtl:rotate-180" />
+        </button>
+        <button
+          onClick={() => navigate("/legal/terms")}
+          className="tap w-full flex items-center justify-between px-4 py-3.5 text-start"
+        >
+          <span className="text-label-lg text-on-surface">{t(lang, "شروط الاستخدام", "Terms of use")}</span>
+          <Icon name="chevron_right" className="text-on-surface-variant rtl:rotate-180" />
+        </button>
+      </div>
+
       <Button
         variant="soft"
         className={cx("w-full", !isConfigured && "opacity-60")}

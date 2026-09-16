@@ -17,6 +17,7 @@ import { Progress } from "./screens/Progress";
 import { ProfileScreen } from "./screens/Profile";
 import { Coach } from "./screens/Coach";
 import { Trainee } from "./screens/Trainee";
+import { Legal } from "./screens/Legal";
 
 /** Static hosting without a rewrite rule cannot serve deep links; there the hash router is the honest choice. */
 const Router = import.meta.env.VITE_HASH_ROUTER ? HashRouter : BrowserRouter;
@@ -66,6 +67,8 @@ export function App() {
       <Routes>
         <Route path="/signin" element={signedIn ? <Navigate to="/" replace /> : <SignIn />} />
         <Route path="/welcome" element={signedIn ? <Onboarding /> : <Navigate to="/signin" replace />} />
+        {/* Readable before there is an account to read it with. */}
+        <Route path="/legal/:doc" element={<Legal />} />
 
         <Route
           element={

@@ -109,7 +109,21 @@ try {
   if (weights.length !== 2) fail(`both readings should be kept, got ${JSON.stringify(weights)}`);
   else ok("weight history keeps every reading");
 
-  // 5. The app opens with the network gone: the worker has to serve the shell and its code.
+  // 5. The legal text is reachable, and reachable signed out too.
+  await page.goto(`${base}/legal/privacy`);
+  await page.waitForTimeout(500);
+  const privacyHeadings = await page.locator("h2").count();
+  if (privacyHeadings < 8) fail(`the privacy notice should render its sections, saw ${privacyHeadings}`);
+  else ok("privacy notice renders");
+
+  await page.locator("button", { hasText: "شروط الاستخدام" }).first().click();
+  await page.waitForTimeout(500);
+  if (!page.url().includes("/legal/terms")) fail("the privacy page should link to the terms");
+  else ok("terms reachable from privacy");
+
+  // 6. The app opens with the network gone: the worker has to serve the shell and its code.
+  await page.goto(base);
+  await page.waitForTimeout(600);
   await page.evaluate(() => navigator.serviceWorker.ready);
   await context.setOffline(true);
   // `load` never fires offline — the font stylesheet hangs — so wait for the document instead.

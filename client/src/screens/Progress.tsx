@@ -514,6 +514,15 @@ function InBodyScanCard() {
         <Icon name="chevron_right" className="text-on-surface-variant rtl:rotate-180 shrink-0" />
       </button>
 
+      {/* The photo leaves the device to be read — say so where the choice is made, not in a policy page. */}
+      <p className="px-1 text-label-sm text-on-surface-variant">
+        {t(
+          lang,
+          "الصورة تُرسل لخدمة قراءة تستخرج الأرقام، وما نحتفظ فيها.",
+          "The photo is sent to a reading service that extracts the numbers, and is not kept."
+        )}
+      </p>
+
       <Sheet open={Boolean(result)} onClose={() => setResult(null)}>
         {result && (
           <>

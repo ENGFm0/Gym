@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { Button, Field, Icon } from "@/components/ui";
 import { signIn, signUp } from "@/lib/firebase";
@@ -6,6 +7,7 @@ import { t, useUi } from "@/state/ui";
 
 export function SignIn() {
   const { lang, toggleLang, say } = useUi();
+  const navigate = useNavigate();
   const [mode, setMode] = useState<"in" | "up">("in");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -88,6 +90,21 @@ export function SignIn() {
             "Your data is yours; it reaches a coach only if you link one."
           )}
         </p>
+
+        <div className="flex items-center justify-center gap-4">
+          <button
+            onClick={() => navigate("/legal/privacy")}
+            className="tap text-label-sm text-primary-fixed underline underline-offset-4"
+          >
+            {t(lang, "سياسة الخصوصية", "Privacy")}
+          </button>
+          <button
+            onClick={() => navigate("/legal/terms")}
+            className="tap text-label-sm text-primary-fixed underline underline-offset-4"
+          >
+            {t(lang, "شروط الاستخدام", "Terms")}
+          </button>
+        </div>
       </div>
     </div>
   );
