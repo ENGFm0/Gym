@@ -32,8 +32,8 @@ public class PlanCalculatorTests
     {
         var plan = PlanCalculator.For(Member(), Today);
 
-        // 10*92.8 + 6.25*185 - 5*30 + 5 = 1939.5
-        Assert.Equal(1940, plan.Bmr);
+        // 928 + 1156.25 - 150 + 5 = 1939.25
+        Assert.Equal(1939, plan.Bmr);
     }
 
     [Fact]
