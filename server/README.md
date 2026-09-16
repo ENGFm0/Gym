@@ -36,6 +36,8 @@ through `POST /api/me/become-coach`; the client must refresh its ID token once a
 | `Firebase:StorageBucket` | bucket for progress photos, e.g. `fitcore.appspot.com` |
 | `Firebase:SignedUrlMinutes` | how long an upload or read link lives (default 15) |
 | `Cors:Origins` | the origins the React app is served from |
+| `Anthropic:ApiKey` | key for reading InBody reports; empty falls back to `ANTHROPIC_API_KEY` |
+| `Anthropic:Model` | defaults to `claude-opus-5` |
 
 ```bash
 dotnet user-secrets --project src/FitCore.Api set "Firebase:ProjectId" "your-project"
@@ -91,6 +93,8 @@ Firestore cannot `SUM` or `GROUP BY`, so weekly figures are computed from a boun
 | GET/POST/DELETE | `/api/training/sessions` | log a session, read the history |
 | GET | `/api/training/exercises/{name}/last` | last working set |
 | GET/POST/DELETE | `/api/coach/trainees…` | coach dashboard, plan against actual |
+| POST | `/api/scan/inbody` | reads a body-composition photo into typed numbers |
+| POST | `/api/scan/inbody/save` | keeps the numbers the member confirmed |
 
 ## Firestore security rules
 
@@ -104,3 +108,30 @@ service cloud.firestore {
   }
 }
 ```
+
+## Reading InBody reports
+
+`POST /api/scan/inbody` takes the photo as multipart and sends it to Claude with a JSON
+schema, so the response always has the same shape and never needs parsing out of prose.
+The numbers come back with a `confidence` and go to the member to confirm — nothing is
+written until they accept, and what they keep is stored as an ordinary weigh-in so the
+history stays one list.
+
+The model is `claude-opus-5` (`Anthropic:Model`). A refusal arrives as a normal 200 with
+stop details rather than an exception, and is handled as an unreadable sheet. If you want
+the server-side fallback behaviour on refusals, move the call to `client.Beta.Messages`
+with the `server-side-fallback-2026-07-01` beta and `fallbacks: "default"`.
+
+Images are capped at 8 MB and limited to JPEG, PNG and WebP.
+
+## Tests
+
+```bash
+dotnet test
+```
+
+`tests/FitCore.Application.Tests` covers the maths that everything else reads: Mifflin-St
+Jeor against a hand-computed BMR, age derived from the birth date, the activity factors,
+the goal deltas and the 1200 kcal floor, the macro split per diet, the 1-to-7-day week
+planner (including that flipping days keeps the exercises already entered and that the last
+training day cannot be removed), and MET burn.

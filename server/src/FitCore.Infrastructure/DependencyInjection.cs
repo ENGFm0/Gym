@@ -3,6 +3,7 @@ using FitCore.Infrastructure.Catalog;
 using FitCore.Infrastructure.Firestore;
 using FitCore.Infrastructure.Firestore.Repositories;
 using FitCore.Infrastructure.Identity;
+using FitCore.Infrastructure.Scanning;
 using FitCore.Infrastructure.Storage;
 using Google.Cloud.Firestore;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +17,7 @@ public static class DependencyInjection
     public static IServiceCollection AddFitCoreInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<FirebaseOptions>(configuration.GetSection(FirebaseOptions.SectionName));
+        services.Configure<ClaudeOptions>(configuration.GetSection(ClaudeOptions.SectionName));
 
         services.AddSingleton(sp =>
         {
@@ -38,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<IFoodCatalog, FirestoreFoodCatalog>();
         services.AddSingleton<IPhotoStorage, FirebasePhotoStorage>();
         services.AddSingleton<IIdentityService, FirebaseIdentityService>();
+        services.AddSingleton<IInBodyScanner, ClaudeInBodyScanner>();
 
         return services;
     }

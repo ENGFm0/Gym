@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button, Card, Field, Icon, Label, Segmented, Sheet, Title } from "@/components/ui";
+import { BarcodeScanner } from "@/components/BarcodeScanner";
+import { api } from "@/lib/api";
 import { MEAL_LABELS } from "@/lib/catalog";
 import { dec, n, parseNumber } from "@/lib/format";
 import { useAddEntry, useFoodSearch } from "@/lib/queries";
@@ -18,6 +20,7 @@ export function AddFood() {
   const [picked, setPicked] = useState<Food | null>(null);
   const [quantity, setQuantity] = useState("");
   const [manual, setManual] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const [custom, setCustom] = useState({ name: "", kcal: "", protein: "", carbs: "", fat: "" });
 
   const foods = useFoodSearch(query);
@@ -85,14 +88,23 @@ export function AddFood() {
         options={SLOTS.map((value) => ({ value, label: t(lang, MEAL_LABELS[value][0], MEAL_LABELS[value][1]) }))}
       />
 
-      <div className="rounded-xl bg-surface-container-high px-4 h-12 flex items-center gap-2">
-        <Icon name="search" className="text-on-surface-variant" />
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={t(lang, "دجاج، أرز، تمر…", "chicken, rice, dates…")}
-          className="flex-1 bg-transparent border-0 text-body-lg text-on-surface focus:outline-none"
-        />
+      <div className="flex gap-2">
+        <div className="flex-1 rounded-xl bg-surface-container-high px-4 h-12 flex items-center gap-2">
+          <Icon name="search" className="text-on-surface-variant" />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={t(lang, "دجاج، أرز، تمر…", "chicken, rice, dates…")}
+            className="flex-1 bg-transparent border-0 text-body-lg text-on-surface focus:outline-none"
+          />
+        </div>
+        <button
+          onClick={() => setScanning(true)}
+          aria-label={t(lang, "امسح الباركود", "Scan a barcode")}
+          className="tap w-12 h-12 rounded-xl bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0"
+        >
+          <Icon name="barcode_scanner" size={20} />
+        </button>
       </div>
 
       <div className="rounded-2xl bg-surface-container divide-y divide-outline-variant/40 overflow-hidden">
@@ -126,6 +138,25 @@ export function AddFood() {
         <Icon name="edit" />
         {t(lang, "صنف من عندك", "Custom item")}
       </Button>
+
+      <BarcodeScanner
+        open={scanning}
+        onClose={() => setScanning(false)}
+        onCode={async (code) => {
+          setScanning(false);
+          const matches = await api.searchFoods(code);
+          const hit = matches.find((food) => food.barcode === code) ?? matches[0];
+          if (hit) {
+            setPicked(hit);
+            setQuantity(String(hit.baseAmount));
+            return;
+          }
+          // Not in the catalog yet: open the manual form rather than a dead end.
+          say(t(lang, "ما لقيناه — سجّله يدوياً ونحفظه لك", "Not in the catalog — add it once and we keep it"));
+          setCustom({ ...custom, name: code });
+          setManual(true);
+        }}
+      />
 
       <Sheet open={Boolean(picked)} onClose={() => setPicked(null)}>
         {picked && (

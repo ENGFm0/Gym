@@ -5,8 +5,8 @@
 import { mockApi, type MockApi } from "./mock";
 import { idToken } from "./firebase";
 import type {
-  Activity, ActivityCatalogItem, Day, Diet, Food, MealSlot, Measurement, Photo,
-  Plan, Profile, Program, Session, SessionExercise, WeekSummary, Weight
+  Activity, ActivityCatalogItem, Day, Diet, Food, InBodyScan, MealSlot, Measurement, Photo,
+  Plan, Profile, Program, Session, SessionExercise, Trainee, WeekSummary, Weight
 } from "./types";
 
 const base = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
@@ -123,6 +123,46 @@ const httpApi: MockApi = {
   },
 
   getWeek: () => call<WeekSummary>("/api/training/week"),
+
+  /* ---- coach ---- */
+
+  becomeCoach: () => call<Profile>("/api/me/become-coach", { method: "POST" }),
+  getTrainees: () => call<Trainee[]>("/api/coach/trainees"),
+  inviteTrainee: async (email, name) => {
+    await call<unknown>("/api/coach/trainees", { method: "POST", body: body({ email, name }) });
+    return call<Trainee[]>("/api/coach/trainees");
+  },
+  assignDiet: async (traineeUid, dietId) => {
+    await call<void>(`/api/coach/trainees/${traineeUid}/diet`, { method: "PUT", body: body(dietId) });
+    return call<Trainee[]>("/api/coach/trainees");
+  },
+  removeTrainee: async (traineeUid) => {
+    await call<void>(`/api/coach/trainees/${traineeUid}`, { method: "DELETE" });
+    return call<Trainee[]>("/api/coach/trainees");
+  },
+
+  /* ---- body composition scan ---- */
+
+  /** The photo goes up as multipart; the API reads it and hands back typed numbers. */
+  scanInBody: async (dataUrl) => {
+    const blob = await (await fetch(dataUrl)).blob();
+    const form = new FormData();
+    form.append("image", blob, "inbody.jpg");
+
+    const token = await idToken();
+    const response = await fetch(`${base}/api/scan/inbody`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form
+    });
+
+    if (!response.ok) throw new Error(await response.text().catch(() => "scan failed"));
+    return (await response.json()) as InBodyScan;
+  },
+
+  saveScan: async (scan) => {
+    await call<void>("/api/scan/inbody/save", { method: "POST", body: body(scan) });
+  },
 
   reset: async () => {}
 };

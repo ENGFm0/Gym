@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
-import { Button, Card, Field, Icon, Label, Segmented, Title, cx } from "@/components/ui";
+import { Button, Card, Field, Icon, Label, Segmented, Sheet, Title, cx } from "@/components/ui";
 import { BODY_PARTS } from "@/lib/catalog";
 import { dec, lengthLabel, massLabel, parseNumber, raw, shortDate, showLength, showMass, toCm, toKg } from "@/lib/format";
 import {
   useAddMeasurement, useAddPhoto, useAddWeight, useDeleteMeasurement, useDeletePhoto,
-  useDeleteWeight, useMeasurements, usePhotos, useProfile, useWeights
+  useDeleteWeight, useMeasurements, usePhotos, useProfile, useSaveScan, useScanInBody, useWeights
 } from "@/lib/queries";
+import type { InBodyScan } from "@/lib/types";
 import { t, useUi } from "@/state/ui";
 
 type Tab = "weight" | "size" | "photos";
@@ -113,6 +114,10 @@ function WeightTab() {
             {current.delta <= 0 ? "−" : "+"} {massLabel(units, lang)}
           </div>
         )}
+      </div>
+
+      <div className="mt-4">
+        <InBodyScanCard />
       </div>
 
       <div className="flex items-end gap-2 mt-4">
@@ -359,5 +364,147 @@ function PhotoTab() {
         </div>
       )}
     </Card>
+  );
+}
+
+/* --------------------------- InBody scan --------------------------- */
+
+/**
+ * Photograph an InBody or smart-scale printout and let the API read it.
+ * The numbers land in a sheet for the member to confirm — a misread digit
+ * should never write itself into their history.
+ */
+function InBodyScanCard() {
+  const { lang, say } = useUi();
+  const scan = useScanInBody();
+  const saveScan = useSaveScan();
+  const input = useRef<HTMLInputElement>(null);
+  const [result, setResult] = useState<InBodyScan | null>(null);
+  const [keep, setKeep] = useState({ weight: true, fat: true, muscle: true });
+
+  const rows: [keyof typeof keep, string, string, number | null | undefined, string][] = result
+    ? [
+        ["weight", "الوزن", "Weight", result.weightKg, t(lang, "كجم", "kg")],
+        ["fat", "نسبة الدهون", "Body fat", result.bodyFatPercent, "٪"],
+        ["muscle", "الكتلة العضلية", "Muscle", result.skeletalMuscleKg, t(lang, "كجم", "kg")]
+      ]
+    : [];
+
+  return (
+    <>
+      <input
+        ref={input}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        hidden
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = async () => {
+            try {
+              const reading = await scan.mutateAsync(String(reader.result));
+              if (reading.confidence <= 0 && reading.weightKg == null) {
+                say(
+                  reading.note === "offline"
+                    ? t(lang, "قراءة التقرير تحتاج الاتصال بالسيرفر", "Reading a report needs the API")
+                    : t(lang, "ما قدرنا نقرأ الورقة — صوّرها بإضاءة أوضح", "We could not read the sheet — try clearer light")
+                );
+                return;
+              }
+              setResult(reading);
+              setKeep({ weight: true, fat: true, muscle: true });
+            } catch {
+              say(t(lang, "ما قدرنا نقرأ الورقة", "The sheet could not be read"));
+            }
+          };
+          reader.readAsDataURL(file);
+          event.target.value = "";
+        }}
+      />
+
+      <button
+        onClick={() => input.current?.click()}
+        disabled={scan.isPending}
+        className="tap w-full rounded-xl bg-surface-container-high p-3 flex items-center gap-3 text-start disabled:opacity-60"
+      >
+        <span className="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+          <Icon name={scan.isPending ? "hourglass_top" : "document_scanner"} />
+        </span>
+        <span className="flex-1 min-w-0">
+          <span className="block text-label-lg text-on-surface">
+            {scan.isPending ? t(lang, "نقرأ الورقة…", "Reading the sheet…") : t(lang, "صوّر تقرير InBody", "Scan an InBody report")}
+          </span>
+          <span className="block text-label-sm text-on-surface-variant">
+            {t(lang, "نقرأ الأرقام ونعرضها لك قبل ما نحفظ", "We read the numbers and show them before saving")}
+          </span>
+        </span>
+        <Icon name="chevron_right" className="text-on-surface-variant rtl:rotate-180 shrink-0" />
+      </button>
+
+      <Sheet open={Boolean(result)} onClose={() => setResult(null)}>
+        {result && (
+          <>
+            <Title>{t(lang, "هذي القراءة", "Here is the reading")}</Title>
+            <Label>
+              {result.deviceName ? `${result.deviceName} · ` : ""}
+              {result.confidence < 0.6
+                ? t(lang, "راجع الأرقام — الصورة مو واضحة تماماً", "Check the numbers — the photo was not fully clear")
+                : t(lang, "اختر وش تحفظ", "Pick what to keep")}
+            </Label>
+
+            <div className="mt-3 rounded-2xl bg-surface-container-high divide-y divide-outline-variant/40 overflow-hidden">
+              {rows.map(([key, ar, en, value, unit]) => (
+                <button
+                  key={key}
+                  disabled={value == null}
+                  onClick={() => setKeep({ ...keep, [key]: !keep[key] })}
+                  className="tap w-full flex items-center justify-between px-4 py-3 text-start disabled:opacity-40"
+                >
+                  <span className="text-label-lg text-on-surface">{t(lang, ar, en)}</span>
+                  <span className="flex items-center gap-3">
+                    <span className="text-title-md text-on-surface tabular-nums">
+                      {value == null ? "—" : `${dec(value, 1, lang)} ${unit}`}
+                    </span>
+                    <span
+                      className={cx(
+                        "w-6 h-6 rounded-full flex items-center justify-center",
+                        value != null && keep[key] ? "bg-primary-fixed text-on-primary-fixed" : "bg-surface-container"
+                      )}
+                    >
+                      {value != null && keep[key] && <Icon name="check" size={14} />}
+                    </span>
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {result.note && result.note !== "offline" && (
+              <p className="mt-2 text-label-sm text-on-surface-variant">{result.note}</p>
+            )}
+
+            <Button
+              className="w-full mt-3"
+              disabled={!result.weightKg || !keep.weight || saveScan.isPending}
+              onClick={async () => {
+                await saveScan.mutateAsync({
+                  weightKg: keep.weight ? result.weightKg : null,
+                  bodyFatPercent: keep.fat ? result.bodyFatPercent : null,
+                  skeletalMuscleKg: keep.muscle ? result.skeletalMuscleKg : null
+                });
+                setResult(null);
+                say(t(lang, "انحفظت القراءة", "Reading saved"));
+              }}
+            >
+              {t(lang, "احفظها كقراءة", "Save as a reading")}
+            </Button>
+            <Button variant="soft" className="w-full mt-2" onClick={() => setResult(null)}>
+              {t(lang, "تجاهل", "Discard")}
+            </Button>
+          </>
+        )}
+      </Sheet>
+    </>
   );
 }

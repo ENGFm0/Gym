@@ -1,0 +1,31 @@
+services:
+  api:
+    build: ./server
+    ports:
+      - "5126:8080"
+    environment:
+      Firebase__ProjectId: ${FIREBASE_PROJECT_ID}
+      Firebase__StorageBucket: ${FIREBASE_STORAGE_BUCKET}
+      # The service account is mounted rather than pasted into the environment.
+      GOOGLE_APPLICATION_CREDENTIALS: /secrets/service-account.json
+      Anthropic__ApiKey: ${ANTHROPIC_API_KEY}
+      Cors__Origins__0: http://localhost:5173
+      Cors__Origins__1: http://localhost:8080
+    volumes:
+      - ./secrets:/secrets:ro
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./client
+      args:
+        VITE_API_BASE: http://localhost:5126
+        VITE_FIREBASE_API_KEY: ${FIREBASE_API_KEY}
+        VITE_FIREBASE_AUTH_DOMAIN: ${FIREBASE_AUTH_DOMAIN}
+        VITE_FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+        VITE_FIREBASE_APP_ID: ${FIREBASE_APP_ID}
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped

@@ -1,0 +1,11 @@
+rules_version = '2';
+
+// Progress photos are uploaded with a short-lived signed URL issued by the API,
+// which carries its own authorisation — so the rules stay closed to everyone else.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

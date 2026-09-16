@@ -7,7 +7,8 @@ src/
   lib/       api client, types, formatting, catalogs, the demo store
   state/     language and theme
   components/ shell, design-system primitives, the wordmark
-  screens/   sign in, onboarding, home, meals, add food, diet, training, session, progress, profile
+  screens/   sign in, onboarding, home, meals, add food, diet, training, session,
+             progress, profile, coach
 ```
 
 ## Two modes
@@ -39,6 +40,17 @@ VITE_FIREBASE_APP_ID=…
 # VITE_HASH_ROUTER=1   only for static hosting with no rewrite to index.html
 ```
 
+## The parts that touch the phone
+
+- **Steps** come from `DeviceMotion` with a peak detector, batched before they reach the API
+  (`screens/Home.tsx`). The manual sheet is the fallback for when the phone was in a bag.
+- **Barcodes** use the browser's `BarcodeDetector` against a rear-camera stream
+  (`components/BarcodeScanner.tsx`). Safari has no detector yet, so the same sheet takes a
+  typed number; an unknown code opens the custom-item form instead of dead-ending.
+- **InBody reports** are photographed and sent to `/api/scan/inbody`; the numbers come back
+  for the member to tick before anything is saved (`screens/Progress.tsx`). In demo mode the
+  scan reports honestly that it needs the API rather than inventing values.
+
 ## Design
 
 The palette is generated from the prototype's `tokens.json`, so the two never drift: colours are
@@ -48,3 +60,10 @@ it stays visible in both themes.
 
 Numbers render in the reader's own digits (`src/lib/format.ts`), except in fields that are about to
 be typed over — those stay Latin so the keyboard behaves.
+
+## Smoke test
+
+`npm run smoke` builds nothing itself — it serves `dist` with `vite preview` and walks the
+app: onboarding, logging food, rearranging the training week, and two weigh-ins that both
+have to survive. It runs in CI after the build. Locally, `CHROMIUM_PATH=/path/to/chrome`
+reuses a browser you already have instead of downloading one.

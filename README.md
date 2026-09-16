@@ -1,8 +1,61 @@
-# قِوام — تطبيق دايت ولياقة (مرحلة التصميم)
+# قِوام — FitCore
 
 تطبيق وموقع لتتبّع الدايت والتمارين: أنظمة غذائية عالمية، تسجيل الوجبات
 بالباركود والبحث واليدوي، تسجيل التمارين ومتابعة التطوّر، حساب السعرات
-والماكروز تلقائياً، عدّاد المشي، وربط ميزان ذكي (XG Scale).
+والماكروز تلقائياً، عدّاد خطوات من حسّاس الجوال، قراءة تقارير InBody،
+ووحدة كاملة للمدرّب.
+
+## بنية المستودع
+
+| المجلد | وش فيه |
+|---|---|
+| `server/` | الـAPI بـASP.NET Core 8 — أربع طبقات، فايربيز للبيانات والهوية |
+| `client/` | تطبيق React + TypeScript + Vite |
+| `web/` | النموذج الأولي (ملف واحد يشتغل بفتحه بالمتصفح) |
+| `design/` | لوحة التصميم — كل الشاشات كـ`.dc.html` |
+| `docs/` | وثيقة المشروع وبرومبتات Stitch |
+
+## التشغيل
+
+```bash
+cp .env.example .env            # املأ مفاتيح فايربيز ومفتاح Anthropic
+mkdir -p secrets                # وحط service-account.json جواه
+docker compose up --build       # الويب على :8080 والـAPI على :5126
+```
+
+أو محلياً بدون Docker:
+
+```bash
+dotnet run --project server/src/FitCore.Api     # http://localhost:5126/swagger
+cd client && npm install && npm run dev          # http://localhost:5173
+```
+
+بدون `VITE_API_BASE` يشتغل الفرونت **بوضع تجربة**: كل شي في متصفحك،
+تقدر تجرّب التطبيق كامل قبل ما تنشر السيرفر.
+
+## التحقق
+
+```bash
+cd server && dotnet test                        # حسابات الخطة والأسبوع والحرق
+cd client && npm run lint && npm run build      # فحص الأنواع والبناء
+cd client && npm run smoke                      # مرور آلي على التطبيق المبني
+```
+
+CI في `.github/workflows/ci.yml` يشغّل الثلاثة ويبني صور Docker.
+
+## قواعد فايربيز
+
+`firestore.rules` و`storage.rules` مقفلة بالكامل عن المتصفح: الوصول كله يمر
+بالـAPI اللي يتحقق من هوية صاحب الطلب. انشرها بـ:
+
+```bash
+firebase deploy --only firestore:rules,storage:rules
+```
+
+---
+
+# النموذج الأولي والتصميم (المرحلة السابقة)
+
 
 ## نسخة الويب الشغّالة
 

@@ -176,6 +176,19 @@ export function ProfileScreen() {
           <span className="text-label-lg text-on-surface">{t(lang, "تقدّمي", "My progress")}</span>
           <Icon name="chevron_right" className="text-on-surface-variant rtl:rotate-180" />
         </button>
+        <button onClick={() => navigate("/coach")} className="tap w-full flex items-center justify-between px-4 py-3.5 text-start">
+          <span>
+            <span className="block text-label-lg text-on-surface">
+              {me.isCoach ? t(lang, "متدربيني", "My trainees") : t(lang, "وضع المدرّب", "Coach mode")}
+            </span>
+            <span className="block text-label-sm text-on-surface-variant">
+              {me.isCoach
+                ? t(lang, "تابع تقدّمهم وأعطهم نظامهم", "Follow their progress and set their diet")
+                : t(lang, "عندك متدربين؟ فعّله", "Have trainees? turn it on")}
+            </span>
+          </span>
+          <Icon name="chevron_right" className="text-on-surface-variant rtl:rotate-180" />
+        </button>
       </div>
 
       <Button

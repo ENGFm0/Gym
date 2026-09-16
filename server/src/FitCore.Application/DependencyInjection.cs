@@ -16,6 +16,7 @@ public static class DependencyInjection
         services.AddScoped<TrainingService>();
         services.AddScoped<WeekSummaryService>();
         services.AddScoped<CoachService>();
+        services.AddScoped<ScanService>();
         return services;
     }
 }

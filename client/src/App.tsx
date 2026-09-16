@@ -14,6 +14,7 @@ import { Training } from "./screens/Training";
 import { Session } from "./screens/Session";
 import { Progress } from "./screens/Progress";
 import { ProfileScreen } from "./screens/Profile";
+import { Coach } from "./screens/Coach";
 
 /** Static hosting without a rewrite rule cannot serve deep links; there the hash router is the honest choice. */
 const Router = import.meta.env.VITE_HASH_ROUTER ? HashRouter : BrowserRouter;
@@ -75,6 +76,7 @@ export function App() {
           <Route path="/training/session/:slot" element={<Session />} />
           <Route path="/progress" element={<Progress />} />
           <Route path="/profile" element={<ProfileScreen />} />
+          <Route path="/coach" element={<Coach />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

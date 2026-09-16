@@ -8,8 +8,8 @@ import {
 } from "./engine";
 import { FOODS, ACTIVITY_LIBRARY, DIETS, EXERCISES } from "./catalog";
 import type {
-  Activity, ActivityCatalogItem, Day, Diet, Food, Meal, MealEntry, MealSlot,
-  Measurement, Photo, Profile, Program, Session, SessionExercise, WeekSummary, Weight
+  Activity, ActivityCatalogItem, Day, Diet, Food, InBodyScan, Meal, MealEntry, MealSlot,
+  Measurement, Photo, Profile, Program, Session, SessionExercise, Trainee, WeekSummary, Weight
 } from "./types";
 
 const KEY = "fitcore.demo.v1";
@@ -26,6 +26,7 @@ interface Store {
   program: Program | null;
   exLast: Record<string, { weightKg: number; reps: number; atUtc: string }>;
   customFoods: Food[];
+  trainees: Trainee[];
 }
 
 const blankProfile = (): Profile => ({
@@ -69,7 +70,8 @@ function empty(): Store {
     sessions: [],
     program: null,
     exLast: {},
-    customFoods: []
+    customFoods: [],
+    trainees: []
   };
 }
 
@@ -504,6 +506,70 @@ export const mockApi = {
       today,
       isRestDay: !today
     };
+  },
+
+  /* ---- coach ---- */
+
+  async becomeCoach(): Promise<Profile> {
+    store.profile.isCoach = true;
+    if (store.trainees.length === 0) {
+      // A demo roster, so the coach screens have something to show.
+      store.trainees = [
+        { uid: "t1", name: "سعود", status: "active", startedAtUtc: new Date(Date.now() - 40 * 864e5).toISOString(),
+          weightKg: 88.4, weightDelta: -0.9, sessionsThisWeek: 3, adherencePercent: 75, assignedDietId: "highprotein" },
+        { uid: "t2", name: "نورة", status: "active", startedAtUtc: new Date(Date.now() - 12 * 864e5).toISOString(),
+          weightKg: 63.1, weightDelta: -0.4, sessionsThisWeek: 2, adherencePercent: 66, assignedDietId: "balanced" },
+        { uid: "t3", name: "خالد", status: "invited", startedAtUtc: new Date().toISOString(),
+          weightKg: null, weightDelta: null, sessionsThisWeek: 0, adherencePercent: 0, assignedDietId: null }
+      ];
+    }
+    save();
+    return store.profile;
+  },
+
+  async getTrainees(): Promise<Trainee[]> {
+    return store.trainees;
+  },
+
+  async inviteTrainee(email: string, name?: string): Promise<Trainee[]> {
+    store.trainees.push({
+      uid: "t" + id(), name: name || email, status: "invited",
+      startedAtUtc: new Date().toISOString(), weightKg: null, weightDelta: null,
+      sessionsThisWeek: 0, adherencePercent: 0, assignedDietId: null
+    });
+    save();
+    return store.trainees;
+  },
+
+  async assignDiet(traineeUid: string, dietId: string): Promise<Trainee[]> {
+    const trainee = store.trainees.find((t) => t.uid === traineeUid);
+    if (trainee) trainee.assignedDietId = dietId;
+    save();
+    return store.trainees;
+  },
+
+  async removeTrainee(traineeUid: string): Promise<Trainee[]> {
+    store.trainees = store.trainees.filter((t) => t.uid !== traineeUid);
+    save();
+    return store.trainees;
+  },
+
+  /* ---- body composition scan ---- */
+
+  /**
+   * Offline there is no model to read the sheet, so the scan reports that plainly
+   * rather than inventing numbers the member might save.
+   */
+  async scanInBody(_dataUrl: string): Promise<InBodyScan> {
+    return {
+      weightKg: null, bodyFatPercent: null, skeletalMuscleKg: null, bodyFatMassKg: null,
+      bmi: null, basalMetabolicRate: null, visceralFatLevel: null, bodyWaterLitres: null,
+      measuredOn: null, deviceName: null, confidence: 0, note: "offline"
+    };
+  },
+
+  async saveScan(scan: { weightKg?: number | null; bodyFatPercent?: number | null; skeletalMuscleKg?: number | null }) {
+    if (scan.weightKg) await this.addWeight(scan.weightKg, "inbody");
   },
 
   /** Used by the sign-out button in demo mode. */

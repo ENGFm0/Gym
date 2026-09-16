@@ -174,3 +174,34 @@ export interface ActivityCatalogItem {
   icon: string;
   unit: "session" | "minutes";
 }
+
+/* ---- coach ---- */
+
+export interface Trainee {
+  uid: string;
+  name: string;
+  status: "invited" | "active" | "paused";
+  startedAtUtc: string;
+  weightKg?: number | null;
+  weightDelta?: number | null;
+  sessionsThisWeek: number;
+  adherencePercent: number;
+  assignedDietId?: string | null;
+}
+
+/* ---- body composition scan ---- */
+
+export interface InBodyScan {
+  weightKg?: number | null;
+  bodyFatPercent?: number | null;
+  skeletalMuscleKg?: number | null;
+  bodyFatMassKg?: number | null;
+  bmi?: number | null;
+  basalMetabolicRate?: number | null;
+  visceralFatLevel?: number | null;
+  bodyWaterLitres?: number | null;
+  measuredOn?: string | null;
+  deviceName?: string | null;
+  confidence: number;
+  note?: string | null;
+}

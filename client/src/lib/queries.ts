@@ -16,7 +16,8 @@ export const keys = {
   program: ["program"] as const,
   exerciseLibrary: ["exerciseLibrary"] as const,
   sessions: ["sessions"] as const,
-  week: ["week"] as const
+  week: ["week"] as const,
+  trainees: ["trainees"] as const
 };
 
 export const useProfile = () => useQuery({ queryKey: keys.profile, queryFn: () => api.getProfile() });
@@ -172,6 +173,51 @@ export function useLogSession() {
     mutationFn: (input: { activityId: string; minutes?: number; distanceKm?: number; exercises?: SessionExercise[] }) =>
       api.logSession(input),
     onSuccess: () => refresh(keys.sessions, keys.week, keys.activities, keys.day(todayKey()))
+  });
+}
+
+export const useTrainees = (enabled: boolean) =>
+  useQuery({ queryKey: keys.trainees, queryFn: () => api.getTrainees(), enabled });
+
+export function useBecomeCoach() {
+  const refresh = useRefresh();
+  return useMutation({
+    mutationFn: () => api.becomeCoach(),
+    onSuccess: () => refresh(keys.profile, keys.trainees)
+  });
+}
+
+export function useInviteTrainee() {
+  const refresh = useRefresh();
+  return useMutation({
+    mutationFn: (input: { email: string; name?: string }) => api.inviteTrainee(input.email, input.name),
+    onSuccess: () => refresh(keys.trainees)
+  });
+}
+
+export function useAssignDiet() {
+  const refresh = useRefresh();
+  return useMutation({
+    mutationFn: (input: { uid: string; dietId: string }) => api.assignDiet(input.uid, input.dietId),
+    onSuccess: () => refresh(keys.trainees)
+  });
+}
+
+export function useRemoveTrainee() {
+  const refresh = useRefresh();
+  return useMutation({ mutationFn: (uid: string) => api.removeTrainee(uid), onSuccess: () => refresh(keys.trainees) });
+}
+
+export function useScanInBody() {
+  return useMutation({ mutationFn: (dataUrl: string) => api.scanInBody(dataUrl) });
+}
+
+export function useSaveScan() {
+  const refresh = useRefresh();
+  return useMutation({
+    mutationFn: (scan: { weightKg?: number | null; bodyFatPercent?: number | null; skeletalMuscleKg?: number | null }) =>
+      api.saveScan(scan),
+    onSuccess: () => refresh(keys.weights, keys.profile, keys.plan)
   });
 }
 
