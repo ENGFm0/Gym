@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html class="dark" dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
+<title>قِوام — FitCore</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style id="tw">/*TW_CSS*/</style>
+<style>
+  /*PALETTE*/
+  html, body { margin:0; padding:0; }
+  body { overscroll-behavior-y:none; }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+  ::-webkit-scrollbar { display:none; }
+  [data-screen] > :first-child { margin-top:0 !important; }
+  /* the exported screens each carried their own fixed header and tab bar — the shell provides one of each */
+  [data-screen] header.fixed, [data-screen] nav.fixed { display:none !important; }
+  [data-screen] .pt-16 { padding-top:0 !important; }
+  [data-screen] .min-h-screen { min-height:0 !important; }
+  .fade { animation: fade .18s ease-out; }
+  @keyframes fade { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce) { .fade { animation:none; } }
+  .tap { -webkit-tap-highlight-color: transparent; }
+  html.light .text-primary-fixed, html.light .text-primary-container,
+  html.light .text-primary-fixed-dim, html.light .text-surface-tint { color: #3F6A08 !important; }
+  html.light .text-secondary, html.light .text-secondary-fixed-dim { color: #00658A !important; }
+  html.light .text-tertiary-fixed-dim { color: #8A6100 !important; }
+  html.light .border-primary-fixed\/30, html.light .border-primary-container\/30 { border-color: rgb(77 103 0 / .35) !important; }
+  /* the icon font is a network font: if it never arrives, hide the ligature words instead of showing them */
+  html.icons-missing .material-symbols-outlined { visibility: hidden; }
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen">
+<!--LOGO-->
+
+<header class="fixed top-0 inset-x-0 z-50 pt-safe bg-surface-container-lowest/90 backdrop-blur-xl border-b border-outline-variant/40">
+  <div class="h-16 px-4 flex items-center gap-2 max-w-3xl mx-auto">
+    <button id="btn-back" class="tap w-11 h-11 shrink-0 rounded-xl bg-surface-container-low flex items-center justify-center text-on-surface" aria-label="رجوع" hidden>
+      <span class="material-symbols-outlined text-[20px] rtl:rotate-180">arrow_back</span>
+    </button>
+    <a href="#home" class="tap flex items-center shrink-0" aria-label="FitCore">
+      <svg class="w-auto" style="height:26px" viewBox="0 0 780 215" role="img" aria-label="FitCore"><use href="#brand-logo"></use></svg>
+    </a>
+    <div class="flex-1 min-w-0 text-center">
+      <h1 id="screen-title" class="font-title-md text-title-md text-on-surface truncate hidden sm:block"></h1>
+    </div>
+    <button id="btn-lang" class="tap h-11 px-3 shrink-0 rounded-xl bg-surface-container-low flex items-center gap-1 text-on-surface font-label-md text-label-md" aria-label="اللغة">
+      <span class="material-symbols-outlined text-[18px]">language</span><span id="lang-label">EN</span>
+    </button>
+    <button id="btn-theme" class="tap w-11 h-11 shrink-0 rounded-xl bg-surface-container-low flex items-center justify-center text-on-surface" aria-label="المظهر">
+      <span class="material-symbols-outlined text-[20px]" id="theme-icon">light_mode</span>
+    </button>
+    <button id="btn-menu" class="tap w-11 h-11 shrink-0 rounded-xl bg-surface-container-low flex items-center justify-center text-on-surface" aria-label="كل الشاشات">
+      <span class="material-symbols-outlined text-[20px]">apps</span>
+    </button>
+  </div>
+</header>
+
+<main id="view" class="max-w-3xl mx-auto px-gutter pt-20 pb-32 bg-surface min-h-screen">
+<section data-screen="profile" hidden>
+  <div id="profile-body" class="flex flex-col gap-4 pt-2"></div>
+</section>
+<!--SCREENS-->
+</main>
+
+<nav id="tabbar" class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface-container-lowest/95 backdrop-blur-xl border-t border-outline-variant/40" hidden>
+  <div class="h-20 max-w-3xl mx-auto px-4 flex items-end justify-between pb-2"></div>
+</nav>
+
+<div id="drawer" class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm hidden" role="dialog" aria-modal="true">
+  <div class="absolute inset-x-0 bottom-0 max-h-[85%] overflow-y-auto bg-surface-container rounded-t-3xl p-5 pb-safe">
+    <div class="w-10 h-1 rounded-full bg-outline/60 mx-auto mb-4"></div>
+    <div id="drawer-body" class="flex flex-col gap-5 max-w-3xl mx-auto"></div>
+  </div>
+</div>
+
+<div id="toast" class="fixed bottom-28 left-1/2 -translate-x-1/2 z-[70] px-4 py-2.5 rounded-xl bg-primary-container text-on-primary-container font-label-lg text-label-lg shadow-lg hidden"></div>
+
+<script>
+(function(){
+"use strict";
+var META  = /*SCREEN_META*/;
+var LINKS = /*LINKS*/;
+var TABS  = /*TABS*/;
+var I18N  = /*I18N*/;
+
+var byId = {}; META.forEach(function(s){ byId[s.id] = s; });
+var view = document.getElementById("view");
+var sections = {};
+Array.prototype.forEach.call(view.querySelectorAll("[data-screen]"), function(el){ sections[el.dataset.screen] = el; });
+
+var KEY = "qiwam.site.v1";
+var S = { theme:"dark", lang:"ar", profile:{}, seen:false };
+try { S = Object.assign(S, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch(e){}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+
+/* ---------------- numbers ---------------- */
+var AR = ["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"];
+function ar(n){ return String(Math.round(n)).replace(/[0-9]/g, function(d){ return AR[+d]; }); }
+function arGroup(n){ return Math.round(n).toLocaleString("en-US").replace(/,/g,"٬").replace(/[0-9]/g,function(d){ return AR[+d]; }); }
+
+/* ---------------- plan maths (same as the prototype) ---------------- */
+var ACT = { light:1.375, moderate:1.55, high:1.725 };
+var SPLIT = { keto:{f:.70,p:.25,c:.05}, highprotein:{f:.28,p:.37,c:.35}, balanced:{f:.30,p:.30,c:.40},
+              mediterranean:{f:.35,p:.20,c:.45}, if:{f:.30,p:.30,c:.40} };
+function plan(){
+  var p = S.profile;
+  var w = +p.weight || 81.4, h = +p.height || 178, age = +p.age || 29;
+  var male = p.gender !== "female";
+  var bmr = 10*w + 6.25*h - 5*age + (male ? 5 : -161);
+  var tdee = bmr * (ACT[p.activity] || 1.375);
+  var goal = p.goal || "fat_loss";
+  var pace = Math.min(1, Math.max(0.1, parseFloat(p.pace) || 0.5));
+  var delta = goal === "bulking" ? +Math.round(pace*1000) : goal === "maintenance" ? 0
+            : goal === "recomp" ? -250 : -Math.round(pace*1000);
+  var kcal = Math.max(1200, Math.round((tdee + delta)/10)*10);
+  var sp = SPLIT[p.diet] || SPLIT.balanced;
+  return { bmr:Math.round(bmr), tdee:Math.round(tdee), kcal:kcal,
+           p:Math.round(kcal*sp.p/4), c:Math.round(kcal*sp.c/4), f:Math.round(kcal*sp.f/9) };
+}
+
+/* ---------------- language ---------------- */
+var EN = I18N.en || {};
+function walkText(root, fn){
+  var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode: function(n){
+      if (!n.nodeValue || !n.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      var p = n.parentNode, tag = p && p.nodeName;
+      if (tag === "SCRIPT" || tag === "STYLE") return NodeFilter.FILTER_REJECT;
+      if (p && p.classList && p.classList.contains("material-symbols-outlined")) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  var n, list = [];
+  while ((n = w.nextNode())) list.push(n);
+  list.forEach(fn);
+}
+function applyLang(root){
+  var toEn = S.lang === "en";
+  walkText(root, function(n){
+    if (n.__ar === undefined) n.__ar = n.nodeValue;
+    var key = n.__ar.trim();
+    if (!toEn){ n.nodeValue = n.__ar; return; }
+    var hit = EN[key];
+    if (hit) n.nodeValue = n.__ar.replace(key, hit);
+  });
+}
+function setLang(l){
+  S.lang = l; save();
+  document.documentElement.lang = l === "en" ? "en" : "ar";
+  document.documentElement.dir  = l === "en" ? "ltr" : "rtl";
+  document.getElementById("lang-label").textContent = l === "en" ? "AR" : "EN";
+  render(current, true);
+}
+
+/* ---------------- theme ---------------- */
+function setTheme(t){
+  S.theme = t; save();
+  document.documentElement.classList.toggle("light", t === "light");
+  document.documentElement.classList.toggle("dark", t !== "light");
+  document.getElementById("theme-icon").textContent = t === "light" ? "dark_mode" : "light_mode";
+  document.querySelector('meta[name="theme-color"]') || (function(){
+    var m = document.createElement("meta"); m.name = "theme-color"; document.head.appendChild(m);
+  })();
+  document.querySelector('meta[name="theme-color"]').content = t === "light" ? "#F7F9F4" : "#121413";
+}
+
+/* ---------------- toast ---------------- */
+var toastEl = document.getElementById("toast"), toastT;
+function toast(msg){
+  toastEl.textContent = msg; toastEl.hidden = false; toastEl.classList.remove("hidden");
+  clearTimeout(toastT);
+  toastT = setTimeout(function(){ toastEl.classList.add("hidden"); }, 1800);
+}
+
+/* ---------------- the account screen (built from the data the user entered) ---------------- */
+var GOALS = { fat_loss:["خسارة دهون","Fat loss"], bulking:["بناء عضل","Muscle gain"],
+              recomp:["إعادة تكوين","Recomposition"], maintenance:["ثبات","Maintenance"] };
+var ACTS  = { light:["خفيف","Light"], moderate:["متوسط","Moderate"], high:["عالي","High"] };
+function tile(label, value, tone){
+  return '<div class="rounded-xl bg-surface-container-high p-3 flex flex-col gap-1">'+
+    '<span class="font-label-sm text-label-sm text-on-surface-variant">'+label+'</span>'+
+    '<span class="font-title-md text-title-md '+(tone||"text-on-surface")+' tabular-nums">'+value+'</span></div>';
+}
+function renderProfile(){
+  var en = S.lang === "en", p = S.profile, pl = plan(), box = document.getElementById("profile-body");
+  var dash = "—";
+  var name = p.name || (en ? "Your account" : "حسابك");
+  var goal = GOALS[p.goal] ? GOALS[p.goal][en?1:0] : dash;
+  var act  = ACTS[p.activity] ? ACTS[p.activity][en?1:0] : (en ? "Light" : "خفيف");
+  box.innerHTML =
+  '<div class="rounded-2xl bg-surface-container p-4 flex items-center gap-3">'+
+    '<div class="w-14 h-14 rounded-2xl bg-primary-fixed text-on-primary-fixed flex items-center justify-center font-headline-md text-headline-md">'+
+      (name.trim().charAt(0) || "؟")+'</div>'+
+    '<div class="flex-1 min-w-0"><div class="font-title-md text-title-md text-on-surface truncate">'+name+'</div>'+
+      '<div class="font-label-sm text-label-sm text-on-surface-variant truncate">'+(p.email || (en?"no email yet":"ما سجّلت بريدك"))+'</div></div>'+
+    '<button data-go="body" class="tap px-3 py-2 rounded-xl bg-primary-container text-on-primary-container font-label-lg text-label-lg">'+(en?"Edit":"تعديل")+'</button>'+
+  '</div>'+
+  '<div><div class="font-label-sm text-label-sm text-on-surface-variant mb-2">'+(en?"Your data":"بياناتك")+'</div>'+
+  '<div class="grid grid-cols-3 gap-2">'+
+    tile(en?"Weight":"الوزن",  p.weight ? p.weight+" "+(en?"kg":"كجم") : dash)+
+    tile(en?"Height":"الطول",  p.height ? p.height+" "+(en?"cm":"سم") : dash)+
+    tile(en?"Age":"العمر",     p.age ? p.age : dash)+
+    tile(en?"Goal":"الهدف",    goal)+
+    tile(en?"Diet":"النظام",   p.diet || (en?"Balanced":"متوازن"))+
+    tile(en?"Activity":"النشاط", act)+
+  '</div></div>'+
+  '<div class="rounded-2xl bg-surface-container p-4 flex flex-col gap-3 border border-primary-fixed/30">'+
+    '<div class="flex items-baseline justify-between"><span class="font-label-lg text-label-lg text-on-surface">'+(en?"Calculated plan":"خطتك المحسوبة")+'</span>'+
+    '<span class="font-label-sm text-label-sm text-on-surface-variant">Mifflin-St Jeor</span></div>'+
+    '<div class="flex items-end gap-2"><span class="font-metric-display-mobile text-metric-display-mobile font-bold text-on-surface tabular-nums">'+arGroup(pl.kcal)+'</span>'+
+    '<span class="font-body-md text-body-md text-on-surface-variant pb-1">'+(en?"kcal / day":"سعرة يومياً")+'</span></div>'+
+    '<div class="grid grid-cols-3 gap-2">'+
+      tile(en?"Protein":"بروتين", ar(pl.p)+" "+(en?"g":"جم"), "text-primary-fixed")+
+      tile(en?"Carbs":"كارب",     ar(pl.c)+" "+(en?"g":"جم"), "text-secondary")+
+      tile(en?"Fat":"دهون",       ar(pl.f)+" "+(en?"g":"جم"), "text-tertiary-fixed-dim")+
+    '</div>'+
+    '<div class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"BMR ":"أيض أساسي ")+arGroup(pl.bmr)+
+      (en?" · maintenance ":" · مصروف يومي ")+arGroup(pl.tdee)+'</div>'+
+  '</div>'+
+  '<div class="rounded-2xl bg-surface-container divide-y divide-outline-variant/40">'+
+    row(en?"Appearance":"المظهر", S.theme === "light" ? (en?"Light":"نهاري") : (en?"Dark":"ليلي"), "theme")+
+    row(en?"Language":"اللغة", S.lang === "en" ? "English" : "العربية", "lang")+
+    row(en?"Units":"الوحدات", en ? "kg · cm" : "كجم · سم", null)+
+  '</div>'+
+  '<div class="flex flex-col gap-2 pt-1">'+
+    '<button data-go="goal" class="tap h-12 rounded-xl bg-primary-fixed text-on-primary-fixed font-label-lg text-label-lg">'+(en?"Redo onboarding":"أعد التهيئة")+'</button>'+
+    '<button data-act="wipe" class="tap h-12 rounded-xl bg-surface-container-high text-on-surface-variant font-label-lg text-label-lg">'+(en?"Clear my data":"امسح بياناتي")+'</button>'+
+  '</div>';
+}
+function row(label, value, act){
+  return '<button '+(act?'data-act="'+act+'"':'')+' class="tap w-full flex items-center justify-between px-4 h-14 text-start">'+
+    '<span class="font-body-lg text-body-lg text-on-surface">'+label+'</span>'+
+    '<span class="font-label-lg text-label-lg text-on-surface-variant">'+value+'</span></button>';
+}
+
+/* ---------------- routing ---------------- */
+var current = null, stack = [];
+function tabbar(active){
+  var bar = document.querySelector("#tabbar > div");
+  if (!bar.childElementCount){
+    var html = "";
+    TABS.slice(0,2).forEach(function(t){ html += tabBtn(t); });
+    html += '<button data-go="quicklog" class="tap w-14 h-14 -mt-6 rounded-2xl bg-primary-fixed text-on-primary-fixed flex items-center justify-center shadow-lg shrink-0" aria-label="تسجيل سريع">'+
+            '<span class="material-symbols-outlined text-[26px]">add</span></button>';
+    TABS.slice(2).forEach(function(t){ html += tabBtn(t); });
+    bar.innerHTML = html;
+  }
+  Array.prototype.forEach.call(bar.querySelectorAll("[data-tab]"), function(b){
+    var on = b.dataset.tab === active;
+    b.className = "tap flex flex-col items-center gap-1 w-16 " + (on ? "text-primary-fixed" : "text-on-surface-variant");
+    var lbl = b.querySelector("[data-tab-label]");
+    lbl.textContent = S.lang === "en" ? lbl.dataset.en : lbl.dataset.ar;
+  });
+}
+function tabBtn(t){
+  return '<button data-go="'+t[0]+'" data-tab="'+t[0]+'" class="tap flex flex-col items-center gap-1 w-16 text-on-surface-variant">'+
+    '<span class="material-symbols-outlined text-[24px]">'+t[1]+'</span>'+
+    '<span data-tab-label data-ar="'+t[2]+'" data-en="'+t[3]+'" class="font-label-sm text-label-sm">'+t[2]+'</span></button>';
+}
+function render(id, keepStack){
+  var s = byId[id] || META[0];
+  if (!keepStack && current && current !== id) stack.push(current);
+  current = s.id;
+  Object.keys(sections).forEach(function(k){ sections[k].hidden = (k !== s.id); });
+  sections[s.id].classList.remove("fade"); void sections[s.id].offsetWidth; sections[s.id].classList.add("fade");
+  document.getElementById("screen-title").textContent = S.lang === "en" ? s.en : s.ar;
+  document.getElementById("btn-back").hidden = !stack.length;
+  var showTabs = s.group === "app" || s.group === "coach";
+  document.getElementById("tabbar").hidden = !showTabs;
+  view.classList.toggle("pb-32", showTabs);
+  view.classList.toggle("pb-10", !showTabs);
+  if (showTabs) tabbar(s.tab);
+  if (s.id === 'profile') renderProfile();
+  personalise(sections[s.id]);
+  wire(sections[s.id], s.id);
+  applyLang(sections[s.id]);
+  if (location.hash !== "#" + s.id) history.replaceState(null, "", "#" + s.id);
+  window.scrollTo(0, 0);
+}
+function go(id){ if (byId[id]) render(id); }
+document.getElementById("btn-back").addEventListener("click", function(){
+  var prev = stack.pop(); if (prev) render(prev, true);
+});
+
+/* ---------------- the user's own numbers flow into the screens ---------------- */
+function personalise(root){
+  var pl = plan(), name = S.profile.name;
+  walkText(root, function(n){
+    if (n.__src === undefined) n.__src = n.nodeValue;
+    var v = n.__src;
+    if (/١٩٥٠|1950/.test(v)) v = v.replace(/١٬?٩٥٠|1,?950/g, arGroup(pl.kcal));
+    if (name && /فهد/.test(v)) v = v.replace(/فهد/g, name);
+    if (v !== n.nodeValue) n.nodeValue = v;
+    n.__ar = undefined;          // let the translator re-read the personalised text
+  });
+}
+
+/* ---------------- make the static screens clickable ---------------- */
+function wire(root, id){
+  if (root.dataset.wired) { wireForms(root, id); return; }
+  root.dataset.wired = "1";
+  (LINKS[id] || []).forEach(function(pair){
+    var text = pair[0], target = pair[1];
+    var nodes = root.querySelectorAll("button, a, [role=button], .cursor-pointer, li, [class*=rounded]");
+    for (var i = 0; i < nodes.length; i++){
+      var el = nodes[i];
+      if (el.dataset.go) continue;
+      var t = (el.textContent || "").trim();
+      if (t.length && t.length < 70 && t.indexOf(text) > -1 && !el.querySelector("[data-go]")){
+        el.dataset.go = target;
+        el.classList.add("tap", "cursor-pointer");
+        break;
+      }
+    }
+  });
+  wireForms(root, id);
+  // generic segmented controls: clicking a sibling moves the active styling
+  Array.prototype.forEach.call(root.querySelectorAll("[data-active-classes]"), function(group){
+    var on = group.dataset.activeClasses.split(/\s+/);
+    Array.prototype.forEach.call(group.children, function(child){
+      child.addEventListener("click", function(){
+        Array.prototype.forEach.call(group.children, function(c){ on.forEach(function(k){ c.classList.remove(k); }); });
+        on.forEach(function(k){ child.classList.add(k); });
+      });
+    });
+  });
+}
+function wireForms(root, id){
+  Array.prototype.forEach.call(root.querySelectorAll("input, select, textarea"), function(el){
+    if (el.dataset.bound) return;
+    el.dataset.bound = "1";
+    var field = guessField(el, id);
+    if (!field) return;
+    if (el.type === "radio"){
+      el.addEventListener("change", function(){ if (el.checked){ S.profile[field] = el.value; save(); } });
+      if (el.checked && S.profile[field] === undefined) S.profile[field] = el.value;
+    } else {
+      if (S.profile[field] !== undefined && S.profile[field] !== "") el.value = S.profile[field];
+      el.addEventListener("input", function(){ S.profile[field] = el.value; save(); });
+    }
+  });
+}
+function labelFor(el){
+  if (el.id){
+    var l = document.querySelector('label[for="' + el.id + '"]');
+    if (l && l.textContent.trim()) return l.textContent.trim().slice(-60);
+  }
+  var lab = el.closest("label");
+  if (lab && lab.textContent.trim()) return lab.textContent.trim().slice(-60);
+  // otherwise: the text that sits immediately before this input, nothing more
+  var txt = "", node = el, guard = 0;
+  while (node && guard++ < 6){
+    var sib = node.previousSibling;
+    while (sib && txt.length < 60){
+      txt = (sib.textContent || "") + " " + txt;
+      sib = sib.previousSibling;
+    }
+    if (txt.trim().length > 1) break;
+    node = node.parentElement;
+  }
+  return txt.replace(/\s+/g, " ").trim().slice(-60);
+}
+function guessField(el, id){
+  if ((el.name || "").toLowerCase() === "fitness_goal") return "goal";
+  if (el.type === "password" || el.type === "checkbox") return null;
+  var hay = labelFor(el) + " " + (el.placeholder || "") + " " + (el.getAttribute("aria-label") || "");
+  if (el.type === "range") return "pace";
+  if (/الوزن المستهدف|target/i.test(hay)) return "target";
+  if (/الوزن|weight/i.test(hay)) return "weight";
+  if (/الطول|height/i.test(hay)) return "height";
+  if (/العمر|age/i.test(hay)) return "age";
+  if (el.type === "email" || /البريد|email/i.test(hay)) return "email";
+  if (/الجوال|الهاتف|phone|mobile/i.test(hay)) return "phone";
+  if (/الاسم|name/i.test(hay)) return "name";
+  return null;
+}
+
+/* ---------------- one click handler for everything ---------------- */
+document.addEventListener("click", function(e){
+  var act = e.target.closest("[data-act]");
+  if (act){
+    e.preventDefault();
+    if (act.dataset.act === "theme"){ setTheme(S.theme === "light" ? "dark" : "light"); renderProfile(); }
+    if (act.dataset.act === "lang"){ setLang(S.lang === "en" ? "ar" : "en"); }
+    if (act.dataset.act === "wipe"){ localStorage.removeItem(KEY); location.hash = ""; location.reload(); }
+    return;
+  }
+  var el = e.target.closest("[data-go]");
+  if (el){ e.preventDefault(); go(el.dataset.go); return; }
+  var a = e.target.closest('a[href^="#"]');
+  if (a){ e.preventDefault(); go(a.getAttribute("href").slice(1)); }
+});
+
+/* ---------------- drawer with every screen ---------------- */
+var drawer = document.getElementById("drawer");
+function buildDrawer(){
+  var groups = { auth:["الحساب","Account"], onboarding:["التهيئة","Onboarding"], app:["التطبيق","App"], coach:["المدرّب","Coach"] };
+  var body = document.getElementById("drawer-body"), html = "";
+  Object.keys(groups).forEach(function(g){
+    var items = META.filter(function(s){ return s.group === g; });
+    if (!items.length) return;
+    html += '<div><div class="font-label-sm text-label-sm text-on-surface-variant mb-2">'+
+            (S.lang === "en" ? groups[g][1] : groups[g][0])+'</div><div class="grid grid-cols-2 gap-2">'+
+      items.map(function(s){
+        return '<button data-go="'+s.id+'" class="tap text-start px-3 py-3 rounded-xl bg-surface-container-high text-on-surface font-label-lg text-label-lg">'+
+               (S.lang === "en" ? s.en : s.ar)+'</button>';
+      }).join("")+'</div></div>';
+  });
+  body.innerHTML = html;
+}
+document.getElementById("btn-menu").addEventListener("click", function(){
+  buildDrawer(); drawer.classList.remove("hidden");
+});
+drawer.addEventListener("click", function(e){
+  if (e.target === drawer || e.target.closest("[data-go]")) drawer.classList.add("hidden");
+});
+
+/* ---------------- chrome ---------------- */
+document.getElementById("btn-theme").addEventListener("click", function(){
+  setTheme(S.theme === "light" ? "dark" : "light");
+  toast(S.theme === "light" ? (S.lang === "en" ? "Light mode" : "الوضع النهاري") : (S.lang === "en" ? "Dark mode" : "الوضع الليلي"));
+});
+document.getElementById("btn-lang").addEventListener("click", function(){
+  setLang(S.lang === "en" ? "ar" : "en");
+  buildDrawer();
+});
+window.addEventListener("hashchange", function(){
+  var id = location.hash.slice(1);
+  if (byId[id] && id !== current) render(id);
+});
+
+/* ---------------- icon font check ---------------- */
+if (document.fonts && document.fonts.load){
+  document.fonts.load('24px "Material Symbols Outlined"').then(function(f){
+    if (!f.length) document.documentElement.classList.add("icons-missing");
+  }).catch(function(){ document.documentElement.classList.add("icons-missing"); });
+  setTimeout(function(){
+    if (!document.fonts.check('24px "Material Symbols Outlined"')) document.documentElement.classList.add("icons-missing");
+  }, 3000);
+}
+
+/* ---------------- start ---------------- */
+setTheme(S.theme);
+document.documentElement.lang = S.lang === "en" ? "en" : "ar";
+document.documentElement.dir  = S.lang === "en" ? "ltr" : "rtl";
+document.getElementById("lang-label").textContent = S.lang === "en" ? "AR" : "EN";
+var start = location.hash.slice(1);
+render(byId[start] ? start : (S.profile.weight ? "home" : "signup"), true);
+window.__app = { go:go, state:S, plan:plan };
+})();
+</script>
+</body>
+</html>
