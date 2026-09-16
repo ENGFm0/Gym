@@ -737,34 +737,179 @@ function actSheet(i){
     '<div class="mt-2">'+btn(en?"Remove activity":"احذف النشاط", 'data-act="delact" data-i="'+i+'"',
       "bg-surface-container-high text-on-surface-variant w-full")+'</div>');
 }
+/* ===================== LIVE SESSION ===================== */
+var TIMER = { id:null, restLeft:0, restOf:90 };
+function mmss(ms){
+  var t = Math.max(0, Math.round(ms/1000)), m = Math.floor(t/60), sec = t%60;
+  var str = m+":"+(sec<10?"0":"")+sec;
+  return S.lang === "en" ? str : str.replace(/[0-9]/g, function(d){ return AR[+d]; });
+}
+function sessionTimer(){
+  if (TIMER.id) return;
+  TIMER.id = setInterval(function(){
+    if (current !== "session"){ clearInterval(TIMER.id); TIMER.id = null; TIMER.restLeft = 0; return; }
+    var c = document.getElementById("sess-clock");
+    if (c && S.sessionStart) c.textContent = mmss(Date.now() - S.sessionStart);
+    if (TIMER.restLeft > 0){
+      TIMER.restLeft--;
+      paintRest();
+      if (TIMER.restLeft === 0){
+        try { if (navigator.vibrate) navigator.vibrate([120,80,120]); } catch(err){}
+        toast(S.lang === "en" ? "Rest over — next set" : "خلصت الراحة — الجولة الجاية");
+      }
+    }
+  }, 1000);
+}
+function paintRest(){
+  var bar = document.getElementById("rest-bar"), gap = document.getElementById("rest-space");
+  if (!bar) return;
+  if (TIMER.restLeft <= 0){
+    bar.classList.add("hidden"); if (gap) gap.classList.add("hidden"); return;
+  }
+  bar.classList.remove("hidden"); if (gap) gap.classList.remove("hidden");
+  var t = document.getElementById("rest-left");
+  if (t) t.textContent = mmss(TIMER.restLeft * 1000);
+  var f = document.getElementById("rest-fill");
+  if (f) f.style.width = (TIMER.restLeft / (TIMER.restOf || 90) * 100).toFixed(1)+"%";
+}
+function restBar(en){
+  var on = TIMER.restLeft > 0;
+  return '<div id="rest-bar" class="fixed inset-x-0 bottom-28 z-40 px-gutter '+(on?"":"hidden")+'">'+
+    '<div class="max-w-3xl mx-auto rounded-2xl bg-primary-container text-on-primary-container p-3 shadow-lg">'+
+      '<div class="flex items-center gap-3">'+
+        '<span class="w-10 h-10 rounded-xl bg-on-primary-container/15 flex items-center justify-center shrink-0">'+
+          '<span class="material-symbols-outlined text-[20px]">timer</span></span>'+
+        '<div class="flex-1 min-w-0"><div class="font-label-sm text-label-sm opacity-80">'+(en?"Rest":"راحة")+'</div>'+
+          '<div id="rest-left" class="font-title-md text-title-md tabular-nums">'+mmss(TIMER.restLeft*1000)+'</div></div>'+
+        '<button data-act="rest15" class="tap px-3 h-10 rounded-xl bg-on-primary-container/15 font-label-lg text-label-lg shrink-0">+'+ar(15)+(en?"s":"ث")+'</button>'+
+        '<button data-act="restskip" class="tap px-3 h-10 rounded-xl bg-on-primary-container text-primary-container font-label-lg text-label-lg shrink-0">'+(en?"Skip":"تخطّي")+'</button>'+
+      '</div>'+
+      '<div class="mt-2 h-1.5 rounded-full bg-on-primary-container/20 overflow-hidden">'+
+        '<div id="rest-fill" class="h-full rounded-full bg-on-primary-container" style="width:'+(on ? (TIMER.restLeft/(TIMER.restOf||90)*100).toFixed(1) : "0")+'%"></div></div>'+
+    '</div></div>';
+}
+function exKey(e){ return e.ar || e.en; }
+function lastNote(e, en){
+  var l = (S.exLast || {})[exKey(e)];
+  if (!l || !l.w) return "";
+  return (en ? "last " : "آخر مرة ")+arDec(showMass(+l.w),1)+" "+massU()+" × "+ar(l.r);
+}
 function vSession(){
   var en = S.lang === "en", pr = program(), i = S.sessionDay || 0, d = pr.days[i] || pr.days[0];
   S.sessionLog = S.sessionLog || {};
-  var vol = 0;
-  d.ex.forEach(function(e, j){ (S.sessionLog[j] || []).forEach(function(s){ if (s.done) vol += (+s.w||0) * (+s.r||0); }); });
+  if (!S.sessionStart) S.sessionStart = Date.now();
+  S.restOf = S.restOf || 90; TIMER.restOf = S.restOf;
+  sessionTimer();
+
+  if (!d || !d.ex.length){
+    return '<div class="flex flex-col gap-4 pt-1">'+
+      card('<div class="text-center py-3">'+
+        '<div class="font-label-lg text-label-lg text-on-surface">'+(en?"This day has no exercises":"هذا اليوم ما فيه تمارين")+'</div>'+
+        '<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">'+(en?"Add them to your program first.":"أضفها لبرنامجك أول.")+'</div></div>')+
+      btn(en?"Back to the program":"ارجع للبرنامج", 'data-act="backprog"', "bg-primary-fixed text-on-primary-fixed w-full")+'</div>';
+  }
+
+  d.ex.forEach(function(e, j){
+    if (!S.sessionLog[j]) S.sessionLog[j] = Array.apply(null, Array(e.sets)).map(function(){ return { w:"", r:e.reps, done:false }; });
+  });
+  var totalSets = 0, doneSets = 0, vol = 0;
+  d.ex.forEach(function(e, j){
+    (S.sessionLog[j]||[]).forEach(function(st){ totalSets++; if (st.done){ doneSets++; vol += (+st.w||0)*(+st.r||0); } });
+  });
+  var idx = Math.max(0, Math.min(S.exIdx || 0, d.ex.length - 1));
+  var e = d.ex[idx], sets = S.sessionLog[idx] || [];
+  var exDone = sets.length && sets.every(function(x){ return x.done; });
+  var note = lastNote(e, en);
+  var allDone = doneSets === totalSets;
+
   return '<div class="flex flex-col gap-4 pt-1">'+
-    '<div class="flex items-start justify-between"><div>'+
-      '<div class="font-headline-md text-headline-md text-on-surface">'+(en?d.en:d.ar)+'</div>'+
-      label(en?"Log every set as you go":"سجّل كل جولة أول بأول")+'</div>'+
-      '<div class="text-end"><div class="font-title-md text-title-md text-primary-fixed tabular-nums">'+arGroup(vol)+'</div>'+
-      label(en?"kg lifted":"كجم مرفوعة")+'</div></div>'+
-    d.ex.map(function(e, j){
-      var sets = S.sessionLog[j] || (S.sessionLog[j] = Array.apply(null, Array(e.sets)).map(function(){ return {w:"",r:e.reps,done:false}; }));
-      return '<div class="rounded-2xl bg-surface-container overflow-hidden">'+
-        '<div class="px-4 py-3 font-title-md text-title-md text-on-surface">'+(en?e.en:e.ar)+'</div>'+
-        sets.map(function(s, k){
-          return '<div class="flex items-center gap-2 px-4 py-2.5 border-t border-outline-variant/40">'+
-            '<span class="w-6 font-label-sm text-label-sm text-on-surface-variant">'+ar(k+1)+'</span>'+
-            '<input data-set="'+j+'-'+k+'-w" value="'+s.w+'" inputmode="decimal" placeholder="'+massU()+'" class="w-20 h-10 text-center rounded-lg bg-surface-container-high border-0 font-label-lg text-label-lg text-on-surface focus:outline-none tabular-nums">'+
-            '<span class="text-on-surface-variant">×</span>'+
-            '<input data-set="'+j+'-'+k+'-r" value="'+s.r+'" inputmode="numeric" class="w-16 h-10 text-center rounded-lg bg-surface-container-high border-0 font-label-lg text-label-lg text-on-surface focus:outline-none tabular-nums">'+
-            '<button data-act="doneset" data-j="'+j+'" data-k="'+k+'" class="tap ms-auto w-10 h-10 rounded-lg '+(s.done?"bg-primary-fixed text-on-primary-fixed":"bg-surface-container-high text-on-surface-variant")+' flex items-center justify-center">'+
-            '<span class="material-symbols-outlined text-[18px]">check</span></button></div>';
-        }).join("")+
-        '<button data-act="addset" data-j="'+j+'" class="tap w-full py-3 border-t border-outline-variant/40 text-primary-fixed font-label-lg text-label-lg">'+(en?"Add set":"أضف جولة")+'</button>'+
-      '</div>';
-    }).join("")+
-    btn(en?"Finish session":"أنهِ الجلسة", 'data-act="finish"', "bg-primary-fixed text-on-primary-fixed w-full")+
+
+    /* live header */
+    card('<div class="flex items-center justify-between gap-3">'+
+        '<div class="min-w-0"><div class="font-title-md text-title-md text-on-surface truncate">'+(en?d.en:d.ar)+'</div>'+
+        '<div class="font-label-sm text-label-sm text-primary-fixed">'+(en?"Session running":"الجلسة شغّالة")+'</div></div>'+
+        '<div id="sess-clock" class="font-metric-display-mobile text-metric-display-mobile font-bold text-on-surface tabular-nums shrink-0">'+
+          mmss(Date.now() - S.sessionStart)+'</div></div>'+
+      '<div class="grid grid-cols-2 gap-3 mt-3">'+
+        '<div class="rounded-xl bg-surface-container-high p-3"><div class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Sets":"الجولات")+'</div>'+
+          '<div class="font-title-md text-title-md text-on-surface tabular-nums">'+ar(doneSets)+(en?" of ":" من ")+ar(totalSets)+'</div></div>'+
+        '<div class="rounded-xl bg-surface-container-high p-3"><div class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Volume":"الحمل")+'</div>'+
+          '<div class="font-title-md text-title-md text-primary-fixed tabular-nums">'+arGroup(vol)+(en?" kg":" كجم")+'</div></div>'+
+      '</div>'+
+      '<div class="mt-3">'+bar(doneSets, Math.max(1, totalSets), "primary-fixed")+'</div>')+
+
+    /* jump between exercises */
+    '<div class="flex gap-2 overflow-x-auto -mx-gutter px-gutter pb-1">'+
+      d.ex.map(function(x, j){
+        var st = S.sessionLog[j] || [], fin = st.length && st.every(function(y){ return y.done; });
+        var on = j === idx;
+        return '<button data-act="goex" data-i="'+j+'" class="tap shrink-0 h-10 px-3 rounded-xl flex items-center gap-1.5 font-label-lg text-label-lg '+
+          (on ? "bg-primary-fixed text-on-primary-fixed" : fin ? "bg-primary-fixed/15 text-primary-fixed" : "bg-surface-container text-on-surface-variant")+'">'+
+          (fin && !on ? '<span class="material-symbols-outlined text-[15px]">check</span>' : '<span class="tabular-nums">'+ar(j+1)+'</span>')+
+          '<span class="max-w-[7rem] truncate">'+(en?x.en:x.ar)+'</span></button>';
+      }).join("")+
+    '</div>'+
+
+    /* the exercise you are on */
+    '<div class="rounded-2xl bg-surface-container overflow-hidden">'+
+      '<div class="flex items-start justify-between gap-2 px-4 pt-4 pb-3">'+
+        '<div class="min-w-0">'+
+          '<div class="font-title-md text-title-md text-on-surface truncate">'+(en?e.en:e.ar)+'</div>'+
+          '<div class="font-label-sm text-label-sm text-on-surface-variant truncate">'+
+            (en?("Exercise "+ar(idx+1)+" of "+ar(d.ex.length)):("التمرين "+ar(idx+1)+" من "+ar(d.ex.length)))+
+            (note ? " · "+note : "")+'</div></div>'+
+        '<div class="flex gap-1 shrink-0">'+
+          '<button data-act="exnav" data-v="-1" class="tap w-10 h-10 rounded-xl bg-surface-container-high text-on-surface flex items-center justify-center'+(idx?"":" opacity-40")+'">'+
+            '<span class="material-symbols-outlined text-[18px] rtl:rotate-180">chevron_left</span></button>'+
+          '<button data-act="exnav" data-v="1" class="tap w-10 h-10 rounded-xl bg-surface-container-high text-on-surface flex items-center justify-center'+(idx < d.ex.length-1?"":" opacity-40")+'">'+
+            '<span class="material-symbols-outlined text-[18px] rtl:rotate-180">chevron_right</span></button>'+
+        '</div></div>'+
+
+      sets.map(function(st, k){
+        return '<div class="flex items-center gap-2 px-3 py-2 border-t border-outline-variant/40 '+(st.done?"bg-primary-fixed/10":"")+'">'+
+          '<span class="w-7 h-7 rounded-lg shrink-0 flex items-center justify-center font-label-sm text-label-sm '+
+            (st.done?"bg-primary-fixed text-on-primary-fixed":"bg-surface-container-high text-on-surface-variant")+'">'+ar(k+1)+'</span>'+
+          '<div class="flex-1 grid grid-cols-2 gap-2">'+
+            '<div class="rounded-xl bg-surface-container-high px-3 py-1.5">'+
+              '<div class="font-label-sm text-label-sm text-on-surface-variant">'+massU()+'</div>'+
+              '<input data-set="'+idx+'-'+k+'-w" value="'+st.w+'" inputmode="decimal" placeholder="—" '+
+                'class="w-full bg-transparent border-0 p-0 font-title-md text-title-md text-on-surface focus:outline-none tabular-nums"></div>'+
+            '<div class="rounded-xl bg-surface-container-high px-3 py-1.5">'+
+              '<div class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"reps":"تكرار")+'</div>'+
+              '<input data-set="'+idx+'-'+k+'-r" value="'+st.r+'" inputmode="numeric" '+
+                'class="w-full bg-transparent border-0 p-0 font-title-md text-title-md text-on-surface focus:outline-none tabular-nums"></div>'+
+          '</div>'+
+          '<button data-act="doneset" data-j="'+idx+'" data-k="'+k+'" class="tap w-11 h-11 rounded-xl shrink-0 flex items-center justify-center '+
+            (st.done?"bg-primary-fixed text-on-primary-fixed":"bg-surface-container-high text-on-surface-variant")+'">'+
+            '<span class="material-symbols-outlined text-[20px]">check</span></button>'+
+          (sets.length > 1 ? '<button data-act="delset" data-j="'+idx+'" data-k="'+k+'" class="tap w-7 h-11 rounded-lg shrink-0 text-on-surface-variant flex items-center justify-center">'+
+            '<span class="material-symbols-outlined text-[15px]">close</span></button>' : "")+
+        '</div>';
+      }).join("")+
+
+      '<button data-act="addset" data-j="'+idx+'" class="tap w-full py-3 border-t border-outline-variant/40 text-primary-fixed font-label-lg text-label-lg flex items-center justify-center gap-1.5">'+
+        '<span class="material-symbols-outlined text-[18px]">add</span>'+(en?"Add set":"أضف جولة")+'</button>'+
+
+      '<div class="flex items-center gap-2 px-3 py-2.5 border-t border-outline-variant/40 bg-surface-container-low">'+
+        '<span class="font-label-sm text-label-sm text-on-surface-variant shrink-0">'+(en?"Rest":"الراحة")+'</span>'+
+        '<div class="flex-1 flex gap-1.5">'+[60,90,120,180].map(function(v){
+          var on = v === S.restOf;
+          return '<button data-act="restset" data-v="'+v+'" class="tap flex-1 h-9 rounded-lg font-label-sm text-label-sm tabular-nums '+
+            (on?"bg-primary-fixed text-on-primary-fixed":"bg-surface-container-high text-on-surface-variant")+'">'+
+            (v<60?ar(v)+(en?"s":"ث"):mmss(v*1000))+'</button>';
+        }).join("")+'</div></div>'+
+    '</div>'+
+
+    (exDone && idx < d.ex.length - 1
+      ? btn((en?"Next · ":"التالي · ")+(en?d.ex[idx+1].en:d.ex[idx+1].ar), 'data-act="exnav" data-v="1"', "bg-primary-fixed text-on-primary-fixed w-full")
+      : "")+
+
+    btn(en?"Finish session":"أنهِ الجلسة", 'data-act="finish"',
+        (allDone ? "bg-primary-fixed text-on-primary-fixed w-full" : "bg-surface-container-high text-on-surface w-full"))+
+
+    /* keeps the finish button clear of the rest bar */
+    '<div id="rest-space" class="'+(TIMER.restLeft > 0 ? "" : "hidden")+'" style="height:104px"></div>'+
+    restBar(en)+
   '</div>';
 }
 
@@ -1187,13 +1332,48 @@ function dynamicAct(name, ds){
       save(); closePanel(); render(current, true); toast(en?"Added":"أُضيف"); return true;
     }
     case "delex": program().days[+ds.d].ex.splice(+ds.j, 1); save(); render(current, true); return true;
-    case "startday": S.sessionDay = +ds.d; S.sessionLog = {}; S.sessionStart = Date.now(); save(); go("session"); return true;
+    case "startday": {
+      S.sessionDay = +ds.d; S.sessionLog = {}; S.exIdx = 0;
+      S.sessionStart = Date.now(); TIMER.restLeft = 0;
+      save(); go("session"); return true;
+    }
+    case "backprog": S.wkTab = "prog"; save(); go("workouts"); return true;
+    case "goex": S.exIdx = +ds.i; save(); render(current, true); return true;
+    case "exnav": {
+      var pr4 = program(), dd4 = pr4.days[S.sessionDay || 0] || pr4.days[0];
+      var ni = Math.max(0, Math.min((S.exIdx || 0) + (+ds.v), dd4.ex.length - 1));
+      S.exIdx = ni; save(); render(current, true); return true;
+    }
+    case "restset": S.restOf = +ds.v; TIMER.restOf = +ds.v; save(); render(current, true); return true;
+    case "rest15": {
+      TIMER.restLeft += 15;
+      if (TIMER.restLeft > TIMER.restOf) TIMER.restOf = TIMER.restLeft;
+      paintRest(); return true;
+    }
+    case "restskip": TIMER.restLeft = 0; paintRest(); return true;
+    case "delset": {
+      var arr = S.sessionLog[+ds.j] || [];
+      if (arr.length > 1) arr.splice(+ds.k, 1);
+      save(); render(current, true); return true;
+    }
     case "doneset": {
       var j = +ds.j, k = +ds.k;
       var wEl = document.querySelector('[data-set="'+j+'-'+k+'-w"]'), rEl = document.querySelector('[data-set="'+j+'-'+k+'-r"]');
-      var s = S.sessionLog[j][k];
-      if (wEl) s.w = wEl.value; if (rEl) s.r = rEl.value;
-      s.done = !s.done; save(); render(current, true); return true;
+      var st = S.sessionLog[j][k];
+      if (wEl) st.w = wEl.value; if (rEl) st.r = rEl.value;
+      st.done = !st.done;
+      if (st.done){
+        var pr5 = program(), d5 = pr5.days[S.sessionDay || 0] || pr5.days[0], ex5 = d5.ex[j];
+        if (ex5 && st.w){ S.exLast = S.exLast || {}; S.exLast[exKey(ex5)] = { w: st.w, r: st.r, d: stamp() }; }
+        TIMER.restOf = S.restOf || 90; TIMER.restLeft = TIMER.restOf;   /* the rest starts itself */
+        sessionTimer();
+        var rest5 = (S.sessionLog[j] || []).every(function(x){ return x.done; });
+        if (rest5 && j < d5.ex.length - 1){
+          S.exIdx = j + 1;
+          toast(en ? ("Next · "+d5.ex[j+1].en) : ("التالي · "+d5.ex[j+1].ar));
+        }
+      }
+      save(); render(current, true); paintRest(); return true;
     }
     case "addset": {
       var jj = +ds.j;
@@ -1201,17 +1381,25 @@ function dynamicAct(name, ds){
       S.sessionLog[jj].push({ w:"", r:"", done:false }); save(); render(current, true); return true;
     }
     case "finish": {
-      var pr3 = program(), d3 = pr3.days[S.sessionDay || 0], vol = 0, done = 0;
+      var pr3 = program(), d3 = pr3.days[S.sessionDay || 0] || pr3.days[0], vol = 0, done = 0;
       Object.keys(S.sessionLog || {}).forEach(function(j){
         (S.sessionLog[j]||[]).forEach(function(s){ if (s.done){ vol += (+s.w||0)*(+s.r||0); done++; } });
       });
+      if (!done){
+        S.sessionLog = {}; S.sessionStart = 0; S.exIdx = 0;
+        TIMER.restLeft = 0; if (TIMER.id){ clearInterval(TIMER.id); TIMER.id = null; }
+        S.wkTab = "prog"; save(); go("workouts");
+        toast(en ? "No sets logged — session dropped" : "ما سجّلت ولا جولة — انلغت الجلسة"); return true;
+      }
       S.sessions = S.sessions || [];
       var mins3 = S.sessionStart ? Math.round((Date.now() - S.sessionStart) / 60000) : 0;
       mins3 = Math.min(180, Math.max(10, mins3 || done * 3));
       S.sessions.push({ d: stamp(), t: Date.now(), act: "gym", ar: d3.ar, en: d3.en,
         volume: Math.round(vol), sets: done, min: mins3, kcal: metKcal(5.0, mins3) });
       if (S.sessions.length > 200) S.sessions.shift();
-      S.sessionLog = {}; S.sessionStart = 0; S.wkTab = "log"; save(); go("workouts");
+      S.sessionLog = {}; S.sessionStart = 0; S.exIdx = 0; S.wkTab = "log";
+      TIMER.restLeft = 0; if (TIMER.id){ clearInterval(TIMER.id); TIMER.id = null; }
+      save(); go("workouts");
       toast((en?"Session saved · ":"انحفظت الجلسة · ")+arGroup(vol)+(en?" kg":" كجم")); return true;
     }
   }
