@@ -39,6 +39,15 @@ internal static class Mapping
         Units = new UnitPreference(ParseEnum(doc.MassUnit, MassUnit.Kg), ParseEnum(doc.LengthUnit, LengthUnit.Cm)),
         RestSeconds = doc.RestSeconds <= 0 ? 90 : doc.RestSeconds,
         IsCoach = doc.IsCoach,
+        Assignment = doc.Assignment is null ? null : new CoachAssignment
+        {
+            CoachUid = doc.Assignment.CoachUid,
+            CoachName = doc.Assignment.CoachName,
+            DietId = doc.Assignment.DietId,
+            CalorieOverride = doc.Assignment.CalorieOverride,
+            Note = doc.Assignment.Note,
+            AssignedAtUtc = ToUtc(doc.Assignment.At)
+        },
         CreatedAtUtc = ToUtc(doc.CreatedAt),
         UpdatedAtUtc = ToUtc(doc.UpdatedAt)
     };
@@ -61,6 +70,15 @@ internal static class Mapping
         LengthUnit = Lower(profile.Units.Length),
         RestSeconds = profile.RestSeconds,
         IsCoach = profile.IsCoach,
+        Assignment = profile.Assignment is null ? null : new AssignmentDocument
+        {
+            CoachUid = profile.Assignment.CoachUid,
+            CoachName = profile.Assignment.CoachName,
+            DietId = profile.Assignment.DietId,
+            CalorieOverride = profile.Assignment.CalorieOverride,
+            Note = profile.Assignment.Note,
+            At = ToTimestamp(profile.Assignment.AssignedAtUtc)
+        },
         CreatedAt = ToTimestamp(profile.CreatedAtUtc == default ? DateTime.UtcNow : profile.CreatedAtUtc),
         UpdatedAt = ToTimestamp(DateTime.UtcNow)
     };
@@ -268,6 +286,31 @@ internal static class Mapping
                 tokens.Add(word[..length]);
         return tokens;
     }
+
+    public static CoachInvite ToInvite(string id, InviteDocument doc) => new()
+    {
+        Id = id,
+        CoachUid = doc.CoachUid,
+        CoachName = doc.CoachName,
+        Email = doc.Email,
+        TraineeName = doc.TraineeName,
+        State = ParseEnum(doc.State, InviteState.Pending),
+        CreatedAtUtc = ToUtc(doc.CreatedAt),
+        AnsweredAtUtc = doc.AnsweredAt is null ? null : ToUtc(doc.AnsweredAt.Value),
+        TraineeUid = doc.TraineeUid
+    };
+
+    public static InviteDocument FromInvite(CoachInvite invite) => new()
+    {
+        CoachUid = invite.CoachUid,
+        CoachName = invite.CoachName,
+        Email = invite.Email,
+        TraineeName = invite.TraineeName,
+        State = Lower(invite.State),
+        CreatedAt = ToTimestamp(invite.CreatedAtUtc),
+        AnsweredAt = invite.AnsweredAtUtc is null ? null : ToTimestamp(invite.AnsweredAtUtc.Value),
+        TraineeUid = invite.TraineeUid
+    };
 
     public static CoachLink ToLink(string id, CoachLinkDocument doc) => new()
     {

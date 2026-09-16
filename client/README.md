@@ -15,8 +15,8 @@ src/
 
 | | |
 |---|---|
-| **Demo** (no `VITE_API_BASE`) | everything runs in the browser against `localStorage`, so the app can be opened and tried before the API is deployed |
-| **Connected** (`VITE_API_BASE` set) | every screen talks to the ASP.NET API; Firebase Auth supplies the ID token |
+| **Demo** (`VITE_API_BASE` unset, or `VITE_DEMO=1`) | everything runs in the browser against `localStorage`, so the app can be opened and tried before the API is deployed |
+| **Connected** (`VITE_API_BASE` set — `/` behind Firebase Hosting) | every screen talks to the ASP.NET API; Firebase Auth supplies the ID token |
 
 `src/lib/engine.ts` carries the same formulas as `FitCore.Application` **only** to keep demo mode
 honest. Once the API is in play the server is the single source for every number.
@@ -47,6 +47,13 @@ VITE_FIREBASE_APP_ID=…
 - **Barcodes** use the browser's `BarcodeDetector` against a rear-camera stream
   (`components/BarcodeScanner.tsx`). Safari has no detector yet, so the same sheet takes a
   typed number; an unknown code opens the custom-item form instead of dead-ending.
+- **A Bluetooth scale** is read over Web Bluetooth with the SIG Weight Scale (0x181D) and Body
+  Composition (0x181B) profiles, which is what the XG/Xiaomi family speaks — so the member
+  steps on the scale instead of retyping what it displayed (`lib/scale.ts`). Chrome, Edge and
+  Android only; the card hides itself where the API is absent.
+- **Steps from the phone's health app** arrive through `window.FitCoreNative` when the app runs
+  inside the Capacitor shell in `native/` (`lib/native.ts`); the device-motion pedometer is the
+  browser fallback.
 - **InBody reports** are photographed and sent to `/api/scan/inbody`; the numbers come back
   for the member to tick before anything is saved (`screens/Progress.tsx`). In demo mode the
   scan reports honestly that it needs the API rather than inventing values.

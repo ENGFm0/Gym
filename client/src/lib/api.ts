@@ -5,12 +5,17 @@
 import { mockApi, type MockApi } from "./mock";
 import { idToken } from "./firebase";
 import type {
-  Activity, ActivityCatalogItem, Day, Diet, Food, InBodyScan, MealSlot, Measurement, Photo,
-  Plan, Profile, Program, Session, SessionExercise, Trainee, WeekSummary, Weight
+  Activity, ActivityCatalogItem, Day, Diet, Food, InBodyScan, Invite, MealSlot, Measurement,
+  Photo, Plan, Profile, Program, Session, SessionExercise, Trainee, WeekSummary, Weight
 } from "./types";
 
-const base = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
-export const isOffline = base === "";
+/**
+ * Demo mode is the absence of a configured API, not an empty string: behind Firebase Hosting
+ * the API is same-origin, so `VITE_API_BASE=/` is a real backend with an empty base.
+ */
+const configured = import.meta.env.VITE_API_BASE;
+const base = (configured ?? "").replace(/\/$/, "");
+export const isOffline = configured === undefined || import.meta.env.VITE_DEMO === "1";
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const token = await idToken();
@@ -132,10 +137,23 @@ const httpApi: MockApi = {
     await call<unknown>("/api/coach/trainees", { method: "POST", body: body({ email, name }) });
     return call<Trainee[]>("/api/coach/trainees");
   },
-  assignDiet: async (traineeUid, dietId) => {
-    await call<void>(`/api/coach/trainees/${traineeUid}/diet`, { method: "PUT", body: body(dietId) });
+  assignPlan: async (traineeUid, plan) => {
+    await call<void>(`/api/coach/trainees/${traineeUid}/plan`, { method: "PUT", body: body(plan) });
     return call<Trainee[]>("/api/coach/trainees");
   },
+  revokeInvite: async (inviteId) => {
+    await call<void>(`/api/coach/invites/${inviteId}`, { method: "DELETE" });
+    return call<Trainee[]>("/api/coach/trainees");
+  },
+
+  /* ---- being coached ---- */
+
+  getInvites: () => call<Invite[]>("/api/me/invites"),
+  acceptInvite: (inviteId) => call<Profile>(`/api/me/invites/${inviteId}/accept`, { method: "POST" }),
+  declineInvite: async (inviteId) => {
+    await call<void>(`/api/me/invites/${inviteId}/decline`, { method: "POST" });
+  },
+  leaveCoach: () => call<Profile>("/api/me/leave-coach", { method: "POST" }),
   removeTrainee: async (traineeUid) => {
     await call<void>(`/api/coach/trainees/${traineeUid}`, { method: "DELETE" });
     return call<Trainee[]>("/api/coach/trainees");

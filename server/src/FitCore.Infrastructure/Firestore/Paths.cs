@@ -8,6 +8,7 @@ internal static class Paths
     public const string Users = "users";
     public const string Foods = "foods";
     public const string CoachLinks = "coachLinks";
+    public const string CoachInvites = "coachInvites";
 
     public static DocumentReference User(FirestoreDb db, string uid) => db.Collection(Users).Document(uid);
     public static CollectionReference Days(FirestoreDb db, string uid) => User(db, uid).Collection("days");

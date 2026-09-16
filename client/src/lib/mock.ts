@@ -8,7 +8,7 @@ import {
 } from "./engine";
 import { FOODS, ACTIVITY_LIBRARY, DIETS, EXERCISES } from "./catalog";
 import type {
-  Activity, ActivityCatalogItem, Day, Diet, Food, InBodyScan, Meal, MealEntry, MealSlot,
+  Activity, ActivityCatalogItem, Day, Diet, Food, InBodyScan, Invite, Meal, MealEntry, MealSlot,
   Measurement, Photo, Profile, Program, Session, SessionExercise, Trainee, WeekSummary, Weight
 } from "./types";
 
@@ -27,6 +27,7 @@ interface Store {
   exLast: Record<string, { weightKg: number; reps: number; atUtc: string }>;
   customFoods: Food[];
   trainees: Trainee[];
+  invites: Invite[];
 }
 
 const blankProfile = (): Profile => ({
@@ -71,7 +72,18 @@ function empty(): Store {
     program: null,
     exLast: {},
     customFoods: [],
-    trainees: []
+    trainees: [],
+    invites: [
+      // One waiting invite, so the accept flow is visible in demo mode.
+      {
+        id: "inv-demo",
+        coachName: "كوتش عبدالله",
+        traineeName: "أنت",
+        email: "demo@fitcore.app",
+        state: "pending",
+        createdAtUtc: new Date().toISOString()
+      }
+    ]
   };
 }
 
@@ -177,6 +189,10 @@ export const mockApi = {
   },
 
   async updateProfile(patch: Partial<Profile>): Promise<Profile> {
+    // Picking a diet by hand overrides what a coach set.
+    if (patch.dietId && store.profile.assignment?.dietId && patch.dietId !== store.profile.assignment.dietId) {
+      store.profile = { ...store.profile, assignment: null };
+    }
     store.profile = { ...store.profile, ...patch };
     if (store.profile.birthDate) {
       const b = new Date(store.profile.birthDate);
@@ -541,11 +557,56 @@ export const mockApi = {
     return store.trainees;
   },
 
-  async assignDiet(traineeUid: string, dietId: string): Promise<Trainee[]> {
+  async assignPlan(
+    traineeUid: string,
+    plan: { dietId?: string | null; calorieOverride?: number | null; note?: string | null }
+  ): Promise<Trainee[]> {
     const trainee = store.trainees.find((t) => t.uid === traineeUid);
-    if (trainee) trainee.assignedDietId = dietId;
+    if (trainee) trainee.assignedDietId = plan.dietId ?? null;
     save();
     return store.trainees;
+  },
+
+  async revokeInvite(inviteId: string): Promise<Trainee[]> {
+    store.trainees = store.trainees.filter((t) => t.uid !== inviteId);
+    save();
+    return store.trainees;
+  },
+
+  /* ---- being coached ---- */
+
+  async getInvites(): Promise<Invite[]> {
+    return store.invites.filter((invite) => invite.state === "pending");
+  },
+
+  /** Accepting is what creates the link — the same rule the API enforces. */
+  async acceptInvite(inviteId: string): Promise<Profile> {
+    const invite = store.invites.find((i) => i.id === inviteId);
+    if (invite) {
+      invite.state = "accepted";
+      store.profile.assignment = {
+        coachUid: "c-demo",
+        coachName: invite.coachName,
+        dietId: "highprotein",
+        calorieOverride: null,
+        note: "نبدأ ببروتين عالي أسبوعين ونراجع.",
+        assignedAtUtc: new Date().toISOString()
+      };
+    }
+    save();
+    return store.profile;
+  },
+
+  async declineInvite(inviteId: string): Promise<void> {
+    const invite = store.invites.find((i) => i.id === inviteId);
+    if (invite) invite.state = "declined";
+    save();
+  },
+
+  async leaveCoach(): Promise<Profile> {
+    store.profile.assignment = null;
+    save();
+    return store.profile;
   },
 
   async removeTrainee(traineeUid: string): Promise<Trainee[]> {

@@ -23,6 +23,26 @@ export interface Profile {
   units: Units;
   restSeconds: number;
   isCoach: boolean;
+  assignment?: Assignment | null;
+}
+
+/** What a coach set for this member, on the member's own document. */
+export interface Assignment {
+  coachUid: string;
+  coachName: string;
+  dietId?: string | null;
+  calorieOverride?: number | null;
+  note?: string | null;
+  assignedAtUtc: string;
+}
+
+export interface Invite {
+  id: string;
+  coachName: string;
+  traineeName: string;
+  email: string;
+  state: "pending" | "accepted" | "declined" | "revoked";
+  createdAtUtc: string;
 }
 
 export interface Macros { protein: number; carbs: number; fat: number }

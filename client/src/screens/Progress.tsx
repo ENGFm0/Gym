@@ -7,6 +7,7 @@ import {
   useDeleteWeight, useMeasurements, usePhotos, useProfile, useSaveScan, useScanInBody, useWeights
 } from "@/lib/queries";
 import type { InBodyScan } from "@/lib/types";
+import { bluetoothSupported, readFromScale } from "@/lib/scale";
 import { t, useUi } from "@/state/ui";
 
 type Tab = "weight" | "size" | "photos";
@@ -116,7 +117,8 @@ function WeightTab() {
         )}
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 flex flex-col gap-2">
+        <ScaleCard />
         <InBodyScanCard />
       </div>
 
@@ -364,6 +366,75 @@ function PhotoTab() {
         </div>
       )}
     </Card>
+  );
+}
+
+/* ------------------------------ scale ------------------------------ */
+
+/**
+ * Reads a Bluetooth scale rather than making the member type what it displayed.
+ * Everything it hands back still lands in the same confirm-then-save path.
+ */
+function ScaleCard() {
+  const { lang, say } = useUi();
+  const add = useAddWeight();
+  const [busy, setBusy] = useState(false);
+  const [live, setLive] = useState<number | null>(null);
+
+  if (!bluetoothSupported()) return null;
+
+  return (
+    <button
+      onClick={async () => {
+        setBusy(true);
+        setLive(null);
+        try {
+          // The scale writes the reading itself: retyping what it displayed is the thing being removed.
+          const reading = await readFromScale((kg) => setLive(kg));
+          await add.mutateAsync({ kg: reading.kg, source: "scale" });
+          say(
+            reading.bodyFatPercent
+              ? t(
+                  lang,
+                  `${dec(reading.kg, 1, lang)} كجم · دهون ${dec(reading.bodyFatPercent, 1, lang)}٪`,
+                  `${reading.kg} kg · ${reading.bodyFatPercent}% fat`
+                )
+              : t(lang, "انقرأ وزنك من الميزان", "Read from the scale")
+          );
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : "";
+          say(
+            reason === "no-service"
+              ? t(lang, "هذا الميزان ما يبث بالبروتوكول القياسي", "That scale does not use the standard profile")
+              : reason === "timeout"
+                ? t(lang, "ما وصل قياس — اصعد على الميزان وجرّب", "No reading arrived — step on the scale and retry")
+                : t(lang, "ما انربط الميزان", "The scale did not connect")
+          );
+        } finally {
+          setBusy(false);
+          setLive(null);
+        }
+      }}
+      disabled={busy}
+      className="tap w-full rounded-xl bg-surface-container-high p-3 flex items-center gap-3 text-start disabled:opacity-60"
+    >
+      <span className="w-10 h-10 rounded-xl bg-primary-fixed/15 text-primary-fixed flex items-center justify-center shrink-0">
+        <Icon name={busy ? "bluetooth_searching" : "monitor_weight"} />
+      </span>
+      <span className="flex-1 min-w-0">
+        <span className="block text-label-lg text-on-surface">
+          {live != null
+            ? `${dec(live, 1, lang)} ${massLabel({ mass: "kg", length: "cm" }, lang)}`
+            : busy
+              ? t(lang, "ابحث عن الميزان…", "Looking for the scale…")
+              : t(lang, "اقرأ من الميزان", "Read from the scale")}
+        </span>
+        <span className="block text-label-sm text-on-surface-variant">
+          {t(lang, "ميزان بلوتوث — اصعد عليه وهو يرسل", "A Bluetooth scale — step on it and it sends")}
+        </span>
+      </span>
+      <Icon name="chevron_right" className="text-on-surface-variant rtl:rotate-180 shrink-0" />
+    </button>
   );
 }
 

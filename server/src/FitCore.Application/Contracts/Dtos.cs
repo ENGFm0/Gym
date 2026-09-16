@@ -21,7 +21,8 @@ public sealed record ProfileDto(
     string DietId,
     UnitsDto Units,
     int RestSeconds,
-    bool IsCoach);
+    bool IsCoach,
+    AssignmentDto? Assignment);
 
 public sealed record UpdateProfileRequest(
     string? Name,
@@ -180,3 +181,21 @@ public sealed record TraineeDto(
     double? WeightKg, double? WeightDelta, int SessionsThisWeek, int AdherencePercent, string? AssignedDietId);
 
 public sealed record InviteTraineeRequest(string Email, string? Name);
+
+public sealed record InviteDto(
+    string Id,
+    string CoachName,
+    string TraineeName,
+    string Email,
+    string State,
+    DateTime CreatedAtUtc);
+
+public sealed record AssignmentDto(
+    string CoachUid,
+    string CoachName,
+    string? DietId,
+    int? CalorieOverride,
+    string? Note,
+    DateTime AssignedAtUtc);
+
+public sealed record AssignRequest(string? DietId, int? CalorieOverride, string? Note);

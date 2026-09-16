@@ -39,7 +39,13 @@ public static class PlanCalculator
         };
 
         var calories = Math.Max(MinimumCalories, (int)(Math.Round((tdee + delta) / 10) * 10));
-        var diet = DietCatalog.Find(profile.DietId);
+
+        // What a coach set wins over the member's own pick, until the member drops it.
+        var assignment = profile.Assignment;
+        if (assignment?.CalorieOverride is > 0)
+            calories = Math.Max(MinimumCalories, assignment.CalorieOverride.Value);
+
+        var diet = DietCatalog.Find(assignment?.DietId ?? profile.DietId);
 
         var macros = new MacroTargets(
             Protein: (int)Math.Round(calories * diet.Split.Protein / 4),

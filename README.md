@@ -13,6 +13,8 @@
 | `client/` | تطبيق React + TypeScript + Vite |
 | `web/` | النموذج الأولي (ملف واحد يشتغل بفتحه بالمتصفح) |
 | `design/` | لوحة التصميم — كل الشاشات كـ`.dc.html` |
+| `native/` | غلاف Capacitor — الخطوات من صحة آبل وHealth Connect |
+| `scripts/` | إعداد فايربيز والنشر |
 | `docs/` | وثيقة المشروع وبرومبتات Stitch |
 
 ## التشغيل
@@ -42,6 +44,21 @@ cd client && npm run smoke                      # مرور آلي على الت�
 ```
 
 CI في `.github/workflows/ci.yml` يشغّل الثلاثة ويبني صور Docker.
+
+## النشر
+
+```bash
+scripts/setup-firebase.sh <project-id>   # يفعّل الخدمات، ينشئ service account، ينشر القواعد والفهارس
+scripts/deploy.sh <project-id>           # الـAPI على Cloud Run والويب على Firebase Hosting
+```
+
+الاستضافة تحوّل `/api/**` لـCloud Run، فالمتصفح يشوف origin واحد و`VITE_API_BASE=/`.
+باقي خطوتين من الكونسول (ما تنكتب بسكربت): تفعيل Email/Password، وإنشاء bucket التخزين.
+
+## الجوال
+
+`native/` غلاف Capacitor يحقن `window.FitCoreNative` ليعطي الخطوات من صحة آبل أو
+Health Connect. الويب يستخدمه لو موجود، وإلا يرجع لحسّاس الحركة — بدون ادعاء.
 
 ## قواعد فايربيز
 

@@ -21,11 +21,16 @@ public sealed class CoachController(
     public async Task<ActionResult<IEnumerable<TraineeDto>>> Trainees(CancellationToken ct) =>
         Ok(await coaches.GetTraineesAsync(Uid, ct));
 
+    /// <summary>Sends an invite. Nothing about the member is readable until they accept it.</summary>
     [HttpPost("trainees")]
-    public async Task<ActionResult<object>> Invite([FromBody] InviteTraineeRequest request, CancellationToken ct)
+    public async Task<ActionResult<InviteDto>> Invite([FromBody] InviteTraineeRequest request, CancellationToken ct) =>
+        Ok(await coaches.InviteAsync(Uid, request, ct));
+
+    [HttpDelete("invites/{inviteId}")]
+    public async Task<IActionResult> Revoke(string inviteId, CancellationToken ct)
     {
-        var link = await coaches.InviteAsync(Uid, request, ct);
-        return Ok(new { link.Id, link.TraineeName, Status = link.Status.ToString().ToLowerInvariant() });
+        await coaches.RevokeInviteAsync(Uid, inviteId, ct);
+        return NoContent();
     }
 
     [HttpGet("trainees/{traineeUid}/week")]
@@ -57,10 +62,11 @@ public sealed class CoachController(
         return Ok(await progress.GetPhotosAsync(traineeUid, ct));
     }
 
-    [HttpPut("trainees/{traineeUid}/diet")]
-    public async Task<IActionResult> AssignDiet(string traineeUid, [FromBody] string dietId, CancellationToken ct)
+    /// <summary>Sets the member's diet, and optionally their calories, from the coach's side.</summary>
+    [HttpPut("trainees/{traineeUid}/plan")]
+    public async Task<IActionResult> Assign(string traineeUid, [FromBody] AssignRequest request, CancellationToken ct)
     {
-        await coaches.AssignDietAsync(Uid, traineeUid, dietId, ct);
+        await coaches.AssignAsync(Uid, traineeUid, request, ct);
         return NoContent();
     }
 

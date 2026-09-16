@@ -115,3 +115,52 @@ public class PlanCalculatorTests
         Assert.Equal(expected, band);
     }
 }
+
+public class CoachAssignmentTests
+{
+    private static readonly DateOnly Today = new(2026, 9, 16);
+
+    private static UserProfile Member() => new()
+    {
+        Uid = "u1",
+        Gender = Gender.Male,
+        BirthDate = new DateOnly(1996, 4, 20),
+        HeightCm = 185,
+        WeightKg = 92.8,
+        Activity = ActivityLevel.Moderate,
+        Goal = Goal.FatLoss,
+        PaceKgPerWeek = 0.5,
+        DietId = "balanced"
+    };
+
+    [Fact]
+    public void A_coachs_diet_wins_over_the_members_own_pick()
+    {
+        var member = Member();
+        var own = PlanCalculator.For(member, Today);
+
+        member.Assignment = new CoachAssignment { CoachUid = "c1", CoachName = "المدرّب", DietId = "keto" };
+        var coached = PlanCalculator.For(member, Today);
+
+        Assert.True(coached.Macros.Fat > own.Macros.Fat);
+        Assert.Equal("keto", coached.DietId);
+    }
+
+    [Fact]
+    public void A_coach_can_set_the_calories_outright()
+    {
+        var member = Member();
+        member.Assignment = new CoachAssignment { CoachUid = "c1", CalorieOverride = 2400 };
+
+        Assert.Equal(2400, PlanCalculator.For(member, Today).Calories);
+    }
+
+    [Fact]
+    public void Even_a_coach_cannot_go_below_the_floor()
+    {
+        var member = Member();
+        member.Assignment = new CoachAssignment { CoachUid = "c1", CalorieOverride = 600 };
+
+        Assert.Equal(1200, PlanCalculator.For(member, Today).Calories);
+    }
+}

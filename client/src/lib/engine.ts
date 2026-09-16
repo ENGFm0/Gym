@@ -39,8 +39,16 @@ export function planFor(profile: Profile) {
     : profile.goal === "recomp" ? -250
     : -Math.round(pace * 1000);
 
-  const calories = Math.max(1200, Math.round((tdee + delta) / 10) * 10);
-  const split = DIET_SPLIT[profile.dietId] ?? DIET_SPLIT.balanced;
+  // What a coach set wins over the member's own pick, until they drop it.
+  const assignment = profile.assignment;
+  const calories = Math.max(
+    1200,
+    assignment?.calorieOverride && assignment.calorieOverride > 0
+      ? assignment.calorieOverride
+      : Math.round((tdee + delta) / 10) * 10
+  );
+  const dietId = assignment?.dietId ?? profile.dietId;
+  const split = DIET_SPLIT[dietId] ?? DIET_SPLIT.balanced;
   const metres = height / 100;
   const bmi = Math.round((weight / (metres * metres)) * 10) / 10;
   const band =
@@ -58,7 +66,7 @@ export function planFor(profile: Profile) {
       carbs: Math.round((calories * split.carbs) / 4),
       fat: Math.round((calories * split.fat) / 9)
     },
-    dietId: profile.dietId,
+    dietId,
     bmi,
     bmiBandAr: band[0],
     bmiBandEn: band[1]

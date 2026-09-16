@@ -21,6 +21,7 @@ public sealed class ProfileDocument
     [FirestoreProperty("lengthUnit")] public string LengthUnit { get; set; } = "cm";
     [FirestoreProperty("restSeconds")] public int RestSeconds { get; set; } = 90;
     [FirestoreProperty("isCoach")] public bool IsCoach { get; set; }
+    [FirestoreProperty("assignment")] public AssignmentDocument? Assignment { get; set; }
     [FirestoreProperty("createdAt")] public Timestamp CreatedAt { get; set; }
     [FirestoreProperty("updatedAt")] public Timestamp UpdatedAt { get; set; }
 }
@@ -168,6 +169,30 @@ public sealed class FoodDocument
     [FirestoreProperty("brand")] public string? Brand { get; set; }
     [FirestoreProperty("ownerUid")] public string? OwnerUid { get; set; }
     [FirestoreProperty("search")] public List<string> Search { get; set; } = new();
+}
+
+[FirestoreData]
+public sealed class AssignmentDocument
+{
+    [FirestoreProperty("coachUid")] public string CoachUid { get; set; } = string.Empty;
+    [FirestoreProperty("coachName")] public string CoachName { get; set; } = string.Empty;
+    [FirestoreProperty("dietId")] public string? DietId { get; set; }
+    [FirestoreProperty("calorieOverride")] public int? CalorieOverride { get; set; }
+    [FirestoreProperty("note")] public string? Note { get; set; }
+    [FirestoreProperty("at")] public Timestamp At { get; set; }
+}
+
+[FirestoreData]
+public sealed class InviteDocument
+{
+    [FirestoreProperty("coachUid")] public string CoachUid { get; set; } = string.Empty;
+    [FirestoreProperty("coachName")] public string CoachName { get; set; } = string.Empty;
+    [FirestoreProperty("email")] public string Email { get; set; } = string.Empty;
+    [FirestoreProperty("traineeName")] public string TraineeName { get; set; } = string.Empty;
+    [FirestoreProperty("state")] public string State { get; set; } = "pending";
+    [FirestoreProperty("createdAt")] public Timestamp CreatedAt { get; set; }
+    [FirestoreProperty("answeredAt")] public Timestamp? AnsweredAt { get; set; }
+    [FirestoreProperty("traineeUid")] public string? TraineeUid { get; set; }
 }
 
 [FirestoreData]

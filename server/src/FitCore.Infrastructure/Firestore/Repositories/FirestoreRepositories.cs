@@ -148,6 +148,37 @@ public sealed class FirestoreTrainingRepository(FirestoreDb db) : ITrainingRepos
 
 public sealed class FirestoreCoachRepository(FirestoreDb db) : ICoachRepository
 {
+    public async Task<IReadOnlyList<CoachInvite>> GetInvitesForCoachAsync(string coachUid, CancellationToken ct = default)
+    {
+        var snapshot = await db.Collection(Paths.CoachInvites)
+            .WhereEqualTo("coachUid", coachUid)
+            .Limit(200)
+            .GetSnapshotAsync(ct);
+
+        return snapshot.Documents.Select(d => Mapping.ToInvite(d.Id, d.ConvertTo<InviteDocument>())).ToList();
+    }
+
+    /// <summary>Matched on the email the member signed in with; the address is stored normalised.</summary>
+    public async Task<IReadOnlyList<CoachInvite>> GetInvitesForEmailAsync(string email, CancellationToken ct = default)
+    {
+        var snapshot = await db.Collection(Paths.CoachInvites)
+            .WhereEqualTo("email", email)
+            .Limit(50)
+            .GetSnapshotAsync(ct);
+
+        return snapshot.Documents.Select(d => Mapping.ToInvite(d.Id, d.ConvertTo<InviteDocument>())).ToList();
+    }
+
+    public async Task<CoachInvite?> GetInviteAsync(string inviteId, CancellationToken ct = default)
+    {
+        var snapshot = await db.Collection(Paths.CoachInvites).Document(inviteId).GetSnapshotAsync(ct);
+        return snapshot.Exists ? Mapping.ToInvite(snapshot.Id, snapshot.ConvertTo<InviteDocument>()) : null;
+    }
+
+    public Task SaveInviteAsync(CoachInvite invite, CancellationToken ct = default) =>
+        db.Collection(Paths.CoachInvites).Document(invite.Id)
+            .SetAsync(Mapping.FromInvite(invite), SetOptions.Overwrite, ct);
+
     public async Task<IReadOnlyList<CoachLink>> GetTraineesAsync(string coachUid, CancellationToken ct = default)
     {
         var snapshot = await db.Collection(Paths.CoachLinks)

@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Button, Card, Empty, Field, Icon, Label, Sheet, Title, cx } from "@/components/ui";
 import { dec, n, shortDate } from "@/lib/format";
 import {
-  useAssignDiet, useBecomeCoach, useDiets, useInviteTrainee, useProfile, useRemoveTrainee, useTrainees
+  useAssignPlan, useBecomeCoach, useDiets, useInviteTrainee, useProfile, useRemoveTrainee, useTrainees
 } from "@/lib/queries";
+import { parseNumber } from "@/lib/format";
 import { t, useUi } from "@/state/ui";
 import type { Trainee } from "@/lib/types";
 
@@ -17,7 +18,7 @@ export function Coach() {
   const become = useBecomeCoach();
   const trainees = useTrainees(Boolean(profile.data?.isCoach));
   const invite = useInviteTrainee();
-  const assign = useAssignDiet();
+  const assign = useAssignPlan();
   const remove = useRemoveTrainee();
   const diets = useDiets();
 
@@ -25,6 +26,8 @@ export function Coach() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [open, setOpen] = useState<Trainee | null>(null);
+  const [calories, setCalories] = useState("");
+  const [note, setNote] = useState("");
 
   if (!profile.data) return null;
 
@@ -216,9 +219,17 @@ export function Coach() {
                   <button
                     key={diet.id}
                     onClick={async () => {
-                      await assign.mutateAsync({ uid: open.uid, dietId: diet.id });
+                      const override = parseNumber(calories);
+                      await assign.mutateAsync({
+                        uid: open.uid,
+                        plan: {
+                          dietId: diet.id,
+                          calorieOverride: Number.isFinite(override) && override > 0 ? Math.round(override) : null,
+                          note: note || null
+                        }
+                      });
                       setOpen({ ...open, assignedDietId: diet.id });
-                      say(t(lang, "انحدّد نظامه", "Diet assigned"));
+                      say(t(lang, "انحدّدت خطته", "Plan assigned"));
                     }}
                     className="tap w-full flex items-center justify-between px-4 py-3 text-start"
                   >
@@ -232,6 +243,28 @@ export function Coach() {
                 ))}
               </div>
             </div>
+
+            <div className="grid grid-cols-2 gap-2 mt-3">
+              <Field
+                label={t(lang, "سعرات مخصصة (اختياري)", "Calories (optional)")}
+                value={calories}
+                onChange={setCalories}
+                inputMode="numeric"
+              />
+              <Field
+                label={t(lang, "ملاحظة له", "Note")}
+                value={note}
+                onChange={setNote}
+                inputMode="text"
+              />
+            </div>
+            <p className="mt-2 text-label-sm text-on-surface-variant">
+              {t(
+                lang,
+                "الخطة تظهر له فوراً، ويقدر يفكّها متى ما بغى — حسابه حسابه.",
+                "The plan shows up for them at once, and they can drop it whenever — it is their account."
+              )}
+            </p>
 
             <Button
               variant="soft"

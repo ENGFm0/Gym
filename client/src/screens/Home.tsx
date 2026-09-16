@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bar, Button, Card, Field, Icon, Ring, Sheet, cx } from "@/components/ui";
+import { InviteCard } from "@/components/InviteCard";
 import { MEAL_LABELS } from "@/lib/catalog";
 import { group, n, parseNumber } from "@/lib/format";
+import { hasHealthSource, healthSteps, watchHealthSteps } from "@/lib/native";
 import { useDay, usePatchDay, useProfile } from "@/lib/queries";
 import { t, useUi } from "@/state/ui";
 
@@ -81,6 +83,26 @@ export function Home() {
     }
   });
 
+  // A native shell is the real source when there is one; the sensor is the browser's best effort.
+  useEffect(() => {
+    if (!hasHealthSource() || !day.data) return;
+
+    let alive = true;
+    healthSteps(day.data.date).then((steps) => {
+      if (alive && steps !== null && steps !== day.data!.steps) patch.mutate({ steps });
+    });
+
+    const stop = watchHealthSteps((steps) => {
+      if (alive) patch.mutate({ steps });
+    });
+
+    return () => {
+      alive = false;
+      stop();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [day.data?.date]);
+
   if (!day.data || !profile.data) return null;
 
   const { plan, totals, steps, waterLitres, burnedCalories, caloriesLeft } = day.data;
@@ -104,6 +126,8 @@ export function Home() {
           <Icon name="person" size={20} />
         </button>
       </div>
+
+      <InviteCard />
 
       <Card>
         <div className="flex items-center justify-between gap-4">
@@ -151,6 +175,7 @@ export function Home() {
           <div className="flex items-center justify-between">
             <span className="text-label-sm text-on-surface-variant">{t(lang, "الخطوات", "Steps")}</span>
             <button
+              hidden={hasHealthSource()}
               onClick={async () => {
                 const state = await pedometer.toggle();
                 if (state === "on") say(t(lang, "بدأ عدّ خطواتك", "Counting your steps"));
@@ -169,7 +194,9 @@ export function Home() {
           <div className="text-headline-md text-on-surface tabular-nums mt-1">{group(steps, lang)}</div>
           <Bar value={steps} max={10000} />
           <div className="mt-2 text-label-sm text-on-surface-variant">
-            {t(lang, "يسجّلها الجوال · ", "From your phone · ")}
+            {hasHealthSource()
+              ? t(lang, "من صحة جوالك · ", "From your phone's health app · ")
+              : t(lang, "يسجّلها الجوال · ", "From your phone · ")}
             <button
               onClick={() => {
                 setStepsDraft(String(steps));

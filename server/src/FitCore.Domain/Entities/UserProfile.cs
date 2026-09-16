@@ -30,6 +30,9 @@ public sealed class UserProfile
     public int RestSeconds { get; set; } = 90;
 
     public bool IsCoach { get; set; }
+
+    /// <summary>Set by a coach the member accepted; null when they train on their own.</summary>
+    public CoachAssignment? Assignment { get; set; }
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
 

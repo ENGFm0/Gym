@@ -17,7 +17,8 @@ export const keys = {
   exerciseLibrary: ["exerciseLibrary"] as const,
   sessions: ["sessions"] as const,
   week: ["week"] as const,
-  trainees: ["trainees"] as const
+  trainees: ["trainees"] as const,
+  invites: ["invites"] as const
 };
 
 export const useProfile = () => useQuery({ queryKey: keys.profile, queryFn: () => api.getProfile() });
@@ -195,11 +196,37 @@ export function useInviteTrainee() {
   });
 }
 
-export function useAssignDiet() {
+export function useAssignPlan() {
   const refresh = useRefresh();
   return useMutation({
-    mutationFn: (input: { uid: string; dietId: string }) => api.assignDiet(input.uid, input.dietId),
+    mutationFn: (input: {
+      uid: string;
+      plan: { dietId?: string | null; calorieOverride?: number | null; note?: string | null };
+    }) => api.assignPlan(input.uid, input.plan),
     onSuccess: () => refresh(keys.trainees)
+  });
+}
+
+export const useInvites = () => useQuery({ queryKey: keys.invites, queryFn: () => api.getInvites() });
+
+export function useAcceptInvite() {
+  const refresh = useRefresh();
+  return useMutation({
+    mutationFn: (inviteId: string) => api.acceptInvite(inviteId),
+    onSuccess: () => refresh(keys.invites, keys.profile, keys.plan, keys.day(todayKey()))
+  });
+}
+
+export function useDeclineInvite() {
+  const refresh = useRefresh();
+  return useMutation({ mutationFn: (inviteId: string) => api.declineInvite(inviteId), onSuccess: () => refresh(keys.invites) });
+}
+
+export function useLeaveCoach() {
+  const refresh = useRefresh();
+  return useMutation({
+    mutationFn: () => api.leaveCoach(),
+    onSuccess: () => refresh(keys.profile, keys.plan, keys.day(todayKey()))
   });
 }
 

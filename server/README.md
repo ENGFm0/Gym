@@ -93,6 +93,11 @@ Firestore cannot `SUM` or `GROUP BY`, so weekly figures are computed from a boun
 | GET/POST/DELETE | `/api/training/sessions` | log a session, read the history |
 | GET | `/api/training/exercises/{name}/last` | last working set |
 | GET/POST/DELETE | `/api/coach/trainees…` | coach dashboard, plan against actual |
+| POST/DELETE | `/api/coach/trainees`, `/api/coach/invites/{id}` | invite by email, revoke |
+| PUT | `/api/coach/trainees/{uid}/plan` | assign a diet, calories and a note |
+| GET | `/api/me/invites` | invites waiting for this member |
+| POST | `/api/me/invites/{id}/accept` · `/decline` | accepting is what creates the link |
+| POST | `/api/me/leave-coach` | the member walks away whenever they like |
 | POST | `/api/scan/inbody` | reads a body-composition photo into typed numbers |
 | POST | `/api/scan/inbody/save` | keeps the numbers the member confirmed |
 
@@ -108,6 +113,19 @@ service cloud.firestore {
   }
 }
 ```
+
+## Coaching
+
+A coach invites by email, because they do not know the member's uid. The invite sits in
+`coachInvites` as pending and **nothing about the member is readable until they accept it** —
+accepting is the only thing that writes a `coachLinks` document, and every coach route calls
+`RequireLinkAsync` before it reads anything.
+
+What a coach sets lands on the member's own profile as an `assignment` (diet, optional
+calorie override, a note). The plan calculator reads it ahead of the member's own choice, so
+one number reaches every screen; the member can drop it at any time, and picking a diet by
+hand drops it automatically. That keeps the member's account theirs while the coach's plan
+still actually applies.
 
 ## Reading InBody reports
 

@@ -8,7 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace FitCore.Api.Controllers;
 
 [Route("api/me")]
-public sealed class ProfileController(CurrentUser user, ProfileService profiles, IIdentityService identity) : ApiControllerBase(user)
+public sealed class ProfileController(
+    CurrentUser user,
+    ProfileService profiles,
+    IIdentityService identity,
+    CoachService coaches) : ApiControllerBase(user)
 {
     /// <summary>The signed-in member; the profile document is created on first call.</summary>
     [HttpGet("profile")]
@@ -36,6 +40,38 @@ public sealed class ProfileController(CurrentUser user, ProfileService profiles,
     {
         await identity.SetCoachAsync(Uid, true, ct);
         return Ok(await profiles.SetCoachAsync(Uid, true, ct));
+    }
+
+    /* ---- being coached ---- */
+
+    /// <summary>Invites waiting for the email on this token.</summary>
+    [HttpGet("invites")]
+    public async Task<ActionResult<IEnumerable<InviteDto>>> Invites(CancellationToken ct) =>
+        Ok(await coaches.GetMyInvitesAsync(Account.Email, ct));
+
+    /// <summary>Accepting is what creates the link — a coach sees nothing before this.</summary>
+    [HttpPost("invites/{inviteId}/accept")]
+    public async Task<ActionResult<ProfileDto>> AcceptInvite(string inviteId, CancellationToken ct)
+    {
+        await coaches.AcceptInviteAsync(Uid, Account.Email, inviteId, ct);
+        var profile = await profiles.GetOrCreateAsync(Uid, Account.Email, Account.Name, ct);
+        return Ok(profiles.Map(profile));
+    }
+
+    [HttpPost("invites/{inviteId}/decline")]
+    public async Task<IActionResult> DeclineInvite(string inviteId, CancellationToken ct)
+    {
+        await coaches.DeclineInviteAsync(Account.Email, inviteId, ct);
+        return NoContent();
+    }
+
+    /// <summary>The member can leave their coach whenever they like; it is their account.</summary>
+    [HttpPost("leave-coach")]
+    public async Task<ActionResult<ProfileDto>> LeaveCoach(CancellationToken ct)
+    {
+        await coaches.LeaveCoachAsync(Uid, ct);
+        var profile = await profiles.GetOrCreateAsync(Uid, Account.Email, Account.Name, ct);
+        return Ok(profiles.Map(profile));
     }
 
     [HttpGet("diets")]

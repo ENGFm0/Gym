@@ -29,7 +29,13 @@ public sealed class ProfileService(IUserRepository users, IClock clock)
         if (request.Gender is not null && Enum.TryParse<Gender>(request.Gender, true, out var gender)) profile.Gender = gender;
         if (request.Activity is not null && Enum.TryParse<ActivityLevel>(request.Activity, true, out var activity)) profile.Activity = activity;
         if (request.Goal is not null && Enum.TryParse<Goal>(request.Goal, true, out var goal)) profile.Goal = goal;
-        if (request.DietId is not null) profile.DietId = request.DietId;
+        if (request.DietId is not null)
+        {
+            profile.DietId = request.DietId;
+            // Choosing a diet by hand overrides what a coach set; nothing silently fights the member.
+            if (profile.Assignment?.DietId is not null && profile.Assignment.DietId != request.DietId)
+                profile.Assignment = null;
+        }
         if (request.Pace is not null) profile.PaceKgPerWeek = Math.Clamp(request.Pace.Value, 0.1, 1.0);
         if (request.RestSeconds is not null) profile.RestSeconds = Math.Clamp(request.RestSeconds.Value, 15, 600);
 
@@ -77,7 +83,12 @@ public sealed class ProfileService(IUserRepository users, IClock clock)
         p.DietId,
         new UnitsDto(p.Units.Mass.ToString().ToLowerInvariant(), p.Units.Length.ToString().ToLowerInvariant()),
         p.RestSeconds,
-        p.IsCoach);
+        p.IsCoach,
+        p.Assignment is null
+            ? null
+            : new AssignmentDto(
+                p.Assignment.CoachUid, p.Assignment.CoachName, p.Assignment.DietId,
+                p.Assignment.CalorieOverride, p.Assignment.Note, p.Assignment.AssignedAtUtc));
 
     public PlanDto PlanFor(UserProfile profile)
     {

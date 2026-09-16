@@ -1,6 +1,6 @@
-import { Card, Icon, Label, cx } from "@/components/ui";
+import { Button, Card, Icon, Label, cx } from "@/components/ui";
 import { group, n } from "@/lib/format";
-import { useDiets, useProfile, useSaveProfile } from "@/lib/queries";
+import { useDiets, useLeaveCoach, useProfile, useSaveProfile } from "@/lib/queries";
 import { t, useUi } from "@/state/ui";
 
 /** The diet section: what the system is, what to eat, what to avoid, and how to switch. */
@@ -9,10 +9,13 @@ export function DietScreen() {
   const profile = useProfile();
   const diets = useDiets();
   const save = useSaveProfile();
+  const leave = useLeaveCoach();
 
   if (!profile.data || !diets.data) return null;
 
-  const current = diets.data.find((d) => d.id === profile.data!.dietId) ?? diets.data[2] ?? diets.data[0];
+  const assignment = profile.data.assignment;
+  const activeId = assignment?.dietId ?? profile.data.dietId;
+  const current = diets.data.find((d) => d.id === activeId) ?? diets.data[2] ?? diets.data[0];
 
   return (
     <div className="flex flex-col gap-4 pt-1 fade">
@@ -20,6 +23,34 @@ export function DietScreen() {
         <div className="text-headline-md text-on-surface">{t(lang, "نظامي الغذائي", "My diet")}</div>
         <Label>{t(lang, "كل شي عن نظامك", "Everything about the system you follow")}</Label>
       </div>
+
+      {assignment && (
+        <Card className="border border-secondary-fixed-dim/50">
+          <div className="flex items-center gap-3">
+            <span className="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+              <Icon name="sports" />
+            </span>
+            <div className="flex-1 min-w-0">
+              <div className="text-label-lg text-on-surface truncate">
+                {t(lang, `خطتك من ${assignment.coachName}`, `Your plan from ${assignment.coachName}`)}
+              </div>
+              <div className="text-label-sm text-on-surface-variant truncate">
+                {assignment.note ?? t(lang, "نظامك وسعراتك محدّدة من مدرّبك", "Your diet and calories are set by your coach")}
+              </div>
+            </div>
+          </div>
+          <Button
+            variant="soft"
+            className="w-full mt-3"
+            onClick={async () => {
+              await leave.mutateAsync();
+              say(t(lang, "رجعت تدير نظامك بنفسك", "You are back to running your own plan"));
+            }}
+          >
+            {t(lang, "أدير نظامي بنفسي", "Run my own plan")}
+          </Button>
+        </Card>
+      )}
 
       <Card className="border border-primary-fixed/40">
         <div className="flex items-center justify-between">
@@ -91,7 +122,7 @@ export function DietScreen() {
               </span>
               {diet.id === current.id ? (
                 <span className="px-2.5 py-1 rounded-lg bg-primary-fixed text-on-primary-fixed text-label-sm">
-                  {t(lang, "نشط", "Active")}
+                  {assignment ? t(lang, "من مدرّبك", "From your coach") : t(lang, "نشط", "Active")}
                 </span>
               ) : (
                 <Icon name="chevron_right" className="text-on-surface-variant rtl:rotate-180" />

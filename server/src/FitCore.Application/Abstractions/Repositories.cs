@@ -57,6 +57,11 @@ public interface IFoodCatalog
 
 public interface ICoachRepository
 {
+    Task<IReadOnlyList<CoachInvite>> GetInvitesForCoachAsync(string coachUid, CancellationToken ct = default);
+    Task<IReadOnlyList<CoachInvite>> GetInvitesForEmailAsync(string email, CancellationToken ct = default);
+    Task<CoachInvite?> GetInviteAsync(string inviteId, CancellationToken ct = default);
+    Task SaveInviteAsync(CoachInvite invite, CancellationToken ct = default);
+
     Task<IReadOnlyList<CoachLink>> GetTraineesAsync(string coachUid, CancellationToken ct = default);
     Task<CoachLink?> GetLinkAsync(string coachUid, string traineeUid, CancellationToken ct = default);
     Task SaveLinkAsync(CoachLink link, CancellationToken ct = default);
