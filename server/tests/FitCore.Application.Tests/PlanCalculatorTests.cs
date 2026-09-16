@@ -53,7 +53,10 @@ public class PlanCalculatorTests
     {
         var plan = PlanCalculator.For(Member(p => p.Activity = level), Today);
         Assert.Equal(pal, PlanCalculator.PalFor(level));
-        Assert.Equal((int)Math.Round(plan.Bmr * pal), plan.Tdee, 1);
+        // Rounding can land either side, so allow the one kcal — Assert.Equal's tolerance
+        // overload has no int form and the call is ambiguous.
+        var expected = (int)Math.Round(plan.Bmr * pal);
+        Assert.InRange(plan.Tdee, expected - 1, expected + 1);
     }
 
     [Fact]
