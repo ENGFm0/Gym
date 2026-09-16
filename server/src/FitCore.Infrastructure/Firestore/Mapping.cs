@@ -48,6 +48,18 @@ internal static class Mapping
             Note = doc.Assignment.Note,
             AssignedAtUtc = ToUtc(doc.Assignment.At)
         },
+        Reminders = doc.Reminders is null ? new ReminderSettings() : new ReminderSettings
+        {
+            Enabled = doc.Reminders.Enabled,
+            UtcOffsetMinutes = doc.Reminders.UtcOffsetMinutes,
+            MealTimes = doc.Reminders.MealTimes.Count > 0 ? doc.Reminders.MealTimes : new List<string> { "13:30", "20:30" },
+            Training = doc.Reminders.Training,
+            TrainingTime = doc.Reminders.TrainingTime,
+            WeighIn = doc.Reminders.WeighIn,
+            WeighInWeekday = doc.Reminders.WeighInWeekday,
+            WeighInTime = doc.Reminders.WeighInTime,
+            LastSent = doc.Reminders.LastSent
+        },
         CreatedAtUtc = ToUtc(doc.CreatedAt),
         UpdatedAtUtc = ToUtc(doc.UpdatedAt)
     };
@@ -79,6 +91,19 @@ internal static class Mapping
             Note = profile.Assignment.Note,
             At = ToTimestamp(profile.Assignment.AssignedAtUtc)
         },
+        Reminders = new RemindersDocument
+        {
+            Enabled = profile.Reminders.Enabled,
+            UtcOffsetMinutes = profile.Reminders.UtcOffsetMinutes,
+            MealTimes = profile.Reminders.MealTimes,
+            Training = profile.Reminders.Training,
+            TrainingTime = profile.Reminders.TrainingTime,
+            WeighIn = profile.Reminders.WeighIn,
+            WeighInWeekday = profile.Reminders.WeighInWeekday,
+            WeighInTime = profile.Reminders.WeighInTime,
+            LastSent = profile.Reminders.LastSent
+        },
+        RemindersOn = profile.Reminders.Enabled,
         CreatedAt = ToTimestamp(profile.CreatedAtUtc == default ? DateTime.UtcNow : profile.CreatedAtUtc),
         UpdatedAt = ToTimestamp(DateTime.UtcNow)
     };

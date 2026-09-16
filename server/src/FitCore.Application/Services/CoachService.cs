@@ -124,6 +124,59 @@ public sealed class CoachService(
             "/diet"), ct);
     }
 
+    /// <summary>
+    /// Sets the trainee's training week: which weekdays, and the exercises on each. It writes
+    /// the member's own program, so their app shows it without knowing a coach was involved —
+    /// and they can still change it, because it is their program.
+    /// </summary>
+    public async Task<ProgramDto> SetProgramAsync(
+        string coachUid, string traineeUid, SetProgramRequest request, CancellationToken ct = default)
+    {
+        await RequireLinkAsync(coachUid, traineeUid, ct);
+
+        var program = await training.GetProgramAsync(traineeUid, ct);
+
+        if (request.TrainingDays is { Count: > 0 })
+        {
+            program.TrainingDays = request.TrainingDays.ToList();
+            Training.WeekPlanner.Reflow(program);
+        }
+
+        foreach (var day in request.Days ?? Array.Empty<ProgramDayDto>())
+        {
+            if (day.Slot < 0 || day.Slot >= program.Days.Count) continue;
+
+            program.Days[day.Slot].Exercises = day.Exercises
+                .Select(e => new ProgramExercise
+                {
+                    NameAr = e.NameAr,
+                    NameEn = string.IsNullOrWhiteSpace(e.NameEn) ? e.NameAr : e.NameEn,
+                    Sets = Math.Clamp(e.Sets, 1, 20),
+                    Reps = Math.Clamp(e.Reps, 1, 100)
+                })
+                .ToList();
+        }
+
+        program.UpdatedAtUtc = clock.UtcNow;
+        await training.SaveProgramForAsync(traineeUid, program, ct);
+
+        var coach = await users.GetAsync(coachUid, ct);
+        await notifier.SendAsync(traineeUid, new PushMessage(
+            "برنامج تمارين جديد",
+            $"{coach?.DisplayName ?? "مدرّبك"} رتّب لك أسبوعك",
+            "A new training program",
+            $"{coach?.DisplayName ?? "Your coach"} set up your week",
+            "/training"), ct);
+
+        return TrainingService.MapProgram(program);
+    }
+
+    public async Task<ProgramDto> GetProgramAsync(string coachUid, string traineeUid, CancellationToken ct = default)
+    {
+        await RequireLinkAsync(coachUid, traineeUid, ct);
+        return TrainingService.MapProgram(await training.GetProgramAsync(traineeUid, ct));
+    }
+
     public async Task RemoveAsync(string coachUid, string traineeUid, CancellationToken ct = default)
     {
         await RequireLinkAsync(coachUid, traineeUid, ct);

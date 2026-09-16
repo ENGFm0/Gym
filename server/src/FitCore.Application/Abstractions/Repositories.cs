@@ -6,6 +6,12 @@ public interface IUserRepository
 {
     Task<UserProfile?> GetAsync(string uid, CancellationToken ct = default);
     Task SaveAsync(UserProfile profile, CancellationToken ct = default);
+
+    /// <summary>Everyone who asked to be reminded. Paged, because the job walks all of them.</summary>
+    Task<IReadOnlyList<UserProfile>> GetRemindableAsync(int limit, string? afterUid, CancellationToken ct = default);
+
+    /// <summary>Removes the member and everything under them.</summary>
+    Task DeleteAsync(string uid, CancellationToken ct = default);
 }
 
 public interface IDiaryRepository

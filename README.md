@@ -38,12 +38,17 @@ cd client && npm install && npm run dev          # http://localhost:5173
 ## التحقق
 
 ```bash
-cd server && dotnet test                        # حسابات الخطة والأسبوع والحرق
+cd server && dotnet test                        # الحسابات + اختبارات تكامل على الـAPI كامل
 cd client && npm run lint && npm run build      # فحص الأنواع والبناء
 cd client && npm run smoke                      # مرور آلي على التطبيق المبني
 ```
 
 CI في `.github/workflows/ci.yml` يشغّل الثلاثة ويبني صور Docker.
+
+## التذكيرات
+
+تحتاج Cloud Scheduler ينادي `/api/jobs/reminders` كل ربع ساعة بمفتاح `Jobs:Secret`
+(الأمر في `server/README.md`). التذكير ما ينرسل إلا إذا الشي فعلاً ناقص.
 
 ## النشر
 

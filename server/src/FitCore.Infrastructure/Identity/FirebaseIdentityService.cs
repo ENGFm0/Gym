@@ -45,4 +45,16 @@ public sealed class FirebaseIdentityService : IIdentityService
         var claims = new Dictionary<string, object> { ["coach"] = isCoach };
         return FirebaseAuth.DefaultInstance.SetCustomUserClaimsAsync(uid, claims, ct);
     }
+
+    public async Task DeleteUserAsync(string uid, CancellationToken ct = default)
+    {
+        try
+        {
+            await FirebaseAuth.DefaultInstance.DeleteUserAsync(uid, ct);
+        }
+        catch (FirebaseAuthException e) when (e.AuthErrorCode == AuthErrorCode.UserNotFound)
+        {
+            // Already gone: the data delete is what mattered.
+        }
+    }
 }

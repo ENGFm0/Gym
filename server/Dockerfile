@@ -9,10 +9,11 @@ COPY src/FitCore.Application/FitCore.Application.csproj src/FitCore.Application/
 COPY src/FitCore.Infrastructure/FitCore.Infrastructure.csproj src/FitCore.Infrastructure/
 COPY src/FitCore.Api/FitCore.Api.csproj src/FitCore.Api/
 COPY tests/FitCore.Application.Tests/FitCore.Application.Tests.csproj tests/FitCore.Application.Tests/
+COPY tests/FitCore.Api.Tests/FitCore.Api.Tests.csproj tests/FitCore.Api.Tests/
 RUN dotnet restore FitCore.sln
 
 COPY . .
-RUN dotnet test tests/FitCore.Application.Tests/FitCore.Application.Tests.csproj -c Release --no-restore
+RUN dotnet test FitCore.sln -c Release --no-restore
 RUN dotnet publish src/FitCore.Api/FitCore.Api.csproj -c Release -o /app --no-restore
 
 # Run

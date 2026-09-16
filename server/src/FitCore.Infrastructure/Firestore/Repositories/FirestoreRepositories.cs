@@ -15,6 +15,47 @@ public sealed class FirestoreUserRepository(FirestoreDb db) : IUserRepository
 
     public Task SaveAsync(UserProfile profile, CancellationToken ct = default) =>
         Paths.User(db, profile.Uid).SetAsync(Mapping.FromProfile(profile), SetOptions.MergeAll, ct);
+
+    /// <summary>Only the members who asked to be reminded, paged by document id.</summary>
+    public async Task<IReadOnlyList<UserProfile>> GetRemindableAsync(int limit, string? afterUid, CancellationToken ct = default)
+    {
+        Query query = db.Collection(Paths.Users)
+            .WhereEqualTo("remindersOn", true)
+            .OrderBy(FieldPath.DocumentId)
+            .Limit(limit);
+
+        if (!string.IsNullOrEmpty(afterUid)) query = query.StartAfter(afterUid);
+
+        var snapshot = await query.GetSnapshotAsync(ct);
+        return snapshot.Documents.Select(d => Mapping.ToProfile(d.Id, d.ConvertTo<ProfileDocument>())).ToList();
+    }
+
+    /// <summary>
+    /// Deletes the member and everything under them. Firestore does not cascade, so each
+    /// collection is walked; the profile goes last, so a failure leaves the account findable.
+    /// </summary>
+    public async Task DeleteAsync(string uid, CancellationToken ct = default)
+    {
+        var user = Paths.User(db, uid);
+
+        foreach (var name in new[] { "days", "weights", "measures", "photos", "activities", "sessions", "exLast", "devices", "quota", "program" })
+        {
+            var collection = user.Collection(name);
+            while (true)
+            {
+                var page = await collection.Limit(300).GetSnapshotAsync(ct);
+                if (page.Count == 0) break;
+
+                var batch = db.StartBatch();
+                foreach (var document in page.Documents) batch.Delete(document.Reference);
+                await batch.CommitAsync(ct);
+
+                if (page.Count < 300) break;
+            }
+        }
+
+        await user.DeleteAsync(cancellationToken: ct);
+    }
 }
 
 public sealed class FirestoreDiaryRepository(FirestoreDb db) : IDiaryRepository

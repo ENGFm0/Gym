@@ -103,6 +103,12 @@ Firestore cannot `SUM` or `GROUP BY`, so weekly figures are computed from a boun
 | POST | `/api/scan/inbody` | reads a body-composition photo into typed numbers |
 | POST | `/api/scan/inbody/save` | keeps the numbers the member confirmed |
 | POST/DELETE | `/api/me/devices` | register or forget a device for push |
+| GET/PUT | `/api/me/reminders` | when to be nudged, in the member's own local time |
+| GET | `/api/me/export` | everything we hold, as one JSON file |
+| DELETE | `/api/me?confirm=delete` | the account and the sign-in, gone |
+| GET/PUT | `/api/coach/trainees/{uid}/program` | the coach sets their training week |
+| POST | `/api/jobs/reminders` | the scheduler's entry point, behind a shared secret |
+| POST | `/api/diagnostics/client-error` | where the app reports a crash it survived |
 
 ## Firestore security rules
 
@@ -182,3 +188,49 @@ everyone in it:
 - The whole API: 300 requests a minute.
 - `POST /api/scan/inbody`: 5 in five minutes, and **10 a day** enforced in Firestore with a
   transaction, because that endpoint calls a model and costs real money per call.
+
+## Reminders
+
+Three nudges, and each one checks before it fires: a meal time where nothing is logged, a
+training day with no session yet, the weekly weigh-in when the last one is five days old.
+Nobody is told to do what they already did.
+
+Times are the member's own, so the offset travels with the settings — the server is UTC and
+has no other way to know it is 8pm in Riyadh. The day each reminder last fired is written
+down, so a re-run or a restart cannot send it twice.
+
+Cloud Scheduler drives it:
+
+```bash
+gcloud scheduler jobs create http fitcore-reminders \
+  --schedule "*/15 * * * *" --time-zone UTC \
+  --uri "https://<api-host>/api/jobs/reminders" --http-method POST \
+  --headers "X-Job-Secret=$JOBS_SECRET"
+```
+
+`Jobs:Secret` must be set, or the route answers 404 — an unset secret closes it rather than
+opening it.
+
+## Logs
+
+Logs go to stdout as JSON, which is what Cloud Run collects and indexes. Every request carries
+an `X-Request-Id` (echoed back, so a member can quote it) and a scope with that id and the uid;
+only failures and anything over a second are written, so the log stays readable. Front-end
+crashes arrive at `/api/diagnostics/client-error` and land in the same stream.
+
+## Tests
+
+```bash
+dotnet test           # both projects
+```
+
+- `FitCore.Application.Tests` — the maths: Mifflin-St Jeor against a hand-computed BMR, the
+  activity factors, goal deltas and the 1200 kcal floor, macro splits, the 1-to-7-day week
+  planner, MET burn, and what a coach's assignment overrides.
+- `FitCore.Api.Tests` — the real pipeline over in-memory stores: the plan end to end, logging
+  and removing food, steps feeding the burn, two weigh-ins that both survive, the training week
+  keeping its exercises through a change, MET burn on a logged session, the scan allowance, and
+  export and delete. The coaching rules get their own file, because they are the ones with
+  teeth: an invite reveals nothing until it is accepted, an invite addressed to someone else
+  cannot be accepted, a coach cannot read a member who is not theirs, an assignment changes the
+  member's plan and the member can drop it, and the job route needs its secret.

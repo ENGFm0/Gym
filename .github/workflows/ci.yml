@@ -36,7 +36,7 @@ jobs:
       - run: dotnet build FitCore.sln -c Release --no-restore
 
       - name: Test
-        run: dotnet test tests/FitCore.Application.Tests/FitCore.Application.Tests.csproj -c Release --no-build --logger "trx;LogFileName=results.trx"
+        run: dotnet test FitCore.sln -c Release --no-build --logger "trx;LogFileName=results.trx"
 
       - name: Publish test results
         if: always()

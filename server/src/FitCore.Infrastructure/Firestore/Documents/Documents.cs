@@ -22,6 +22,9 @@ public sealed class ProfileDocument
     [FirestoreProperty("restSeconds")] public int RestSeconds { get; set; } = 90;
     [FirestoreProperty("isCoach")] public bool IsCoach { get; set; }
     [FirestoreProperty("assignment")] public AssignmentDocument? Assignment { get; set; }
+    [FirestoreProperty("reminders")] public RemindersDocument? Reminders { get; set; }
+    /// <summary>Denormalised so the reminder job can query without reading every profile.</summary>
+    [FirestoreProperty("remindersOn")] public bool RemindersOn { get; set; }
     [FirestoreProperty("createdAt")] public Timestamp CreatedAt { get; set; }
     [FirestoreProperty("updatedAt")] public Timestamp UpdatedAt { get; set; }
 }
@@ -180,6 +183,20 @@ public sealed class AssignmentDocument
     [FirestoreProperty("calorieOverride")] public int? CalorieOverride { get; set; }
     [FirestoreProperty("note")] public string? Note { get; set; }
     [FirestoreProperty("at")] public Timestamp At { get; set; }
+}
+
+[FirestoreData]
+public sealed class RemindersDocument
+{
+    [FirestoreProperty("enabled")] public bool Enabled { get; set; }
+    [FirestoreProperty("offset")] public int UtcOffsetMinutes { get; set; } = 180;
+    [FirestoreProperty("mealTimes")] public List<string> MealTimes { get; set; } = new();
+    [FirestoreProperty("training")] public bool Training { get; set; }
+    [FirestoreProperty("trainingTime")] public string TrainingTime { get; set; } = "18:00";
+    [FirestoreProperty("weighIn")] public bool WeighIn { get; set; }
+    [FirestoreProperty("weighInWeekday")] public int WeighInWeekday { get; set; }
+    [FirestoreProperty("weighInTime")] public string WeighInTime { get; set; } = "07:30";
+    [FirestoreProperty("lastSent")] public Dictionary<string, string> LastSent { get; set; } = new();
 }
 
 [FirestoreData]

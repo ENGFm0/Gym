@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Bar, Button, Card, Empty, Field, Icon, Label, Segmented, Title, cx } from "@/components/ui";
+import { Bar, Button, Card, Empty, Field, Icon, Label, Segmented, Sheet, Title, cx } from "@/components/ui";
 import { MEAL_LABELS } from "@/lib/catalog";
 import { dec, group, n, parseNumber, shortDate } from "@/lib/format";
 import {
-  useAssignPlan, useDiets, useTraineeDay, useTraineePhotos, useTraineeWeek, useTraineeWeights, useTrainees
+  useAssignPlan, useDiets, useExerciseLibrary, useSetTraineeProgram, useTraineeDay, useTraineePhotos,
+  useTraineeProgram, useTraineeWeek, useTraineeWeights, useTrainees
 } from "@/lib/queries";
+import { WEEK_AR, WEEK_AR_SHORT, WEEK_EN, WEEK_EN_SHORT, WEEK_SHAPES } from "@/lib/engine";
 import { todayKey } from "@/lib/api";
 import { t, useUi } from "@/state/ui";
 
-type Tab = "week" | "food" | "weight" | "photos";
+type Tab = "week" | "program" | "food" | "weight" | "photos";
 
 /**
  * One trainee, everything the link allows: their week, what they actually ate against the
@@ -46,6 +48,7 @@ export function Trainee() {
         onChange={setTab}
         options={[
           { value: "week", label: t(lang, "أسبوعه", "Week") },
+          { value: "program", label: t(lang, "برنامجه", "Program") },
           { value: "food", label: t(lang, "أكله", "Food") },
           { value: "weight", label: t(lang, "وزنه", "Weight") },
           { value: "photos", label: t(lang, "صوره", "Photos") }
@@ -53,6 +56,7 @@ export function Trainee() {
       />
 
       {tab === "week" && <WeekTab uid={uid} />}
+      {tab === "program" && <ProgramTab uid={uid} />}
       {tab === "food" && <FoodTab uid={uid} />}
       {tab === "weight" && <WeightTab uid={uid} />}
       {tab === "photos" && <PhotoTab uid={uid} />}
@@ -320,5 +324,161 @@ function PhotoTab({ uid }: { uid: string }) {
         </div>
       ))}
     </div>
+  );
+}
+
+/** The coach sets the trainee's week: which days, and what is on each of them. */
+function ProgramTab({ uid }: { uid: string }) {
+  const { lang, say } = useUi();
+  const program = useTraineeProgram(uid);
+  const setProgram = useSetTraineeProgram(uid);
+  const library = useExerciseLibrary();
+  const [openSlot, setOpenSlot] = useState(0);
+  const [addTo, setAddTo] = useState<number | null>(null);
+
+  if (!program.data) return null;
+  const plan = program.data;
+
+  return (
+    <>
+      <Card>
+        <Title>{t(lang, "أيام تمرينه", "Their training days")}</Title>
+        <Label>
+          {t(
+            lang,
+            "تظهر له مباشرة، ويقدر يعدّلها — البرنامج برنامجه.",
+            "It shows up for them at once, and they can change it — the program is theirs."
+          )}
+        </Label>
+
+        <div className="flex gap-1.5 mt-3">
+          {[1, 2, 3, 4, 5, 6, 7].map((count) => (
+            <button
+              key={count}
+              onClick={() => setProgram.mutate({ trainingDays: [...WEEK_SHAPES[count]] })}
+              className={cx(
+                "tap flex-1 h-10 rounded-xl text-label-lg tabular-nums",
+                count === plan.daysPerWeek ? "bg-primary-fixed text-on-primary-fixed" : "bg-surface-container-high text-on-surface-variant"
+              )}
+            >
+              {n(count, lang)}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-1.5 mt-2">
+          {[0, 1, 2, 3, 4, 5, 6].map((weekday) => {
+            const on = plan.trainingDays.includes(weekday);
+            return (
+              <button
+                key={weekday}
+                onClick={() => {
+                  const next = on
+                    ? plan.trainingDays.filter((day) => day !== weekday)
+                    : [...plan.trainingDays, weekday].sort((a, b) => a - b);
+                  if (next.length === 0) return;
+                  setProgram.mutate({ trainingDays: next });
+                }}
+                className={cx(
+                  "tap flex-1 h-11 rounded-xl text-label-lg",
+                  on ? "bg-primary-fixed text-on-primary-fixed" : "bg-surface-container-high text-on-surface-variant"
+                )}
+              >
+                {t(lang, WEEK_AR_SHORT[weekday], WEEK_EN_SHORT[weekday])}
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+
+      <div className="rounded-2xl bg-surface-container divide-y divide-outline-variant/40 overflow-hidden">
+        {plan.days.map((day) => {
+          const isOpen = day.slot === openSlot;
+          return (
+            <div key={day.slot}>
+              <button
+                onClick={() => setOpenSlot(isOpen ? -1 : day.slot)}
+                className="tap w-full px-4 py-3 flex items-center gap-3 text-start"
+              >
+                <span className="w-8 h-8 rounded-lg bg-primary-fixed/15 text-primary-fixed flex items-center justify-center text-label-sm shrink-0">
+                  {n(day.slot + 1, lang)}
+                </span>
+                <span className="flex-1 min-w-0">
+                  <span className="block text-label-lg text-on-surface truncate">
+                    {t(lang, WEEK_AR[day.weekday], WEEK_EN[day.weekday])} · {t(lang, day.nameAr, day.nameEn)}
+                  </span>
+                  <span className="block text-label-sm text-on-surface-variant truncate">
+                    {day.exercises.length
+                      ? day.exercises.map((exercise) => t(lang, exercise.nameAr, exercise.nameEn)).join(" · ")
+                      : t(lang, "ما فيه تمارين", "nothing yet")}
+                  </span>
+                </span>
+                <Icon name="expand_more" className={cx("text-on-surface-variant shrink-0", isOpen && "rotate-180")} />
+              </button>
+
+              {isOpen && (
+                <>
+                  {day.exercises.map((exercise, index) => (
+                    <div
+                      key={`${exercise.nameAr}-${index}`}
+                      className="flex items-center justify-between ps-4 pe-3 py-2.5 border-t border-outline-variant/40 bg-surface-container-low"
+                    >
+                      <div className="min-w-0">
+                        <div className="text-label-lg text-on-surface truncate">{t(lang, exercise.nameAr, exercise.nameEn)}</div>
+                        <div className="text-label-sm text-on-surface-variant tabular-nums">
+                          {n(exercise.sets, lang)}
+                          {t(lang, " جولات × ", " sets × ")}
+                          {n(exercise.reps, lang)}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() =>
+                          setProgram.mutate({
+                            days: [{ ...day, exercises: day.exercises.filter((_, at) => at !== index) }]
+                          })
+                        }
+                        className="tap w-9 h-9 rounded-lg text-on-surface-variant flex items-center justify-center shrink-0"
+                      >
+                        <Icon name="close" size={16} />
+                      </button>
+                    </div>
+                  ))}
+
+                  <div className="p-3 border-t border-outline-variant/40 bg-surface-container-low">
+                    <Button variant="soft" className="w-full h-11" onClick={() => setAddTo(day.slot)}>
+                      <Icon name="add" />
+                      {t(lang, "أضف تمرين", "Add exercise")}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <Sheet open={addTo !== null} onClose={() => setAddTo(null)}>
+        <Title>{t(lang, "أضف تمرين", "Add exercise")}</Title>
+        <div className="rounded-2xl bg-surface-container-high divide-y divide-outline-variant/40 mt-3 max-h-80 overflow-y-auto">
+          {(library.data ?? []).map((exercise) => (
+            <button
+              key={exercise.nameAr}
+              onClick={async () => {
+                const day = plan.days.find((row) => row.slot === addTo);
+                if (!day) return;
+                await setProgram.mutateAsync({
+                  days: [{ ...day, exercises: [...day.exercises, { ...exercise, sets: 4, reps: 10 }] }]
+                });
+                setAddTo(null);
+                say(t(lang, "أُضيف لبرنامجه", "Added to their program"));
+              }}
+              className="tap w-full text-start px-4 py-3 text-label-lg text-on-surface"
+            >
+              {t(lang, exercise.nameAr, exercise.nameEn)}
+            </button>
+          ))}
+        </div>
+      </Sheet>
+    </>
   );
 }

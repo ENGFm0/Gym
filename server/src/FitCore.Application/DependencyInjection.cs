@@ -17,6 +17,8 @@ public static class DependencyInjection
         services.AddScoped<WeekSummaryService>();
         services.AddScoped<CoachService>();
         services.AddScoped<ScanService>();
+        services.AddScoped<ReminderService>();
+        services.AddScoped<AccountService>();
         return services;
     }
 }

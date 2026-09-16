@@ -4,4 +4,7 @@ namespace FitCore.Application.Abstractions;
 public interface IIdentityService
 {
     Task SetCoachAsync(string uid, bool isCoach, CancellationToken ct = default);
+
+    /// <summary>Removes the sign-in itself, so a deleted account cannot come back.</summary>
+    Task DeleteUserAsync(string uid, CancellationToken ct = default);
 }

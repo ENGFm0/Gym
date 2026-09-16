@@ -79,6 +79,12 @@ Push runs through the same worker. Permission is asked for on a tap in the profi
 load, and the token goes to `/api/me/devices` so the API can reach that device. Needs
 `VITE_FIREBASE_VAPID_KEY`.
 
+## When something breaks
+
+`components/ErrorBoundary.tsx` catches a crash, shows a screen that says the data is safe, and
+posts the message and stack to `/api/diagnostics/client-error`. Without it a front-end error is
+a white screen on someone's phone that nobody ever hears about.
+
 ## Smoke test
 
 `npm run smoke` builds nothing itself — it serves `dist` with `vite preview` and walks the

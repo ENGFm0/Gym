@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, todayKey } from "./api";
-import type { MealSlot, Profile, SessionExercise } from "./types";
+import type { MealSlot, Profile, Program, Reminders, SessionExercise } from "./types";
 
 export const keys = {
   profile: ["profile"] as const,
@@ -19,6 +19,7 @@ export const keys = {
   week: ["week"] as const,
   trainees: ["trainees"] as const,
   invites: ["invites"] as const,
+  reminders: ["reminders"] as const,
   trainee: (uid: string) => ["trainee", uid] as const,
   traineeDay: (uid: string, date: string) => ["trainee", uid, "day", date] as const
 };
@@ -226,6 +227,27 @@ export const useTraineeDay = (uid: string, date: string) =>
 export function useRevokeInvite() {
   const refresh = useRefresh();
   return useMutation({ mutationFn: (inviteId: string) => api.revokeInvite(inviteId), onSuccess: () => refresh(keys.trainees) });
+}
+
+export const useReminders = () => useQuery({ queryKey: keys.reminders, queryFn: () => api.getReminders() });
+
+export function useSaveReminders() {
+  const refresh = useRefresh();
+  return useMutation({
+    mutationFn: (reminders: Reminders) => api.setReminders(reminders),
+    onSuccess: () => refresh(keys.reminders)
+  });
+}
+
+export const useTraineeProgram = (uid: string) =>
+  useQuery({ queryKey: [...keys.trainee(uid), "program"], queryFn: () => api.getTraineeProgram(uid) });
+
+export function useSetTraineeProgram(uid: string) {
+  const refresh = useRefresh();
+  return useMutation({
+    mutationFn: (program: { trainingDays?: number[]; days?: Program["days"] }) => api.setTraineeProgram(uid, program),
+    onSuccess: () => refresh(keys.trainee(uid))
+  });
 }
 
 export function useAcceptInvite() {

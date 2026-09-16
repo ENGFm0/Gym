@@ -225,3 +225,14 @@ export interface InBodyScan {
   confidence: number;
   note?: string | null;
 }
+
+export interface Reminders {
+  enabled: boolean;
+  utcOffsetMinutes: number;
+  mealTimes: string[];
+  training: boolean;
+  trainingTime: string;
+  weighIn: boolean;
+  weighInWeekday: number;
+  weighInTime: string;
+}

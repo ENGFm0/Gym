@@ -70,6 +70,16 @@ public sealed class CoachController(
         return NoContent();
     }
 
+    /// <summary>Their training week, as the coach sees and sets it.</summary>
+    [HttpGet("trainees/{traineeUid}/program")]
+    public async Task<ActionResult<ProgramDto>> Program(string traineeUid, CancellationToken ct) =>
+        Ok(await coaches.GetProgramAsync(Uid, traineeUid, ct));
+
+    [HttpPut("trainees/{traineeUid}/program")]
+    public async Task<ActionResult<ProgramDto>> SetProgram(
+        string traineeUid, [FromBody] SetProgramRequest request, CancellationToken ct) =>
+        Ok(await coaches.SetProgramAsync(Uid, traineeUid, request, ct));
+
     [HttpDelete("trainees/{traineeUid}")]
     public async Task<IActionResult> Remove(string traineeUid, CancellationToken ct)
     {

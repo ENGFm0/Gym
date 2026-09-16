@@ -27,6 +27,10 @@ public sealed class TrainingService(
         return seeded;
     }
 
+    /// <summary>Writes a program for a uid other than the caller — used by a linked coach.</summary>
+    public Task SaveProgramForAsync(string uid, TrainingProgram program, CancellationToken ct = default) =>
+        training.SaveProgramAsync(uid, program, ct);
+
     public async Task<ProgramDto> GetProgramDtoAsync(string uid, CancellationToken ct = default) =>
         MapProgram(await GetProgramAsync(uid, ct));
 

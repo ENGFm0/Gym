@@ -13,7 +13,9 @@ public sealed class ProfileController(
     ProfileService profiles,
     IIdentityService identity,
     CoachService coaches,
-    IDeviceRepository devices) : ApiControllerBase(user)
+    IDeviceRepository devices,
+    ReminderService reminders,
+    AccountService account) : ApiControllerBase(user)
 {
     /// <summary>The signed-in member; the profile document is created on first call.</summary>
     [HttpGet("profile")]
@@ -90,6 +92,42 @@ public sealed class ProfileController(
     public async Task<IActionResult> ForgetDevice(string token, CancellationToken ct)
     {
         await devices.RemoveTokenAsync(Uid, token, ct);
+        return NoContent();
+    }
+
+    /* ---- reminders ---- */
+
+    [HttpGet("reminders")]
+    public async Task<ActionResult<RemindersDto>> Reminders(CancellationToken ct)
+    {
+        var profile = await profiles.GetOrCreateAsync(Uid, Account.Email, Account.Name, ct);
+        return Ok(ReminderService.Map(profile.Reminders));
+    }
+
+    /// <summary>Times are the member's own, which is why the offset travels with them.</summary>
+    [HttpPut("reminders")]
+    public async Task<ActionResult<RemindersDto>> SetReminders([FromBody] RemindersDto request, CancellationToken ct) =>
+        Ok(await reminders.UpdateAsync(Uid, request, ct));
+
+    /* ---- the member's data is theirs ---- */
+
+    /// <summary>Everything we hold about this member, in one file they can keep.</summary>
+    [HttpGet("export")]
+    public async Task<IActionResult> Export(CancellationToken ct)
+    {
+        var bundle = await account.ExportAsync(Uid, ct);
+        var name = $"fitcore-{DateTime.UtcNow:yyyy-MM-dd}.json";
+        return File(bundle, "application/json", name);
+    }
+
+    /// <summary>Deletes the account and everything under it, including the sign-in itself.</summary>
+    [HttpDelete]
+    public async Task<IActionResult> DeleteAccount([FromQuery] string confirm, CancellationToken ct)
+    {
+        if (!string.Equals(confirm, "delete", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "Add ?confirm=delete to confirm." });
+
+        await account.DeleteAsync(Uid, ct);
         return NoContent();
     }
 

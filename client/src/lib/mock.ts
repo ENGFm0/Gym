@@ -9,7 +9,7 @@ import {
 import { FOODS, ACTIVITY_LIBRARY, DIETS, EXERCISES } from "./catalog";
 import type {
   Activity, ActivityCatalogItem, Day, Diet, Food, InBodyScan, Invite, Meal, MealEntry, MealSlot,
-  Measurement, Photo, Profile, Program, Session, SessionExercise, Trainee, WeekSummary, Weight
+  Measurement, Photo, Profile, Program, Reminders, Session, SessionExercise, Trainee, WeekSummary, Weight
 } from "./types";
 
 const KEY = "fitcore.demo.v1";
@@ -28,6 +28,7 @@ interface Store {
   customFoods: Food[];
   trainees: Trainee[];
   invites: Invite[];
+  reminders: Reminders;
 }
 
 const blankProfile = (): Profile => ({
@@ -73,6 +74,16 @@ function empty(): Store {
     exLast: {},
     customFoods: [],
     trainees: [],
+    reminders: {
+      enabled: false,
+      utcOffsetMinutes: -new Date().getTimezoneOffset(),
+      mealTimes: ["13:30", "20:30"],
+      training: true,
+      trainingTime: "18:00",
+      weighIn: true,
+      weighInWeekday: 0,
+      weighInTime: "07:30"
+    },
     invites: [
       // One waiting invite, so the accept flow is visible in demo mode.
       {
@@ -656,6 +667,47 @@ export const mockApi = {
 
   async saveScan(scan: { weightKg?: number | null; bodyFatPercent?: number | null; skeletalMuscleKg?: number | null }) {
     if (scan.weightKg) await this.addWeight(scan.weightKg, "inbody");
+  },
+
+  async getReminders(): Promise<Reminders> {
+    return store.reminders;
+  },
+
+  async setReminders(reminders: Reminders): Promise<Reminders> {
+    store.reminders = reminders;
+    save();
+    return store.reminders;
+  },
+
+  /** The demo store is the export: same shape, straight out of the browser. */
+  async exportData(): Promise<Blob> {
+    return new Blob([JSON.stringify(store, null, 2)], { type: "application/json" });
+  },
+
+  async deleteAccount(): Promise<void> {
+    store = empty();
+    save();
+  },
+
+  async getTraineeProgram(_uid: string): Promise<Program> {
+    return ensureProgram();
+  },
+
+  async setTraineeProgram(_uid: string, program: { trainingDays?: number[]; days?: Program["days"] }): Promise<Program> {
+    if (program.trainingDays?.length) {
+      store.program = reflow({ daysPerWeek: program.trainingDays.length, trainingDays: program.trainingDays, days: ensureProgram().days, restDays: [] });
+    }
+    program.days?.forEach((day) => {
+      const target = store.program?.days.find((d) => d.slot === day.slot);
+      if (target) target.exercises = day.exercises;
+    });
+    save();
+    return ensureProgram();
+  },
+
+  /** Demo mode has nowhere to report to, so the console is the log. */
+  async reportError(report: { message: string; stack?: string; route?: string; agent?: string }): Promise<void> {
+    console.error("[fitcore]", report.message, report.route);
   },
 
   /** No server to register with in demo mode; the call is accepted and dropped. */

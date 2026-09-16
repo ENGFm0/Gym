@@ -6,7 +6,7 @@ import { mockApi, type MockApi } from "./mock";
 import { idToken } from "./firebase";
 import type {
   Activity, ActivityCatalogItem, Day, Diet, Food, InBodyScan, Invite, MealSlot, Measurement,
-  Photo, Plan, Profile, Program, Session, SessionExercise, Trainee, WeekSummary, Weight
+  Photo, Plan, Profile, Program, Reminders, Session, SessionExercise, Trainee, WeekSummary, Weight
 } from "./types";
 
 /** Everything a coach is allowed to see about one trainee, in one call each. */
@@ -167,6 +167,41 @@ const httpApi: MockApi = {
     await call<void>(`/api/me/invites/${inviteId}/decline`, { method: "POST" });
   },
   leaveCoach: () => call<Profile>("/api/me/leave-coach", { method: "POST" }),
+
+  getReminders: () => call<Reminders>("/api/me/reminders"),
+  setReminders: (reminders) => call<Reminders>("/api/me/reminders", { method: "PUT", body: body(reminders) }),
+
+  /** The export is a file, so it is fetched rather than parsed. */
+  exportData: async () => {
+    const token = await idToken();
+    const response = await fetch(`${base}/api/me/export`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    if (!response.ok) throw new Error("export failed");
+    return response.blob();
+  },
+
+  deleteAccount: async () => {
+    await call<void>("/api/me?confirm=delete", { method: "DELETE" });
+  },
+
+  getTraineeProgram: (uid) => call<Program>(`/api/coach/trainees/${uid}/program`),
+  setTraineeProgram: (uid, program) =>
+    call<Program>(`/api/coach/trainees/${uid}/program`, { method: "PUT", body: body(program) }),
+
+  /** Best effort: a report that cannot be sent must never itself throw. */
+  reportError: async (report) => {
+    try {
+      await fetch(`${base}/api/diagnostics/client-error`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: body(report),
+        keepalive: true
+      });
+    } catch {
+      /* offline, or no API at all */
+    }
+  },
 
   registerDevice: async (device) => {
     await call<void>("/api/me/devices", { method: "POST", body: body(device) });

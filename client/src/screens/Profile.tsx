@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Card, Field, Icon, Label, Segmented, Title, cx } from "@/components/ui";
+import { Button, Card, Field, Icon, Label, Segmented, Sheet, Title, cx } from "@/components/ui";
 import { isConfigured, leave } from "@/lib/firebase";
-import { enablePush, pushSupported } from "@/lib/push";
+import { RemindersCard } from "@/components/RemindersCard";
+import { api } from "@/lib/api";
 import { isOffline } from "@/lib/api";
 import { dec, group, lengthLabel, massLabel, n, parseNumber, raw, showLength, showMass, toCm, toKg } from "@/lib/format";
 import { useDay, useProfile, useSaveProfile } from "@/lib/queries";
@@ -16,9 +17,8 @@ export function ProfileScreen() {
   const day = useDay();
   const save = useSaveProfile();
   const [editing, setEditing] = useState(false);
-  const [pushOn, setPushOn] = useState(
-    typeof Notification !== "undefined" && Notification.permission === "granted"
-  );
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState<{ name: string; height: string; weight: string; target: string; birth: string }>({
     name: "",
     height: "",
@@ -195,41 +195,53 @@ export function ProfileScreen() {
         </button>
       </div>
 
-      {pushSupported() && (
-        <div className="rounded-2xl bg-surface-container overflow-hidden">
-          <button
-            onClick={async () => {
-              const state = await enablePush(lang);
-              setPushOn(state === "granted");
-              say(
-                state === "granted"
-                  ? t(lang, "بنذكّرك", "We will nudge you")
-                  : state === "denied"
-                    ? t(lang, "التنبيهات مرفوضة من المتصفح", "Notifications are blocked in the browser")
-                    : t(lang, "التنبيهات تحتاج ربط السيرفر", "Notifications need the API")
-              );
-            }}
-            className="tap w-full flex items-center justify-between px-4 py-3.5 text-start"
-          >
-            <span>
-              <span className="block text-label-lg text-on-surface">{t(lang, "التنبيهات", "Notifications")}</span>
-              <span className="block text-label-sm text-on-surface-variant">
-                {pushOn
-                  ? t(lang, "مفعّلة — خطة مدرّبك وجلساته توصلك", "On — your coach's plan and sessions reach you")
-                  : t(lang, "تذكير بالوجبة والتمرين وخطة مدرّبك", "Meal and training reminders, and your coach's plan")}
-              </span>
+      <RemindersCard />
+
+      <div className="rounded-2xl bg-surface-container divide-y divide-outline-variant/40 overflow-hidden">
+        <button
+          onClick={async () => {
+            setBusy(true);
+            try {
+              // The export is a file: it downloads rather than opening a screen.
+              const blob = await api.exportData();
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.href = url;
+              link.download = `fitcore-${new Date().toISOString().slice(0, 10)}.json`;
+              link.click();
+              URL.revokeObjectURL(url);
+              say(t(lang, "نزّلنا بياناتك", "Your data was downloaded"));
+            } catch {
+              say(t(lang, "ما قدرنا نصدّر بياناتك", "The export did not work"));
+            } finally {
+              setBusy(false);
+            }
+          }}
+          disabled={busy}
+          className="tap w-full flex items-center justify-between px-4 py-3.5 text-start disabled:opacity-60"
+        >
+          <span>
+            <span className="block text-label-lg text-on-surface">{t(lang, "نزّل بياناتي", "Download my data")}</span>
+            <span className="block text-label-sm text-on-surface-variant">
+              {t(lang, "كل شي سجّلته، بملف واحد", "Everything you logged, in one file")}
             </span>
-            <span
-              className={cx(
-                "w-6 h-6 rounded-full flex items-center justify-center shrink-0",
-                pushOn ? "bg-primary-fixed text-on-primary-fixed" : "bg-surface-container-high"
-              )}
-            >
-              {pushOn && <Icon name="check" size={14} />}
+          </span>
+          <Icon name="download" className="text-on-surface-variant" />
+        </button>
+
+        <button
+          onClick={() => setConfirming(true)}
+          className="tap w-full flex items-center justify-between px-4 py-3.5 text-start"
+        >
+          <span>
+            <span className="block text-label-lg text-error">{t(lang, "احذف حسابي", "Delete my account")}</span>
+            <span className="block text-label-sm text-on-surface-variant">
+              {t(lang, "يمسح كل شي نهائياً", "Removes everything, for good")}
             </span>
-          </button>
-        </div>
-      )}
+          </span>
+          <Icon name="delete" className="text-on-surface-variant" />
+        </button>
+      </div>
 
       <Button
         variant="soft"
@@ -242,6 +254,41 @@ export function ProfileScreen() {
         <Icon name="logout" />
         {t(lang, "خروج", "Sign out")}
       </Button>
+
+      <Sheet open={confirming} onClose={() => setConfirming(false)}>
+        <Title>{t(lang, "تحذف حسابك؟", "Delete your account?")}</Title>
+        <Label>
+          {t(
+            lang,
+            "وزنك ومقاساتك وصورك وجلساتك كلها تنمسح ولا ترجع. نزّل بياناتك أول إذا تبي تحتفظ فيها.",
+            "Your weight, measurements, photos and sessions all go, and do not come back. Download your data first if you want to keep it."
+          )}
+        </Label>
+        <Button
+          variant="soft"
+          className="w-full mt-3"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            try {
+              await api.deleteAccount();
+              if (isConfigured) await leave();
+              say(t(lang, "انحذف حسابك", "Your account is gone"));
+              window.location.href = "/";
+            } catch {
+              say(t(lang, "ما قدرنا نحذف الحساب", "The account could not be deleted"));
+            } finally {
+              setBusy(false);
+              setConfirming(false);
+            }
+          }}
+        >
+          {t(lang, "احذفه نهائياً", "Delete it for good")}
+        </Button>
+        <Button className="w-full mt-2" onClick={() => setConfirming(false)}>
+          {t(lang, "لا، رجعني", "No, take me back")}
+        </Button>
+      </Sheet>
 
       {isOffline && (
         <p className="text-label-sm text-on-surface-variant text-center">

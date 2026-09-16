@@ -18,6 +18,14 @@ builder.Services
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
+// Cloud Run reads stdout as structured logs, so JSON here is what makes a field searchable.
+builder.Logging.ClearProviders();
+builder.Logging.AddJsonConsole(options =>
+{
+    options.IncludeScopes = true;
+    options.JsonWriterOptions = new System.Text.Json.JsonWriterOptions { Indented = false };
+});
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CurrentUser>();
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
@@ -107,6 +115,31 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// One line per request, carrying an id the client can quote when something goes wrong.
+app.Use(async (context, next) =>
+{
+    var requestId = context.Request.Headers["X-Request-Id"].FirstOrDefault() ?? context.TraceIdentifier;
+    context.Response.Headers["X-Request-Id"] = requestId;
+
+    using (app.Logger.BeginScope(new Dictionary<string, object>
+           {
+               ["requestId"] = requestId,
+               ["uid"] = context.User.FindFirst("user_id")?.Value ?? "anonymous"
+           }))
+    {
+        var started = System.Diagnostics.Stopwatch.GetTimestamp();
+        await next();
+        var ms = System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+
+        // Only what is worth reading later: the slow, the failed, and nothing else.
+        if (context.Response.StatusCode >= 400 || ms > 1000)
+        {
+            app.Logger.LogWarning("{Method} {Path} -> {Status} in {Elapsed:0}ms",
+                context.Request.Method, context.Request.Path, context.Response.StatusCode, ms);
+        }
+    }
+});
+
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -118,13 +151,17 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok", at = DateTime.UtcNow
    .WithName("Health");
 
 // The shipped food catalog is written once; a failure here must not stop the API coming up.
-try
+// Tests run against in-memory stores and must not reach for Firestore at all.
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    await app.Services.SeedFoodCatalogAsync();
-}
-catch (Exception e)
-{
-    app.Logger.LogWarning(e, "Could not seed the food catalog");
+    try
+    {
+        await app.Services.SeedFoodCatalogAsync();
+    }
+    catch (Exception e)
+    {
+        app.Logger.LogWarning(e, "Could not seed the food catalog");
+    }
 }
 
 app.Run();

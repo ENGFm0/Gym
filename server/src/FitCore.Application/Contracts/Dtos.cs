@@ -145,6 +145,8 @@ public sealed record SetTrainingDaysRequest(int? DaysPerWeek, int? ToggleWeekday
 
 public sealed record SaveDayExercisesRequest(IReadOnlyList<ExerciseDto> Exercises);
 
+public sealed record SetProgramRequest(IReadOnlyList<int>? TrainingDays, IReadOnlyList<ProgramDayDto>? Days);
+
 public sealed record SetLogDto(double? WeightKg, int Reps, bool Done);
 
 public sealed record SessionExerciseDto(string NameAr, string NameEn, IReadOnlyList<SetLogDto> Sets);
@@ -201,3 +203,15 @@ public sealed record AssignmentDto(
 public sealed record AssignRequest(string? DietId, int? CalorieOverride, string? Note);
 
 public sealed record RegisterDeviceRequest(string Token, string? Platform, string? Lang);
+
+public sealed record RemindersDto(
+    bool Enabled,
+    int UtcOffsetMinutes,
+    IReadOnlyList<string> MealTimes,
+    bool Training,
+    string TrainingTime,
+    bool WeighIn,
+    int WeighInWeekday,
+    string WeighInTime);
+
+public sealed record ReminderRunResult(int Checked, int Sent);
