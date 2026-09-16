@@ -40,7 +40,9 @@ public class MemberEndpointTests(ApiFactory factory) : IClassFixture<ApiFactory>
 
         var plan = await client.GetFromJsonAsync<PlanDto>("/api/me/plan");
         Assert.NotNull(plan);
-        Assert.Equal(1940, plan!.Bmr);                       // Mifflin-St Jeor, by hand
+        // Mifflin-St Jeor at 30, which the fixed clock makes him:
+        // 10(92.8) + 6.25(185) - 5(30) + 5 = 1939.25
+        Assert.Equal(1939, plan!.Bmr);
         Assert.True(plan.Calories < plan.Tdee);              // cutting
         Assert.InRange(plan.Bmi, 27.0, 27.2);
     }
