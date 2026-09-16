@@ -13,20 +13,20 @@ SCREENS = [
     ("signup",   "fitcore_2", "إنشاء حساب",        "Sign up",         "auth", None),
     ("signin",   "fitcore_1", "تسجيل الدخول",       "Sign in",         "auth", None),
     ("goal",     "_14",       "هدفك",               "Your goal",       "onboarding", None),
-    ("body",     "_16",       "قياساتك ونشاطك",      "Body & activity", "onboarding", None),
+    ("body",     None,        "قياساتك",             "Your body",       "onboarding", None),
     ("diet",     "_15",       "نظامك الغذائي",       "Your diet",       "onboarding", None),
     ("prefs",    "_17",       "تفضيلاتك",            "Preferences",     "onboarding", None),
     ("plan",     "_18",       "خطتك جاهزة",          "Your plan",       "onboarding", None),
-    ("home",     "_2",        "الرئيسية",            "Home",            "app", "home"),
-    ("meals",    "_8",        "الوجبات",             "Meals",           "app", "meals"),
+    ("home_stitch", "_2",     "الرئيسية (تصميم)",     "Home (mockup)",   "mockup", None),
+    ("meals_stitch", "_8",    "الوجبات (تصميم)",      "Meals (mockup)",  "mockup", None),
     ("quicklog", "_4",        "تسجيل سريع",          "Quick log",       "app", None),
     ("meal",     "_3",        "تفاصيل الوجبة",       "Meal details",    "app", None),
-    ("workouts", "_19",       "التمارين",            "Training",        "app", "workouts"),
-    ("session",  "_20",       "جلسة التمرين",        "Workout session", "app", None),
+    ("workouts_stitch", "_19","خطة المدرّب",          "Coach plan",      "mockup", None),
+    ("session_stitch", "_20", "جلسة (تصميم)",         "Session (mockup)","mockup", None),
     ("exercise", "_22",       "تفاصيل التمرين",      "Exercise",        "app", None),
     ("load",     "_21",       "معدل التحميل",        "Load progression","app", None),
-    ("progress", "_1",        "التقدّم",             "Progress",        "app", "progress"),
-    ("photos",   "_10",       "صور التقدّم",         "Progress photos", "app", None),
+    ("progress_stitch", "_1", "التقدّم (تصميم)",      "Progress (mockup)","mockup", None),
+    ("photos_stitch", "_10",  "مقارنة الصور",         "Photo comparison","app", None),
     ("coach",    "_5",        "لوحة المدرّب",        "Coach dashboard", "coach", None),
     ("clients",  "_9",        "المتدربون",           "Clients",         "coach", None),
     ("client",   "_12",       "ملف المتدرب",         "Client profile",  "coach", None),
@@ -35,6 +35,13 @@ SCREENS = [
     ("addclient","_13",       "إضافة متدرب",         "Add trainee",     "coach", None),
     ("chat",     "_11",       "المحادثة",            "Chat",            "coach", None),
     ("profile",  None,        "حسابي",               "Account",         "app", None),
+    ("home",     None,        "الرئيسية",            "Home",            "app", "home"),
+    ("meals",    None,        "الوجبات",             "Meals",           "app", "meals"),
+    ("addfood",  None,        "إضافة طعام",          "Add food",        "app", None),
+    ("dietinfo", None,        "نظامي الغذائي",       "My diet",         "app", None),
+    ("workouts", None,        "برنامجي",             "My program",      "app", "workouts"),
+    ("session",  None,        "جلسة التمرين",        "Workout session", "app", None),
+    ("progress", None,        "التقدّم",             "Progress",        "app", "progress"),
 ]
 
 # clicking text -> screen, per screen. First match on an element wins.
@@ -159,9 +166,10 @@ def build():
         .replace("/*LINKS*/", json.dumps(LINKS, ensure_ascii=False))
         .replace("/*TABS*/", json.dumps(TABS, ensure_ascii=False))
         .replace("/*I18N*/", (HERE / "i18n.json").read_text().strip())
+        .replace("/*VIEWS*/", (HERE / "views.js").read_text())
         .replace("<!--SCREENS-->", "\n".join(
-            f'<section data-screen="{s["id"]}" hidden>{s["html"]}</section>'
-            for s in screens if s["html"] is not None)))
+            f'<section data-screen="{s["id"]}" hidden>{s["html"] or ""}</section>'
+            for s in screens if s["id"] != "profile")))   # profile's container lives in the shell
     (HERE / "index.html").write_text(out)
     # pass 2: compile exactly the classes these screens use, then inline the result
     import subprocess

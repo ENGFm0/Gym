@@ -78,6 +78,7 @@
   </div>
 </div>
 
+<input type="file" id="photo-input" accept="image/*" capture="environment" hidden>
 <div id="toast" class="fixed bottom-28 left-1/2 -translate-x-1/2 z-[70] px-4 py-2.5 rounded-xl bg-primary-container text-on-primary-container font-label-lg text-label-lg shadow-lg hidden"></div>
 
 <script>
@@ -140,6 +141,9 @@ function walkText(root, fn){
   list.forEach(fn);
 }
 function applyLang(root){
+  Array.prototype.forEach.call(root.querySelectorAll("[data-mockup-note]"), function(n){
+    n.textContent = S.lang === "en" ? "Stitch mockup — open the working screen" : "هذي شاشة تصميم — افتح النسخة الشغّالة";
+  });
   var toEn = S.lang === "en";
   walkText(root, function(n){
     if (n.__ar === undefined) n.__ar = n.nodeValue;
@@ -267,6 +271,8 @@ function render(id, keepStack){
   if (!keepStack && current && current !== id) stack.push(current);
   current = s.id;
   Object.keys(sections).forEach(function(k){ sections[k].hidden = (k !== s.id); });
+  var dyn = (typeof DYNAMIC !== "undefined") && DYNAMIC[s.id];
+  if (dyn) sections[s.id].innerHTML = dyn();
   sections[s.id].classList.remove("fade"); void sections[s.id].offsetWidth; sections[s.id].classList.add("fade");
   document.getElementById("screen-title").textContent = S.lang === "en" ? s.en : s.ar;
   document.getElementById("btn-back").hidden = !stack.length;
@@ -276,9 +282,13 @@ function render(id, keepStack){
   view.classList.toggle("pb-10", !showTabs);
   if (showTabs) tabbar(s.tab);
   if (s.id === 'profile') renderProfile();
-  personalise(sections[s.id]);
-  wire(sections[s.id], s.id);
-  applyLang(sections[s.id]);
+  if (!dyn){
+    personalise(sections[s.id]);
+    wire(sections[s.id], s.id);
+    applyLang(sections[s.id]);
+  } else {
+    bindLiveInputs(sections[s.id]);
+  }
   if (location.hash !== "#" + s.id) history.replaceState(null, "", "#" + s.id);
   window.scrollTo(0, 0);
 }
@@ -301,9 +311,20 @@ function personalise(root){
 }
 
 /* ---------------- make the static screens clickable ---------------- */
+var MOCKUP_OF = { home_stitch:"home", meals_stitch:"meals", workouts_stitch:"workouts",
+                  session_stitch:"session", progress_stitch:"progress" };
 function wire(root, id){
   if (root.dataset.wired) { wireForms(root, id); return; }
   root.dataset.wired = "1";
+  var working = MOCKUP_OF[id];
+  if (working){
+    var bn = document.createElement("button");
+    bn.dataset.go = working;
+    bn.className = "tap w-full mb-3 rounded-xl bg-primary-fixed/15 text-primary-fixed px-4 py-3 flex items-center justify-between font-label-lg text-label-lg";
+    bn.innerHTML = '<span data-mockup-note>هذي شاشة تصميم — افتح النسخة الشغّالة</span>'+
+                   '<span class="material-symbols-outlined text-[18px] rtl:rotate-180">chevron_right</span>';
+    root.insertBefore(bn, root.firstChild);
+  }
   (LINKS[id] || []).forEach(function(pair){
     var text = pair[0], target = pair[1];
     var nodes = root.querySelectorAll("button, a, [role=button], .cursor-pointer, li, [class*=rounded]");
@@ -319,6 +340,17 @@ function wire(root, id){
     }
   });
   wireForms(root, id);
+  Array.prototype.forEach.call(root.querySelectorAll("button, [role=button]"), function(el){
+    if (el.dataset.go || el.dataset.act || el.dataset.bound) return;
+    if (el.closest("[data-active-classes]")) return;          // segmented controls handle themselves
+    el.dataset.bound = "1";
+    el.classList.add("tap");
+    el.addEventListener("click", function(){
+      var t = (el.textContent || "").trim().slice(0, 28);
+      toast(S.lang === "en" ? (t ? '"'+t+'" — mockup control' : "Mockup control")
+                            : (t ? '«'+t+'» — عنصر تصميم' : "عنصر تصميم"));
+    });
+  });
   // generic segmented controls: clicking a sibling moves the active styling
   Array.prototype.forEach.call(root.querySelectorAll("[data-active-classes]"), function(group){
     var on = group.dataset.activeClasses.split(/\s+/);
@@ -380,11 +412,24 @@ function guessField(el, id){
   return null;
 }
 
+function bindLiveInputs(root){
+  var q = root.querySelector("#food-q");
+  if (q){
+    q.addEventListener("input", function(){
+      foodQuery = q.value;
+      render(current, true);
+      var n = document.getElementById("food-q");
+      if (n){ n.focus(); n.setSelectionRange(n.value.length, n.value.length); }
+    });
+  }
+}
+
 /* ---------------- one click handler for everything ---------------- */
 document.addEventListener("click", function(e){
   var act = e.target.closest("[data-act]");
   if (act){
     e.preventDefault();
+    if (typeof dynamicAct === "function" && dynamicAct(act.dataset.act, act.dataset)) return;
     if (act.dataset.act === "theme"){ setTheme(S.theme === "light" ? "dark" : "light"); renderProfile(); }
     if (act.dataset.act === "lang"){ setLang(S.lang === "en" ? "ar" : "en"); }
     if (act.dataset.act === "wipe"){ localStorage.removeItem(KEY); location.hash = ""; location.reload(); }
@@ -399,7 +444,7 @@ document.addEventListener("click", function(e){
 /* ---------------- drawer with every screen ---------------- */
 var drawer = document.getElementById("drawer");
 function buildDrawer(){
-  var groups = { auth:["الحساب","Account"], onboarding:["التهيئة","Onboarding"], app:["التطبيق","App"], coach:["المدرّب","Coach"] };
+  var groups = { app:["التطبيق","App"], onboarding:["التهيئة","Onboarding"], coach:["المدرّب","Coach"], auth:["الحساب","Account"], mockup:["تصاميم Stitch","Stitch mockups"] };
   var body = document.getElementById("drawer-body"), html = "";
   Object.keys(groups).forEach(function(g){
     var items = META.filter(function(s){ return s.group === g; });
@@ -417,7 +462,7 @@ document.getElementById("btn-menu").addEventListener("click", function(){
   buildDrawer(); drawer.classList.remove("hidden");
 });
 drawer.addEventListener("click", function(e){
-  if (e.target === drawer || e.target.closest("[data-go]")) drawer.classList.add("hidden");
+  if (e.target === drawer || e.target.closest("[data-go]")) closePanel();
 });
 
 /* ---------------- chrome ---------------- */
@@ -434,6 +479,19 @@ window.addEventListener("hashchange", function(){
   if (byId[id] && id !== current) render(id);
 });
 
+/* ---------------- working screens ---------------- */
+function openPanel(html){
+  var d = document.getElementById("drawer");
+  document.getElementById("drawer-body").innerHTML = html;
+  d.classList.remove("hidden");
+  d.dataset.panel = "1";
+}
+function closePanel(){
+  var d = document.getElementById("drawer");
+  d.classList.add("hidden"); delete d.dataset.panel;
+}
+/*VIEWS*/
+
 /* ---------------- icon font check ---------------- */
 if (document.fonts && document.fonts.load){
   document.fonts.load('24px "Material Symbols Outlined"').then(function(f){
@@ -443,6 +501,26 @@ if (document.fonts && document.fonts.load){
     if (!document.fonts.check('24px "Material Symbols Outlined"')) document.documentElement.classList.add("icons-missing");
   }, 3000);
 }
+
+document.getElementById("photo-input").addEventListener("change", function(e){
+  var f = e.target.files && e.target.files[0];
+  if (!f) return;
+  var img = new Image(), fr = new FileReader();
+  fr.onload = function(){ img.src = fr.result; };
+  img.onload = function(){
+    var scale = Math.min(1, 900 / Math.max(img.width, img.height));
+    var c = document.createElement("canvas");
+    c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    S.photos = S.photos || [];
+    S.photos.push({ d: stamp(), src: c.toDataURL("image/jpeg", 0.72) });
+    if (S.photos.length > 24) S.photos.shift();
+    save(); render(current, true);
+    toast(S.lang === "en" ? "Photo added" : "انضافت الصورة");
+  };
+  fr.readAsDataURL(f);
+  e.target.value = "";
+});
 
 /* ---------------- start ---------------- */
 setTheme(S.theme);

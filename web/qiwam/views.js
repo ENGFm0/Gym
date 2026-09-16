@@ -1,0 +1,724 @@
+/* Real, working screens rendered from the user's own data, in the Stitch design language. */
+var FOODS = [
+  {id:"egg",n:"بيض",en:"Eggs",u:"حبة",base:1,kcal:90,p:6,c:.3,f:7.3},
+  {id:"chick",n:"صدر دجاج مشوي",en:"Grilled chicken",u:"جم",base:100,kcal:165,p:31,c:0,f:3.6},
+  {id:"beef",n:"لحم بقري",en:"Beef",u:"جم",base:100,kcal:250,p:26,c:0,f:16},
+  {id:"salmon",n:"سلمون",en:"Salmon",u:"جم",base:100,kcal:208,p:20,c:0,f:13},
+  {id:"shrimp",n:"روبيان",en:"Shrimp",u:"جم",base:100,kcal:99,p:24,c:.2,f:.3},
+  {id:"tuna",n:"تونة بالماء",en:"Tuna",u:"علبة",base:1,kcal:110,p:25,c:0,f:1},
+  {id:"yog",n:"لبن يوناني",en:"Greek yogurt",u:"جم",base:170,kcal:100,p:17,c:6,f:0},
+  {id:"milk",n:"حليب",en:"Milk",u:"مل",base:200,kcal:104,p:7,c:10,f:4},
+  {id:"halou",n:"جبن حلوم",en:"Halloumi",u:"جم",base:100,kcal:325,p:22,c:2.5,f:26},
+  {id:"qareesh",n:"جبن قريش",en:"Cottage cheese",u:"جم",base:100,kcal:98,p:11,c:3.4,f:4.3},
+  {id:"rice",n:"أرز أبيض مطبوخ",en:"White rice",u:"جم",base:100,kcal:130,p:2.7,c:28,f:.3},
+  {id:"kabsa",n:"كبسة دجاج",en:"Kabsa",u:"صحن",base:1,kcal:640,p:34,c:72,f:22},
+  {id:"shawrma",n:"شاورما دجاج",en:"Shawarma",u:"سندويتش",base:1,kcal:390,p:24,c:36,f:16},
+  {id:"bread",n:"خبز عربي",en:"Arabic bread",u:"رغيف",base:1,kcal:140,p:5,c:26,f:1.5},
+  {id:"oats",n:"شوفان",en:"Oats",u:"جم",base:100,kcal:389,p:17,c:66,f:7},
+  {id:"pasta",n:"معكرونة",en:"Pasta",u:"جم",base:100,kcal:158,p:6,c:31,f:.9},
+  {id:"potato",n:"بطاطس مقلية",en:"Fries",u:"جم",base:100,kcal:312,p:3.4,c:41,f:15},
+  {id:"foul",n:"فول مدمس",en:"Foul",u:"صحن",base:1,kcal:270,p:14,c:34,f:8},
+  {id:"hummus",n:"حمص بالطحينة",en:"Hummus",u:"جم",base:100,kcal:177,p:8,c:14,f:10},
+  {id:"dates",n:"تمر",en:"Dates",u:"حبة",base:1,kcal:22,p:.2,c:6,f:0},
+  {id:"banana",n:"موز",en:"Banana",u:"حبة",base:1,kcal:105,p:1.3,c:27,f:.4},
+  {id:"apple",n:"تفاح",en:"Apple",u:"حبة",base:1,kcal:95,p:.5,c:25,f:.3},
+  {id:"avo",n:"أفوكادو",en:"Avocado",u:"جم",base:100,kcal:214,p:2.6,c:11,f:20},
+  {id:"almond",n:"لوز",en:"Almonds",u:"جم",base:100,kcal:579,p:21,c:22,f:50},
+  {id:"pb",n:"زبدة فول سوداني",en:"Peanut butter",u:"جم",base:100,kcal:588,p:25,c:20,f:50},
+  {id:"oil",n:"زيت زيتون",en:"Olive oil",u:"ملعقة",base:1,kcal:119,p:0,c:0,f:13.5},
+  {id:"butter",n:"زبدة",en:"Butter",u:"جم",base:100,kcal:717,p:.9,c:.1,f:81},
+  {id:"gsalad",n:"سلطة يونانية",en:"Greek salad",u:"حصة",base:1,kcal:310,p:8,c:10,f:27},
+  {id:"broc",n:"بروكلي",en:"Broccoli",u:"جم",base:100,kcal:35,p:2.4,c:7,f:.4},
+  {id:"cucum",n:"خيار",en:"Cucumber",u:"جم",base:100,kcal:15,p:.7,c:3.6,f:.1},
+  {id:"whey",n:"بروتين واي",en:"Whey protein",u:"سكوب",base:1,kcal:120,p:24,c:3,f:1.5},
+  {id:"latte",n:"قهوة بحليب",en:"Latte",u:"كوب",base:1,kcal:150,p:8,c:14,f:7},
+  {id:"coffee",n:"قهوة سادة",en:"Black coffee",u:"فنجان",base:1,kcal:5,p:.2,c:.8,f:0},
+  {id:"burger",n:"برجر",en:"Burger",u:"وجبة",base:1,kcal:540,p:28,c:41,f:29},
+  {id:"pizza",n:"بيتزا",en:"Pizza slice",u:"قطعة",base:1,kcal:230,p:10,c:28,f:9}
+];
+var FOOD_BY_ID = {}; FOODS.forEach(function(f){ FOOD_BY_ID[f.id] = f; });
+var MEAL_NAMES = ["الفطور","الغداء","سناك","العشاء"];
+var MEAL_EN = { "الفطور":"Breakfast", "الغداء":"Lunch", "سناك":"Snack", "العشاء":"Dinner" };
+var EXERCISE_LIB = [
+  ["بنش برس","Bench press"],["سكوات","Squat"],["رفعة ميتة","Deadlift"],["ضغط أكتاف","Shoulder press"],
+  ["سحب أمامي","Lat pulldown"],["تجديف بالبار","Barbell row"],["عقلة","Pull-up"],["مرجحة بايسبس","Biceps curl"],
+  ["ترايسبس بالحبل","Triceps pushdown"],["دمبل صدر مائل","Incline dumbbell press"],["لانجز","Lunges"],
+  ["رفرفة جانبي","Lateral raise"],["سمانة واقف","Standing calf raise"],["بلانك","Plank"],["كارديو","Cardio"]
+];
+var DAY_TEMPLATES = {
+  3: [["دفع","Push"],["سحب","Pull"],["أرجل","Legs"]],
+  4: [["صدر وترايسبس","Chest & triceps"],["ظهر وبايسبس","Back & biceps"],["أرجل","Legs"],["أكتاف وبطن","Shoulders & core"]],
+  5: [["صدر","Chest"],["ظهر","Back"],["أرجل","Legs"],["أكتاف","Shoulders"],["ذراعين","Arms"]],
+  6: [["دفع أ","Push A"],["سحب أ","Pull A"],["أرجل أ","Legs A"],["دفع ب","Push B"],["سحب ب","Pull B"],["أرجل ب","Legs B"]]
+};
+
+/* ---- units ---- */
+var KG_LB = 2.20462, CM_IN = 2.54;
+function U(){ S.profile.units = S.profile.units || { mass:"kg", len:"cm" }; return S.profile.units; }
+function massU(){ return U().mass === "lb" ? (S.lang==="en"?"lb":"رطل") : (S.lang==="en"?"kg":"كجم"); }
+function lenU(){ return U().len === "in" ? (S.lang==="en"?"in":"إنش") : (S.lang==="en"?"cm":"سم"); }
+function showMass(kg){ return U().mass === "lb" ? kg*KG_LB : kg; }
+function toKg(v){ return U().mass === "lb" ? v/KG_LB : v; }
+function showLen(cm){ return U().len === "in" ? cm/CM_IN : cm; }
+function toCm(v){ return U().len === "in" ? v*CM_IN : v; }
+function dec(n, d){ var x = Math.round(n * Math.pow(10, d||0)) / Math.pow(10, d||0); return String(x); }
+
+/* ---- day store ---- */
+function todayKey(){ var d = new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+function day(){
+  S.days = S.days || {};
+  var k = S.dayKey || todayKey();
+  if (!S.days[k]) S.days[k] = { meals:{ "الفطور":[], "الغداء":[], "سناك":[], "العشاء":[] }, water:0, steps:0 };
+  return S.days[k];
+}
+function mealTotals(m){
+  var t = {kcal:0,p:0,c:0,f:0};
+  (day().meals[m] || []).forEach(function(it){
+    var k = it.qty / it.base;
+    t.kcal += it.kcal*k; t.p += it.p*k; t.c += it.c*k; t.f += it.f*k;
+  });
+  return t;
+}
+function dayTotals(){
+  var t = {kcal:0,p:0,c:0,f:0};
+  MEAL_NAMES.forEach(function(m){ var v = mealTotals(m); t.kcal+=v.kcal; t.p+=v.p; t.c+=v.c; t.f+=v.f; });
+  return t;
+}
+
+/* ---- small ui helpers, Stitch classes ---- */
+function card(inner, cls){ return '<div class="rounded-2xl bg-surface-container p-4 '+(cls||"")+'">'+inner+'</div>'; }
+function label(t){ return '<div class="font-label-sm text-label-sm text-on-surface-variant">'+t+'</div>'; }
+function h(t, extra){ return '<div class="font-title-md text-title-md text-on-surface '+(extra||"")+'">'+t+'</div>'; }
+function btn(text, act, cls){
+  return '<button '+act+' class="tap h-12 px-4 rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-2 '+
+         (cls || "bg-primary-fixed text-on-primary-fixed")+'">'+text+'</button>';
+}
+function field(id, lab, value, unit, mode){
+  return '<div class="rounded-xl bg-surface-container-high p-3 flex flex-col gap-1">'+
+    label(lab)+
+    '<div class="flex items-baseline gap-2">'+
+      '<input id="'+id+'" value="'+value+'" inputmode="'+(mode||"decimal")+'" '+(mode==="date"?'type="date"':'type="text"')+
+      ' class="w-full bg-transparent border-0 p-0 font-title-md text-title-md text-on-surface focus:outline-none tabular-nums">'+
+      (unit ? '<span class="font-label-sm text-label-sm text-on-surface-variant shrink-0">'+unit+'</span>' : "")+
+    '</div></div>';
+}
+function seg(options, activeVal, act){
+  return '<div class="rounded-xl bg-surface-container-low p-1 flex gap-1">'+options.map(function(o){
+    var on = o[0] === activeVal;
+    return '<button '+act.replace("%v", o[0])+' class="tap flex-1 h-10 rounded-lg font-label-lg text-label-lg '+
+      (on ? "bg-primary-fixed text-on-primary-fixed" : "text-on-surface-variant")+'">'+o[1]+'</button>';
+  }).join("")+'</div>';
+}
+function ringSvg(pct, center, sub){
+  var r = 52, c = 2*Math.PI*r, d = c * Math.max(0, Math.min(1, pct));
+  return '<div class="relative w-32 h-32 shrink-0">'+
+    '<svg viewBox="0 0 120 120" class="w-32 h-32 -rotate-90">'+
+      '<circle cx="60" cy="60" r="'+r+'" fill="none" stroke="rgb(var(--c-surface-container-highest))" stroke-width="10"/>'+
+      (d > 1 ? '<circle cx="60" cy="60" r="'+r+'" fill="none" stroke="rgb(var(--c-primary-fixed))" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+d.toFixed(1)+' '+c.toFixed(1)+'"/>' : "")+
+    '</svg>'+
+    '<div class="absolute inset-0 flex flex-col items-center justify-center">'+
+      '<div class="font-metric-display-mobile text-metric-display-mobile font-bold text-on-surface tabular-nums leading-none">'+center+'</div>'+
+      '<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">'+sub+'</div>'+
+    '</div></div>';
+}
+function bar(val, max, colorVar){
+  return '<div class="h-1.5 rounded-full bg-surface-container-highest overflow-hidden"><div class="h-full rounded-full" style="width:'+
+    (Math.max(0, Math.min(100, val/max*100)).toFixed(1))+'%;background:rgb(var(--c-'+colorVar+'))"></div></div>';
+}
+
+/* ===================== HOME ===================== */
+function vHome(){
+  var en = S.lang === "en", t = plan(), d = dayTotals(), dd = day();
+  var burn = Math.round((dd.steps || 0) * 0.04);
+  var left = Math.round(t.kcal - d.kcal + burn);
+  var name = S.profile.name || (en ? "there" : "بك");
+  return '<div class="flex flex-col gap-4 pt-1">'+
+    '<div class="flex items-start justify-between gap-3">'+
+      '<div><div class="font-headline-md text-headline-md text-on-surface">'+(en?"Hey ":"أهلاً ")+name+'</div>'+
+      '<button data-go="dietinfo" class="tap font-label-lg text-label-lg text-on-surface-variant">'+
+        (S.profile.diet || (en?"Balanced":"متوازن"))+' · '+(en?"target ":"هدفك ")+arGroup(t.kcal)+(en?" kcal":" سعرة")+'</button></div>'+
+      '<button data-go="profile" class="tap w-11 h-11 rounded-xl bg-surface-container flex items-center justify-center text-on-surface">'+
+        '<span class="material-symbols-outlined text-[20px]">person</span></button>'+
+    '</div>'+
+    card('<div class="flex items-center justify-between gap-4">'+
+      ringSvg(d.kcal / t.kcal, arGroup(Math.abs(left)), left >= 0 ? (en?"kcal left":"سعرة متبقية") : (en?"over":"سعرة زيادة"))+
+      '<div class="flex-1 flex flex-col gap-3">'+
+        '<div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Target":"الهدف")+'</span>'+
+          '<span class="font-title-md text-title-md text-on-surface tabular-nums">'+arGroup(t.kcal)+'</span></div>'+
+        '<div class="h-px bg-outline-variant/50"></div>'+
+        '<div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Eaten":"تناولت")+'</span>'+
+          '<span class="font-title-md text-title-md text-on-surface tabular-nums">'+arGroup(d.kcal)+'</span></div>'+
+        '<div class="h-px bg-outline-variant/50"></div>'+
+        '<div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Steps burn":"حرق المشي")+'</span>'+
+          '<span class="font-title-md text-title-md text-primary-fixed tabular-nums">'+arGroup(burn)+'</span></div>'+
+      '</div></div>'+
+      '<div class="grid grid-cols-3 gap-3 mt-4">'+
+        macroCol(en?"Protein":"بروتين", d.p, t.p, "primary-fixed")+
+        macroCol(en?"Carbs":"كارب", d.c, t.c, "secondary-fixed-dim")+
+        macroCol(en?"Fat":"دهون", d.f, t.f, "tertiary-fixed-dim")+
+      '</div>')+
+    '<div class="grid grid-cols-2 gap-3">'+
+      card('<div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Steps":"الخطوات")+'</span>'+
+        '<div class="flex gap-1"><button data-act="steps" data-v="-500" class="tap w-8 h-8 rounded-lg bg-surface-container-high text-on-surface">−</button>'+
+        '<button data-act="steps" data-v="500" class="tap w-8 h-8 rounded-lg bg-primary-fixed text-on-primary-fixed">+</button></div></div>'+
+        '<div class="font-headline-md text-headline-md text-on-surface tabular-nums mt-1">'+arGroup(dd.steps||0)+'</div>'+
+        bar(dd.steps||0, 10000, "primary-fixed"))+
+      card('<div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Water":"الماء")+'</span>'+
+        '<div class="flex gap-1"><button data-act="water" data-v="-0.25" class="tap w-8 h-8 rounded-lg bg-surface-container-high text-on-surface">−</button>'+
+        '<button data-act="water" data-v="0.25" class="tap w-8 h-8 rounded-lg bg-primary-fixed text-on-primary-fixed">+</button></div></div>'+
+        '<div class="font-headline-md text-headline-md text-on-surface tabular-nums mt-1">'+dec(dd.water||0,2)+'<span class="font-label-sm text-label-sm text-on-surface-variant"> '+(en?"L":"لتر")+'</span></div>'+
+        bar(dd.water||0, 3, "secondary-fixed-dim"))+
+    '</div>'+
+    '<div class="flex items-center justify-between"><span class="font-title-md text-title-md text-on-surface">'+(en?"Today's meals":"وجبات اليوم")+'</span>'+
+      '<button data-go="meals" class="tap font-label-lg text-label-lg text-primary-fixed">'+(en?"Diary":"اليوميات")+'</button></div>'+
+    '<div class="rounded-2xl bg-surface-container divide-y divide-outline-variant/40">'+
+      MEAL_NAMES.map(function(m){
+        var mt = mealTotals(m), items = day().meals[m] || [];
+        return '<button data-act="addmeal" data-meal="'+m+'" class="tap w-full flex items-center justify-between px-4 py-3.5 text-start">'+
+          '<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl '+(items.length?"bg-primary-fixed/15 text-primary-fixed":"bg-surface-container-high text-on-surface-variant")+' flex items-center justify-center">'+
+            '<span class="material-symbols-outlined text-[18px]">'+(items.length?"check_circle":"add")+'</span></div>'+
+          '<div><div class="font-label-lg text-label-lg text-on-surface">'+(en?MEAL_EN[m]:m)+'</div>'+
+          '<div class="font-label-sm text-label-sm text-on-surface-variant">'+(items.length ? items.map(function(i){ return en&&i.en?i.en:i.n; }).join(" · ") : (en?"nothing logged":"ما سجّلت شي"))+'</div></div></div>'+
+          '<div class="font-label-lg text-label-lg '+(items.length?"text-on-surface":"text-on-surface-variant")+' tabular-nums">'+(items.length?arGroup(mt.kcal):"+")+'</div></button>';
+      }).join("")+
+    '</div>'+
+    '<div class="grid grid-cols-2 gap-3">'+
+      quick(en?"Log weight":"سجّل وزنك","monitor_weight","weighin")+
+      quick(en?"My program":"برنامجي","fitness_center","gotoworkouts")+
+    '</div>'+
+  '</div>';
+}
+function macroCol(name, val, max, color){
+  return '<div class="flex flex-col gap-1.5"><div class="flex items-baseline justify-between">'+
+    '<span class="font-label-sm text-label-sm text-on-surface-variant">'+name+'</span></div>'+
+    '<span class="font-label-lg text-label-lg text-on-surface tabular-nums">'+ar(val)+' / '+ar(max)+'</span>'+
+    bar(val, max, color)+'</div>';
+}
+function quick(text, icon, act){
+  return '<button data-act="'+act+'" class="tap rounded-2xl bg-surface-container p-4 flex items-center gap-3 text-start">'+
+    '<div class="w-10 h-10 rounded-xl bg-primary-fixed/15 text-primary-fixed flex items-center justify-center">'+
+    '<span class="material-symbols-outlined text-[18px]">'+icon+'</span></div>'+
+    '<span class="font-label-lg text-label-lg text-on-surface">'+text+'</span></button>';
+}
+
+/* ===================== MEALS (diary) ===================== */
+function vMeals(){
+  var en = S.lang === "en", t = plan(), d = dayTotals();
+  return '<div class="flex flex-col gap-4 pt-1">'+
+    '<div><div class="font-headline-md text-headline-md text-on-surface">'+(en?"Meals":"الوجبات")+'</div>'+
+    label(en?"Your daily food log":"سجل أكلك اليومي")+'</div>'+
+    seg([["log", en?"My diary":"يومياتي"],["diet", en?"My diet":"النظام"]], "log", 'data-act="mealstab" data-v="%v"')+
+    card('<div class="flex items-center justify-between gap-2 flex-wrap">'+
+      stat(en?"Target":"الهدف", arGroup(t.kcal))+stat(en?"Eaten":"أكل", arGroup(d.kcal))+
+      stat(en?"Left":"متبقي", arGroup(t.kcal - d.kcal), "text-primary-fixed")+'</div>'+
+      '<div class="mt-3 h-2 rounded-full bg-surface-container-highest overflow-hidden flex">'+
+        '<div style="width:'+pc(d.p*4,t.kcal)+'%;background:rgb(var(--c-primary-fixed))"></div>'+
+        '<div style="width:'+pc(d.c*4,t.kcal)+'%;background:rgb(var(--c-secondary-fixed-dim))"></div>'+
+        '<div style="width:'+pc(d.f*9,t.kcal)+'%;background:rgb(var(--c-tertiary-fixed-dim))"></div></div>'+
+      '<div class="flex justify-between mt-2 font-label-sm text-label-sm">'+
+        '<span class="text-primary-fixed">'+(en?"Protein ":"بروتين ")+ar(d.p)+'/'+ar(t.p)+'</span>'+
+        '<span class="text-secondary-fixed-dim">'+(en?"Carbs ":"كارب ")+ar(d.c)+'/'+ar(t.c)+'</span>'+
+        '<span class="text-tertiary-fixed-dim">'+(en?"Fat ":"دهون ")+ar(d.f)+'/'+ar(t.f)+'</span></div>')+
+    MEAL_NAMES.map(function(m){
+      var items = day().meals[m] || [], mt = mealTotals(m);
+      return '<div class="rounded-2xl bg-surface-container overflow-hidden">'+
+        '<div class="flex items-center justify-between px-4 py-3">'+
+          '<span class="font-title-md text-title-md text-on-surface">'+(en?MEAL_EN[m]:m)+'</span>'+
+          '<span class="font-label-lg text-label-lg text-on-surface-variant tabular-nums">'+arGroup(mt.kcal)+'</span></div>'+
+        (items.length ? items.map(function(it, i){
+          var k = it.qty/it.base;
+          return '<div class="flex items-center justify-between px-4 py-3 border-t border-outline-variant/40">'+
+            '<div class="min-w-0"><div class="font-label-lg text-label-lg text-on-surface truncate">'+(en&&it.en?it.en:it.n)+'</div>'+
+            '<div class="font-label-sm text-label-sm text-on-surface-variant">'+dec(it.qty,1)+' '+it.u+' · '+ar(it.p*k)+(en?" g protein":" بروتين")+'</div></div>'+
+            '<div class="flex items-center gap-2 shrink-0"><span class="font-label-lg text-label-lg text-on-surface-variant tabular-nums">'+ar(it.kcal*k)+'</span>'+
+            '<button data-act="delitem" data-meal="'+m+'" data-i="'+i+'" class="tap w-9 h-9 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center">'+
+            '<span class="material-symbols-outlined text-[16px]">close</span></button></div></div>';
+        }).join("") : '<div class="px-4 py-3 border-t border-outline-variant/40 font-label-sm text-label-sm text-on-surface-variant">'+(en?"nothing logged":"ما سجّلت شي")+'</div>')+
+        '<button data-act="addmeal" data-meal="'+m+'" class="tap w-full flex items-center gap-2 px-4 py-3.5 border-t border-outline-variant/40 text-primary-fixed">'+
+          '<span class="material-symbols-outlined text-[18px]">add</span>'+
+          '<span class="font-label-lg text-label-lg">'+(en?("Add to "+MEAL_EN[m]):("أضف لـ"+m))+'</span></button>'+
+      '</div>';
+    }).join("")+
+  '</div>';
+}
+function stat(l, v, tone){
+  return '<div class="flex flex-col"><span class="font-label-sm text-label-sm text-on-surface-variant">'+l+'</span>'+
+    '<span class="font-title-md text-title-md tabular-nums '+(tone||"text-on-surface")+'">'+v+'</span></div>';
+}
+function pc(a, b){ return Math.max(0, Math.min(100, a/b*100)).toFixed(1); }
+
+/* ===================== ADD FOOD ===================== */
+var foodQuery = "", foodPick = null;
+function vAddFood(){
+  var en = S.lang === "en", meal = S.addMeal || "الغداء";
+  var q = foodQuery.trim();
+  var list = FOODS.filter(function(f){ return !q || (f.n + " " + f.en).toLowerCase().indexOf(q.toLowerCase()) > -1; }).slice(0, 30);
+  return '<div class="flex flex-col gap-4 pt-1">'+
+    '<div><div class="font-headline-md text-headline-md text-on-surface">'+(en?("Add to "+MEAL_EN[meal]):("إضافة إلى "+meal))+'</div>'+
+    label(en?"Search, or add your own":"ابحث، أو أضف صنفك")+'</div>'+
+    '<div class="rounded-xl bg-surface-container flex items-center gap-2 px-3 h-12">'+
+      '<span class="material-symbols-outlined text-[20px] text-on-surface-variant">search</span>'+
+      '<input id="food-q" value="'+foodQuery.replace(/"/g,"&quot;")+'" placeholder="'+(en?"chicken, rice, dates…":"دجاج، أرز، تمر…")+'"'+
+      ' class="flex-1 bg-transparent border-0 p-0 font-body-md text-body-md text-on-surface focus:outline-none">'+
+    '</div>'+
+    seg(MEAL_NAMES.map(function(m){ return [m, en?MEAL_EN[m]:m]; }), meal, 'data-act="setmeal" data-v="%v"')+
+    (foodPick ? foodPickPanel(en) : "")+
+    '<div class="rounded-2xl bg-surface-container divide-y divide-outline-variant/40">'+
+      (list.length ? list.map(function(f){
+        return '<button data-act="pickfood" data-id="'+f.id+'" class="tap w-full flex items-center justify-between px-4 py-3.5 text-start">'+
+          '<div class="min-w-0"><div class="font-label-lg text-label-lg text-on-surface truncate">'+(en?f.en:f.n)+'</div>'+
+          '<div class="font-label-sm text-label-sm text-on-surface-variant">'+dec(f.base,0)+' '+f.u+' · '+ar(f.kcal)+(en?" kcal · ":" سعرة · ")+ar(f.p)+(en?" g protein":" بروتين")+'</div></div>'+
+          '<div class="w-9 h-9 rounded-lg bg-primary-fixed/15 text-primary-fixed flex items-center justify-center shrink-0">'+
+          '<span class="material-symbols-outlined text-[18px]">add</span></div></button>';
+      }).join("") : '<div class="px-4 py-6 text-center font-body-md text-body-md text-on-surface-variant">'+(en?"Nothing found — add it manually":"ما لقينا شي — أضفه يدوياً")+'</div>')+
+    '</div>'+
+    btn((en?"Add a custom item":"أضف صنفاً يدوياً"), 'data-act="manualfood"', "bg-surface-container text-on-surface w-full")+
+  '</div>';
+}
+function foodPickPanel(en){
+  var f = FOOD_BY_ID[foodPick.id], k = foodPick.qty / f.base;
+  return card(
+    '<div class="flex items-center justify-between mb-3"><span class="font-title-md text-title-md text-on-surface">'+(en?f.en:f.n)+'</span>'+
+    '<button data-act="closepick" class="tap w-9 h-9 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center">'+
+    '<span class="material-symbols-outlined text-[16px]">close</span></button></div>'+
+    '<div class="flex items-center gap-2 mb-3">'+
+      '<button data-act="qty" data-v="-1" class="tap w-11 h-11 rounded-xl bg-surface-container-high text-on-surface">−</button>'+
+      '<input id="pick-qty" value="'+dec(foodPick.qty,1)+'" inputmode="decimal" class="flex-1 h-11 text-center rounded-xl bg-surface-container-high border-0 font-title-md text-title-md text-on-surface focus:outline-none tabular-nums">'+
+      '<span class="font-label-lg text-label-lg text-on-surface-variant w-12">'+f.u+'</span>'+
+      '<button data-act="qty" data-v="1" class="tap w-11 h-11 rounded-xl bg-primary-fixed text-on-primary-fixed">+</button>'+
+    '</div>'+
+    '<div class="grid grid-cols-4 gap-2 mb-3">'+
+      [[en?"kcal":"سعرة", ar(f.kcal*k), "text-on-surface"],[en?"P":"بروتين", ar(f.p*k), "text-primary-fixed"],
+       [en?"C":"كارب", ar(f.c*k), "text-secondary-fixed-dim"],[en?"F":"دهون", ar(f.f*k), "text-tertiary-fixed-dim"]]
+      .map(function(x){ return '<div class="rounded-xl bg-surface-container-high p-2 text-center"><div class="font-label-lg text-label-lg '+x[2]+' tabular-nums">'+x[1]+'</div>'+
+        '<div class="font-label-sm text-label-sm text-on-surface-variant">'+x[0]+'</div></div>'; }).join("")+
+    '</div>'+
+    btn(en?"Add":"أضف", 'data-act="confirmfood"', "bg-primary-fixed text-on-primary-fixed w-full"), "border border-primary-fixed/40");
+}
+
+/* ===================== BODY DATA (birth date, typed, units) ===================== */
+function ageFrom(birth){
+  if (!birth) return null;
+  var b = new Date(birth); if (isNaN(b)) return null;
+  var n = new Date(), a = n.getFullYear() - b.getFullYear();
+  var m = n.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && n.getDate() < b.getDate())) a--;
+  return (a > 0 && a < 120) ? a : null;
+}
+function vBody(){
+  var en = S.lang === "en", p = S.profile;
+  var age = ageFrom(p.birth);
+  var ACTS = [["light", en?"Desk / light":"خامل أو مكتبي", "1.2–1.375"],
+              ["moderate", en?"Moderate · 3–4 days":"متوسط · ٣–٤ أيام", "1.55"],
+              ["high", en?"High · daily":"عالي · يومياً", "1.725"]];
+  return '<div class="flex flex-col gap-4 pt-1">'+
+    '<div><div class="font-headline-md text-headline-md text-on-surface">'+(en?"Your body":"قياساتك")+'</div>'+
+    label(en?"Age comes from your birth date":"العمر يُحسب من تاريخ ميلادك")+'</div>'+
+    seg([["male", en?"Male":"ذكر"],["female", en?"Female":"أنثى"]], p.gender || "male", 'data-act="gender" data-v="%v"')+
+    '<div class="flex gap-2">'+
+      seg([["kg","كجم / kg"],["lb","رطل / lb"]], U().mass, 'data-act="unit" data-kind="mass" data-v="%v"')+
+      seg([["cm","سم / cm"],["in","إنش / in"]], U().len, 'data-act="unit" data-kind="len" data-v="%v"')+
+    '</div>'+
+    '<div class="grid grid-cols-2 gap-3">'+
+      '<div class="col-span-2">'+field("f-birth", en?"Birth date":"تاريخ الميلاد", p.birth || "", age ? (ar(age)+(en?" yrs":" سنة")) : "", "date")+'</div>'+
+      field("f-height", en?"Height":"الطول", p.height ? dec(showLen(+p.height),0) : "", lenU())+
+      field("f-weight", en?"Weight":"الوزن الحالي", p.weight ? dec(showMass(+p.weight),1) : "", massU())+
+      '<div class="col-span-2">'+field("f-target", en?"Target weight":"الوزن المستهدف", p.target ? dec(showMass(+p.target),1) : "", massU())+'</div>'+
+    '</div>'+
+    '<div>'+label(en?"Activity":"مستوى النشاط")+
+    '<div class="rounded-2xl bg-surface-container divide-y divide-outline-variant/40 mt-2">'+
+      ACTS.map(function(a){
+        var on = (p.activity || "light") === a[0];
+        return '<button data-act="activity" data-v="'+a[0]+'" class="tap w-full flex items-center justify-between px-4 py-3.5 text-start">'+
+          '<div><div class="font-label-lg text-label-lg text-on-surface">'+a[1]+'</div>'+
+          '<div class="font-label-sm text-label-sm text-on-surface-variant">PAL '+a[2]+'</div></div>'+
+          '<div class="w-6 h-6 rounded-full '+(on?"bg-primary-fixed text-on-primary-fixed":"bg-surface-container-high")+' flex items-center justify-center">'+
+          (on?'<span class="material-symbols-outlined text-[14px]">check</span>':"")+'</div></button>';
+      }).join("")+'</div></div>'+
+    card('<div class="flex items-center justify-between"><span class="font-label-lg text-label-lg text-on-surface">'+(en?"Your target":"هدفك")+'</span>'+
+      '<span class="font-headline-md text-headline-md text-on-surface tabular-nums">'+arGroup(plan().kcal)+'</span></div>'+
+      '<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">'+(en?"BMR ":"أيض أساسي ")+arGroup(plan().bmr)+
+      (en?" · TDEE ":" · مصروف ")+arGroup(plan().tdee)+'</div>', "border border-primary-fixed/40")+
+    btn(en?"Save and continue":"احفظ وتابع", 'data-act="savebody"', "bg-primary-fixed text-on-primary-fixed w-full")+
+  '</div>';
+}
+
+/* ===================== MY PROGRAM ===================== */
+function program(){
+  if (!S.program) S.program = { perWeek:4, days: DAY_TEMPLATES[4].map(function(d){ return { ar:d[0], en:d[1], ex:[] }; }) };
+  return S.program;
+}
+function vWorkouts(){
+  var en = S.lang === "en", pr = program();
+  return '<div class="flex flex-col gap-4 pt-1">'+
+    '<div><div class="font-headline-md text-headline-md text-on-surface">'+(en?"My program":"برنامجي")+'</div>'+
+    label(en?"Build it yourself — a coach is optional":"ابنِه بنفسك — المدرّب اختياري")+'</div>'+
+    '<div>'+label(en?"Days per week":"كم يوم بالأسبوع")+
+      '<div class="mt-2">'+seg([[3,"٣"],[4,"٤"],[5,"٥"],[6,"٦"]].map(function(x){ return [String(x[0]), en?String(x[0]):x[1]]; }),
+        String(pr.perWeek), 'data-act="perweek" data-v="%v"')+'</div></div>'+
+    pr.days.map(function(d, i){
+      return '<div class="rounded-2xl bg-surface-container overflow-hidden">'+
+        '<div class="flex items-center justify-between px-4 py-3">'+
+          '<div class="flex items-center gap-2"><span class="w-7 h-7 rounded-lg bg-primary-fixed/15 text-primary-fixed flex items-center justify-center font-label-sm text-label-sm">'+ar(i+1)+'</span>'+
+          '<span class="font-title-md text-title-md text-on-surface">'+(en?d.en:d.ar)+'</span></div>'+
+          '<span class="font-label-sm text-label-sm text-on-surface-variant">'+ar(d.ex.length)+(en?" exercises":" تمارين")+'</span></div>'+
+        (d.ex.length ? d.ex.map(function(e, j){
+          return '<div class="flex items-center justify-between px-4 py-3 border-t border-outline-variant/40">'+
+            '<div><div class="font-label-lg text-label-lg text-on-surface">'+(en?e.en:e.ar)+'</div>'+
+            '<div class="font-label-sm text-label-sm text-on-surface-variant">'+ar(e.sets)+(en?" sets × ":" جولات × ")+ar(e.reps)+(en?" reps":" تكرار")+'</div></div>'+
+            '<button data-act="delex" data-d="'+i+'" data-j="'+j+'" class="tap w-9 h-9 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center">'+
+            '<span class="material-symbols-outlined text-[16px]">close</span></button></div>';
+        }).join("") : '<div class="px-4 py-3 border-t border-outline-variant/40 font-label-sm text-label-sm text-on-surface-variant">'+(en?"no exercises yet":"ما أضفت تمارين")+'</div>')+
+        '<div class="flex border-t border-outline-variant/40">'+
+          '<button data-act="addex" data-d="'+i+'" class="tap flex-1 flex items-center justify-center gap-2 py-3.5 text-primary-fixed">'+
+            '<span class="material-symbols-outlined text-[18px]">add</span><span class="font-label-lg text-label-lg">'+(en?"Add exercise":"أضف تمرين")+'</span></button>'+
+          (d.ex.length ? '<button data-act="startday" data-d="'+i+'" class="tap flex-1 flex items-center justify-center gap-2 py-3.5 bg-primary-fixed text-on-primary-fixed">'+
+            '<span class="material-symbols-outlined text-[18px]">play_arrow</span><span class="font-label-lg text-label-lg">'+(en?"Start":"ابدأ")+'</span></button>' : "")+
+        '</div></div>';
+    }).join("")+
+    card('<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center">'+
+      '<span class="material-symbols-outlined text-[18px]">sports</span></div>'+
+      '<div class="flex-1"><div class="font-label-lg text-label-lg text-on-surface">'+(en?"Have a coach?":"عندك مدرّب؟")+'</div>'+
+      '<div class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Their plan shows up here too":"خطته تظهر هنا كمان")+'</div></div>'+
+      '<button data-go="workouts_stitch" class="tap px-3 h-10 rounded-xl bg-surface-container-high text-on-surface font-label-lg text-label-lg">'+(en?"View":"اعرض")+'</button></div>')+
+    (S.sessions && S.sessions.length ? '<div>'+label(en?"Recent sessions":"آخر الجلسات")+
+      '<div class="rounded-2xl bg-surface-container divide-y divide-outline-variant/40 mt-2">'+
+      S.sessions.slice(-5).reverse().map(function(s){
+        return '<div class="flex items-center justify-between px-4 py-3"><span class="font-label-lg text-label-lg text-on-surface">'+(en?s.en:s.ar)+'</span>'+
+        '<span class="font-label-sm text-label-sm text-on-surface-variant tabular-nums">'+arGroup(s.volume)+(en?" kg":" كجم")+'</span></div>';
+      }).join("")+'</div></div>' : "")+
+  '</div>';
+}
+function vSession(){
+  var en = S.lang === "en", pr = program(), i = S.sessionDay || 0, d = pr.days[i] || pr.days[0];
+  S.sessionLog = S.sessionLog || {};
+  var vol = 0;
+  d.ex.forEach(function(e, j){ (S.sessionLog[j] || []).forEach(function(s){ if (s.done) vol += (+s.w||0) * (+s.r||0); }); });
+  return '<div class="flex flex-col gap-4 pt-1">'+
+    '<div class="flex items-start justify-between"><div>'+
+      '<div class="font-headline-md text-headline-md text-on-surface">'+(en?d.en:d.ar)+'</div>'+
+      label(en?"Log every set as you go":"سجّل كل جولة أول بأول")+'</div>'+
+      '<div class="text-end"><div class="font-title-md text-title-md text-primary-fixed tabular-nums">'+arGroup(vol)+'</div>'+
+      label(en?"kg lifted":"كجم مرفوعة")+'</div></div>'+
+    d.ex.map(function(e, j){
+      var sets = S.sessionLog[j] || (S.sessionLog[j] = Array.apply(null, Array(e.sets)).map(function(){ return {w:"",r:e.reps,done:false}; }));
+      return '<div class="rounded-2xl bg-surface-container overflow-hidden">'+
+        '<div class="px-4 py-3 font-title-md text-title-md text-on-surface">'+(en?e.en:e.ar)+'</div>'+
+        sets.map(function(s, k){
+          return '<div class="flex items-center gap-2 px-4 py-2.5 border-t border-outline-variant/40">'+
+            '<span class="w-6 font-label-sm text-label-sm text-on-surface-variant">'+ar(k+1)+'</span>'+
+            '<input data-set="'+j+'-'+k+'-w" value="'+s.w+'" inputmode="decimal" placeholder="'+massU()+'" class="w-20 h-10 text-center rounded-lg bg-surface-container-high border-0 font-label-lg text-label-lg text-on-surface focus:outline-none tabular-nums">'+
+            '<span class="text-on-surface-variant">×</span>'+
+            '<input data-set="'+j+'-'+k+'-r" value="'+s.r+'" inputmode="numeric" class="w-16 h-10 text-center rounded-lg bg-surface-container-high border-0 font-label-lg text-label-lg text-on-surface focus:outline-none tabular-nums">'+
+            '<button data-act="doneset" data-j="'+j+'" data-k="'+k+'" class="tap ms-auto w-10 h-10 rounded-lg '+(s.done?"bg-primary-fixed text-on-primary-fixed":"bg-surface-container-high text-on-surface-variant")+' flex items-center justify-center">'+
+            '<span class="material-symbols-outlined text-[18px]">check</span></button></div>';
+        }).join("")+
+        '<button data-act="addset" data-j="'+j+'" class="tap w-full py-3 border-t border-outline-variant/40 text-primary-fixed font-label-lg text-label-lg">'+(en?"Add set":"أضف جولة")+'</button>'+
+      '</div>';
+    }).join("")+
+    btn(en?"Finish session":"أنهِ الجلسة", 'data-act="finish"', "bg-primary-fixed text-on-primary-fixed w-full")+
+  '</div>';
+}
+
+/* ===================== PROGRESS: weight · measurements · photos ===================== */
+var PARTS = [["neck","الرقبة","Neck"],["shoulder","الكتف","Shoulder"],["chest","الصدر","Chest"],["arm","الذراع","Arm"],
+             ["waist","الخصر","Waist"],["hip","الأرداف","Hips"],["thigh","الفخذ","Thigh"],["calf","السمانة","Calf"]];
+function vProgress(){
+  var en = S.lang === "en", tab = S.progTab || "weight";
+  return '<div class="flex flex-col gap-4 pt-1">'+
+    '<div><div class="font-headline-md text-headline-md text-on-surface">'+(en?"Progress":"التقدّم")+'</div>'+
+    label(en?"Weight, measurements and photos — all yours to update":"وزنك ومقاساتك وصورك — تحدّثها بنفسك")+'</div>'+
+    seg([["weight", en?"Weight":"الوزن"],["size", en?"Measurements":"المقاسات"],["photos", en?"Photos":"الصور"]], tab, 'data-act="progtab" data-v="%v"')+
+    (tab === "weight" ? weightTab(en) : tab === "size" ? sizeTab(en) : photoTab(en))+
+  '</div>';
+}
+function weightTab(en){
+  var ws = S.weights || [];
+  var cur = ws.length ? ws[ws.length-1] : null, prev = ws.length > 1 ? ws[ws.length-2] : null;
+  var diff = (cur && prev) ? cur.kg - prev.kg : null;
+  return card(
+    '<div class="flex items-start justify-between">'+
+      '<div><div class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Current weight":"وزنك الحالي")+'</div>'+
+      '<div class="flex items-baseline gap-2"><span class="font-metric-display-mobile text-metric-display-mobile font-bold text-on-surface tabular-nums">'+
+      (cur ? dec(showMass(cur.kg),1) : "—")+'</span><span class="font-label-lg text-label-lg text-on-surface-variant">'+massU()+'</span></div>'+
+      (prev ? '<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">'+(en?"Previous: ":"السابق: ")+dec(showMass(prev.kg),1)+' '+massU()+' · '+prev.d+'</div>' : "")+
+      '</div>'+
+      (diff !== null ? '<div class="px-3 py-1.5 rounded-lg '+(diff <= 0 ? "bg-primary-fixed/15 text-primary-fixed" : "bg-tertiary-container text-on-tertiary-container")+' font-label-lg text-label-lg tabular-nums">'+
+        dec(Math.abs(showMass(diff)),1)+(diff <= 0 ? "−" : "+")+' '+massU()+'</div>' : "")+
+    '</div>'+
+    '<div class="flex items-end gap-2 mt-4">'+
+      '<div class="flex-1 rounded-xl bg-surface-container-high p-3">'+
+        '<div class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"New reading":"القراءة الجديدة")+'</div>'+
+        '<div class="flex items-baseline gap-2"><input id="w-new" inputmode="decimal" value="'+(cur ? dec(showMass(cur.kg),1) : "")+'"'+
+        ' class="w-full bg-transparent border-0 p-0 font-title-md text-title-md text-on-surface focus:outline-none tabular-nums">'+
+        '<span class="font-label-sm text-label-sm text-on-surface-variant">'+massU()+'</span></div></div>'+
+      btn(en?"Update":"حدّث", 'data-act="savew"', "bg-primary-fixed text-on-primary-fixed")+
+    '</div>'+
+    (ws.length ? '<div class="mt-4">'+sparkline(ws.map(function(x){ return x.kg; }))+'</div>' : "")+
+    (ws.length ? '<div class="mt-3 divide-y divide-outline-variant/40">'+ws.slice().reverse().slice(0,6).map(function(x, i, arr){
+      var p2 = arr[i+1], dd = p2 ? x.kg - p2.kg : null;
+      return '<div class="flex items-center justify-between py-2.5">'+
+        '<span class="font-label-lg text-label-lg text-on-surface-variant">'+x.d+'</span>'+
+        '<div class="flex items-center gap-3"><span class="font-label-lg text-label-lg text-on-surface tabular-nums">'+dec(showMass(x.kg),1)+' '+massU()+'</span>'+
+        (dd !== null ? '<span class="w-14 text-start font-label-sm text-label-sm tabular-nums '+(dd<=0?"text-primary-fixed":"text-on-surface-variant")+'">'+dec(Math.abs(showMass(dd)),1)+(dd<=0?"−":"+")+'</span>' : '<span class="w-14"></span>')+
+        '</div></div>';
+    }).join("")+'</div>' : '<div class="mt-3 font-label-sm text-label-sm text-on-surface-variant">'+(en?"No readings yet — your first one starts the chart.":"ما سجّلت وزن بعد — أول قراءة تبدأ المنحنى.")+'</div>'));
+}
+function sparkline(vals){
+  if (vals.length < 2) return "";
+  var w = 300, h = 60, min = Math.min.apply(null, vals), max = Math.max.apply(null, vals), pad = (max-min)||1;
+  var pts = vals.map(function(v,i){ return [(i*(w-8)/(vals.length-1)+4).toFixed(1), (h-6-(v-min)/pad*(h-14)).toFixed(1)]; });
+  return '<svg viewBox="0 0 '+w+' '+h+'" class="w-full" style="height:60px" aria-hidden="true">'+
+    '<polyline points="'+pts.map(function(p){ return p.join(","); }).join(" ")+'" fill="none" stroke="rgb(var(--c-primary-fixed))" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+
+    '<circle cx="'+pts[pts.length-1][0]+'" cy="'+pts[pts.length-1][1]+'" r="3.5" fill="rgb(var(--c-primary-fixed))"/></svg>';
+}
+function sizeTab(en){
+  var last = (S.measures && S.measures.length) ? S.measures[S.measures.length-1].v : {};
+  var prev = (S.measures && S.measures.length > 1) ? S.measures[S.measures.length-2].v : {};
+  return card(
+    '<div class="flex items-center justify-between mb-3"><span class="font-title-md text-title-md text-on-surface">'+(en?"Today's measurements":"مقاسات اليوم")+'</span>'+
+    '<span class="font-label-sm text-label-sm text-on-surface-variant">'+lenU()+'</span></div>'+
+    '<div class="grid grid-cols-2 gap-2">'+PARTS.map(function(p){
+      var v = last[p[0]], pv = prev[p[0]], d = (v != null && pv != null) ? v - pv : null;
+      return '<div class="rounded-xl bg-surface-container-high p-3">'+
+        '<div class="flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">'+(en?p[2]:p[1])+'</span>'+
+        (d !== null && d !== 0 ? '<span class="font-label-sm text-label-sm tabular-nums '+(d<0?"text-primary-fixed":"text-on-surface-variant")+'">'+dec(Math.abs(showLen(d)),1)+(d<0?"−":"+")+'</span>' : "")+'</div>'+
+        '<input data-m="'+p[0]+'" inputmode="decimal" value="'+(v != null ? dec(showLen(v),1) : "")+'" placeholder="—"'+
+        ' class="w-full bg-transparent border-0 p-0 mt-1 font-title-md text-title-md text-on-surface focus:outline-none tabular-nums"></div>';
+    }).join("")+'</div>'+
+    '<div class="mt-3">'+btn(en?"Save measurements":"احفظ المقاسات", 'data-act="savemeasures"', "bg-primary-fixed text-on-primary-fixed w-full")+'</div>'+
+    (S.measures && S.measures.length ? '<div class="mt-3 font-label-sm text-label-sm text-on-surface-variant">'+
+      (en?"Last logged: ":"آخر تسجيل: ")+S.measures[S.measures.length-1].d+'</div>' : ""));
+}
+function photoTab(en){
+  var ph = S.photos || [];
+  return card(
+    '<div class="flex items-center justify-between mb-3"><span class="font-title-md text-title-md text-on-surface">'+(en?"Progress photos":"صور التقدّم")+'</span>'+
+    '<span class="font-label-sm text-label-sm text-on-surface-variant">'+ar(ph.length)+'</span></div>'+
+    '<button data-act="addphoto" class="tap w-full h-14 rounded-xl bg-primary-fixed text-on-primary-fixed flex items-center justify-center gap-2 font-label-lg text-label-lg">'+
+      '<span class="material-symbols-outlined text-[20px]">photo_camera</span>'+(en?"Add a photo":"أضف صورة")+'</button>'+
+    (ph.length ? '<div class="grid grid-cols-3 gap-2 mt-3">'+ph.slice().reverse().map(function(p, i){
+      var idx = ph.length - 1 - i;
+      return '<div class="relative rounded-xl overflow-hidden bg-surface-container-high aspect-[3/4]">'+
+        '<img src="'+p.src+'" alt="" class="w-full h-full object-cover">'+
+        '<div class="absolute inset-x-0 bottom-0 bg-black/55 px-2 py-1 font-label-sm text-label-sm text-white">'+p.d+'</div>'+
+        '<button data-act="delphoto" data-i="'+idx+'" class="tap absolute top-1 end-1 w-7 h-7 rounded-lg bg-black/55 text-white flex items-center justify-center">'+
+        '<span class="material-symbols-outlined text-[14px]">close</span></button></div>';
+    }).join("")+'</div>' : '<div class="mt-3 font-label-sm text-label-sm text-on-surface-variant">'+
+      (en?"Same pose, same light, once a week — that is where the change shows.":"نفس الوضعية ونفس الإضاءة مرة بالأسبوع — هنا يبان التغيير.")+'</div>')+
+    (ph.length > 1 ? '<div class="mt-3">'+btn(en?"Compare":"قارن", 'data-go="photos_stitch"', "bg-surface-container-high text-on-surface w-full")+'</div>' : ""));
+}
+
+/* ===================== DIET SECTION ===================== */
+var DIETS = [
+  {id:"keto", ar:"الكيتو دايت", en:"Keto", split:{f:.70,p:.25,c:.05},
+   yes:["لحوم وأسماك","بيض","زبدة وزيت زيتون","أفوكادو","جبن كامل الدسم","خضار ورقي"],
+   no:["أرز ومعكرونة","خبز","سكر وحلويات","تمر وموز","بطاطس"]},
+  {id:"highprotein", ar:"عالي البروتين", en:"High protein", split:{f:.28,p:.37,c:.35},
+   yes:["دجاج ولحم وسمك","بيض وبياض بيض","بروتين واي","جبن قريش","بقوليات"],
+   no:["الكارب الفارغ","المقليات اليومية","العصائر بدل الوجبات"]},
+  {id:"balanced", ar:"متوازن", en:"Balanced", split:{f:.30,p:.30,c:.40},
+   yes:["كل المجموعات الغذائية","بروتين بكل وجبة","خضار في وجبتين"],
+   no:["السكر المضاف اليومي","المقليات المتكررة"]},
+  {id:"mediterranean", ar:"البحر المتوسط", en:"Mediterranean", split:{f:.35,p:.20,c:.45},
+   yes:["زيت زيتون","أسماك","بقوليات","حبوب كاملة","خضار وفواكه"],
+   no:["اللحوم المصنعة","السكر المضاف","الخبز الأبيض"]},
+  {id:"if", ar:"صيام متقطع ١٦:٨", en:"Intermittent fasting", split:{f:.30,p:.30,c:.40},
+   yes:["كل الأصناف داخل النافذة","بروتين بكل وجبة","ماء وقهوة سادة أثناء الصيام"],
+   no:["الأكل خارج النافذة","العصائر أثناء الصيام"]}
+];
+function vDietInfo(){
+  var en = S.lang === "en", cur = S.profile.diet || "balanced";
+  var d = DIETS.filter(function(x){ return x.id === cur; })[0] || DIETS[2];
+  var t = plan();
+  return '<div class="flex flex-col gap-4 pt-1">'+
+    '<div><div class="font-headline-md text-headline-md text-on-surface">'+(en?"My diet":"نظامي الغذائي")+'</div>'+
+    label(en?"Everything about the system you follow":"كل شي عن نظامك")+'</div>'+
+    card('<div class="flex items-center justify-between"><span class="font-title-md text-title-md text-on-surface">'+(en?d.en:d.ar)+'</span>'+
+      '<span class="font-label-sm text-label-sm text-on-surface-variant tabular-nums">'+arGroup(t.kcal)+(en?" kcal":" سعرة")+'</span></div>'+
+      '<div class="grid grid-cols-3 gap-2 mt-3">'+
+        '<div class="rounded-xl bg-surface-container-high p-3 text-center"><div class="font-title-md text-title-md text-tertiary-fixed-dim tabular-nums">'+ar(t.f)+'</div><div class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Fat g · ":"دهون جم · ")+ar(d.split.f*100)+'٪</div></div>'+
+        '<div class="rounded-xl bg-surface-container-high p-3 text-center"><div class="font-title-md text-title-md text-primary-fixed tabular-nums">'+ar(t.p)+'</div><div class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Protein g · ":"بروتين جم · ")+ar(d.split.p*100)+'٪</div></div>'+
+        '<div class="rounded-xl bg-surface-container-high p-3 text-center"><div class="font-title-md text-title-md text-secondary-fixed-dim tabular-nums">'+ar(t.c)+'</div><div class="font-label-sm text-label-sm text-on-surface-variant">'+(en?"Carbs g · ":"كارب جم · ")+ar(d.split.c*100)+'٪</div></div>'+
+      '</div>', "border border-primary-fixed/40")+
+    card('<div class="flex items-center gap-2 mb-2"><span class="material-symbols-outlined text-[18px] text-primary-fixed">check_circle</span>'+
+      '<span class="font-title-md text-title-md text-on-surface">'+(en?"Eat freely":"كُل بحرية")+'</span></div>'+
+      '<div class="flex flex-wrap gap-2">'+d.yes.map(function(x){ return '<span class="px-3 py-1.5 rounded-lg bg-primary-fixed/15 text-primary-fixed font-label-sm text-label-sm">'+x+'</span>'; }).join("")+'</div>')+
+    card('<div class="flex items-center gap-2 mb-2"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">cancel</span>'+
+      '<span class="font-title-md text-title-md text-on-surface">'+(en?"Avoid":"تجنّبه")+'</span></div>'+
+      '<div class="flex flex-wrap gap-2">'+d.no.map(function(x){ return '<span class="px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">'+x+'</span>'; }).join("")+'</div>')+
+    '<div>'+label(en?"Switch system":"بدّل النظام")+
+    '<div class="rounded-2xl bg-surface-container divide-y divide-outline-variant/40 mt-2">'+DIETS.map(function(x){
+      var on = x.id === cur;
+      return '<button data-act="setdiet" data-v="'+x.id+'" class="tap w-full flex items-center justify-between px-4 py-3.5 text-start">'+
+        '<div><div class="font-label-lg text-label-lg text-on-surface">'+(en?x.en:x.ar)+'</div>'+
+        '<div class="font-label-sm text-label-sm text-on-surface-variant">'+ar(x.split.f*100)+'٪ / '+ar(x.split.p*100)+'٪ / '+ar(x.split.c*100)+'٪</div></div>'+
+        (on ? '<span class="px-2.5 py-1 rounded-lg bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">'+(en?"Active":"نشط")+'</span>'
+            : '<span class="material-symbols-outlined text-[18px] text-on-surface-variant rtl:rotate-180">chevron_right</span>')+
+      '</button>';
+    }).join("")+'</div></div>'+
+  '</div>';
+}
+
+/* ===================== actions ===================== */
+function num(id){
+  var el = document.getElementById(id); if (!el) return NaN;
+  return parseFloat((el.value||"").replace(/[٠-٩]/g, function(d){ return String(d.charCodeAt(0)-1632); })
+    .replace(/[٫٬]/g, ".").replace(/[^0-9.]/g, ""));
+}
+function stamp(){
+  var d = new Date();
+  return S.lang === "en" ? (d.getDate()+"/"+(d.getMonth()+1)) : (ar(d.getDate())+"/"+ar(d.getMonth()+1));
+}
+function dynamicAct(name, ds){
+  var en = S.lang === "en";
+  switch(name){
+    case "unit": U()[ds.kind] = ds.v; save(); render(current, true); return true;
+    case "gender": S.profile.gender = ds.v; save(); render(current, true); return true;
+    case "activity": S.profile.activity = ds.v; save(); render(current, true); return true;
+    case "setdiet": S.profile.diet = ds.v; save(); render(current, true); toast(en?"Diet updated":"تحدّث نظامك"); return true;
+    case "savebody": {
+      var b = document.getElementById("f-birth"); if (b && b.value) S.profile.birth = b.value;
+      var a = ageFrom(S.profile.birth); if (a) S.profile.age = a;
+      var hh = num("f-height"), ww = num("f-weight"), tt = num("f-target");
+      if (!isNaN(hh)) S.profile.height = Math.round(toCm(hh));
+      if (!isNaN(ww)){ S.profile.weight = Math.round(toKg(ww)*10)/10; pushWeight(S.profile.weight); }
+      if (!isNaN(tt)) S.profile.target = Math.round(toKg(tt)*10)/10;
+      save(); toast(en?"Saved":"انحفظت بياناتك"); go("plan"); return true;
+    }
+    case "mealstab": if (ds.v === "diet") go("dietinfo"); return true;
+    case "addmeal": S.addMeal = ds.meal; foodPick = null; foodQuery = ""; save(); go("addfood"); return true;
+    case "setmeal": S.addMeal = ds.v; save(); render(current, true); return true;
+    case "pickfood": {
+      var f = FOOD_BY_ID[ds.id];
+      foodPick = { id: f.id, qty: f.base };
+      render(current, true); return true;
+    }
+    case "qty": {
+      if (!foodPick) return true;
+      var f2 = FOOD_BY_ID[foodPick.id];
+      var typed = num("pick-qty"); if (!isNaN(typed)) foodPick.qty = typed;
+      var step = (f2.u === "جم" || f2.u === "مل") ? 10 : 1;
+      foodPick.qty = Math.max(step, Math.round((foodPick.qty + step * (+ds.v)) * 10) / 10);
+      render(current, true); return true;
+    }
+    case "closepick": foodPick = null; render(current, true); return true;
+    case "confirmfood": {
+      if (!foodPick) return true;
+      var typed2 = num("pick-qty"); if (!isNaN(typed2) && typed2 > 0) foodPick.qty = typed2;
+      var f3 = FOOD_BY_ID[foodPick.id], meal = S.addMeal || "الغداء";
+      day().meals[meal].push({ n:f3.n, en:f3.en, u:f3.u, base:f3.base, qty:foodPick.qty,
+                               kcal:f3.kcal, p:f3.p, c:f3.c, f:f3.f });
+      foodPick = null; save(); go("meals");
+      toast((en?"Added to ":"أُضيف لـ") + (en?MEAL_EN[meal]:meal)); return true;
+    }
+    case "manualfood": {
+      openPanel('<div class="font-title-md text-title-md text-on-surface mb-3">'+(en?"Custom item":"صنف يدوي")+'</div>'+
+        '<div class="grid grid-cols-2 gap-2">'+
+          '<div class="col-span-2">'+field("mf-n", en?"Name":"الاسم", "", "", "text")+'</div>'+
+          field("mf-k", en?"Calories":"السعرات", "", en?"kcal":"سعرة")+
+          field("mf-p", en?"Protein":"بروتين", "", en?"g":"جم")+
+          field("mf-c", en?"Carbs":"كارب", "", en?"g":"جم")+
+          field("mf-f", en?"Fat":"دهون", "", en?"g":"جم")+
+        '</div><div class="mt-3">'+btn(en?"Add":"أضف", 'data-act="savemanual"', "bg-primary-fixed text-on-primary-fixed w-full")+'</div>');
+      return true;
+    }
+    case "savemanual": {
+      var nEl = document.getElementById("mf-n");
+      var nm = (nEl && nEl.value.trim()) || (en?"Custom item":"صنف يدوي");
+      var kc = num("mf-k"); if (isNaN(kc) || kc <= 0){ toast(en?"Enter the calories":"اكتب السعرات"); return true; }
+      var meal2 = S.addMeal || "الغداء";
+      day().meals[meal2].push({ n:nm, en:nm, u:(en?"serving":"حصة"), base:1, qty:1, kcal:kc,
+        p:num("mf-p")||0, c:num("mf-c")||0, f:num("mf-f")||0 });
+      save(); closePanel(); go("meals"); toast(en?"Added":"أُضيف"); return true;
+    }
+    case "delitem": day().meals[ds.meal].splice(+ds.i, 1); save(); render(current, true); return true;
+    case "steps": day().steps = Math.max(0, (day().steps||0) + (+ds.v)); save(); render(current, true); return true;
+    case "water": day().water = Math.max(0, Math.round(((day().water||0) + parseFloat(ds.v))*100)/100); save(); render(current, true); return true;
+    case "weighin": S.progTab = "weight"; save(); go("progress"); return true;
+    case "gotoworkouts": go("workouts"); return true;
+    case "progtab": S.progTab = ds.v; save(); render(current, true); return true;
+    case "savew": {
+      var w = num("w-new");
+      if (isNaN(w) || w <= 0){ toast(en?"Enter a weight":"اكتب وزناً صحيحاً"); return true; }
+      pushWeight(Math.round(toKg(w)*10)/10); save(); render(current, true); toast(en?"Weight updated":"تحدّث وزنك"); return true;
+    }
+    case "savemeasures": {
+      var v = {}, any = false;
+      Array.prototype.forEach.call(document.querySelectorAll("[data-m]"), function(el){
+        var x = parseFloat((el.value||"").replace(/[^0-9.]/g, ""));
+        if (!isNaN(x) && x > 0){ v[el.dataset.m] = Math.round(toCm(x)*10)/10; any = true; }
+      });
+      if (!any){ toast(en?"Nothing to save":"ما فيه أرقام"); return true; }
+      S.measures = S.measures || []; S.measures.push({ d: stamp(), v: v });
+      save(); render(current, true); toast(en?"Measurements saved":"انحفظت مقاساتك"); return true;
+    }
+    case "addphoto": {
+      var inp = document.getElementById("photo-input");
+      if (inp) inp.click();
+      return true;
+    }
+    case "delphoto": (S.photos||[]).splice(+ds.i, 1); save(); render(current, true); return true;
+    case "perweek": {
+      var n = +ds.v, pr = program();
+      var tpl = DAY_TEMPLATES[n] || DAY_TEMPLATES[4];
+      var old = pr.days;
+      pr.perWeek = n;
+      pr.days = tpl.map(function(t, i){ return old[i] ? { ar:t[0], en:t[1], ex:old[i].ex } : { ar:t[0], en:t[1], ex:[] }; });
+      save(); render(current, true); return true;
+    }
+    case "addex": {
+      var di = +ds.d;
+      openPanel('<div class="font-title-md text-title-md text-on-surface mb-3">'+(en?"Add exercise":"أضف تمرين")+'</div>'+
+        '<div class="grid grid-cols-2 gap-2 mb-3">'+field("ex-sets", en?"Sets":"الجولات", "4", "", "numeric")+
+        field("ex-reps", en?"Reps":"التكرارات", "10", "", "numeric")+'</div>'+
+        '<div class="rounded-2xl bg-surface-container-high divide-y divide-outline-variant/40 max-h-72 overflow-y-auto">'+
+        EXERCISE_LIB.map(function(e, i){
+          return '<button data-act="pickex" data-d="'+di+'" data-i="'+i+'" class="tap w-full text-start px-4 py-3 font-label-lg text-label-lg text-on-surface">'+
+            (en?e[1]:e[0])+'</button>';
+        }).join("")+'</div>');
+      return true;
+    }
+    case "pickex": {
+      var e = EXERCISE_LIB[+ds.i], pr2 = program();
+      var sets = num("ex-sets") || 4, reps = num("ex-reps") || 10;
+      pr2.days[+ds.d].ex.push({ ar:e[0], en:e[1], sets:Math.max(1,Math.round(sets)), reps:Math.max(1,Math.round(reps)) });
+      save(); closePanel(); render(current, true); toast(en?"Added":"أُضيف"); return true;
+    }
+    case "delex": program().days[+ds.d].ex.splice(+ds.j, 1); save(); render(current, true); return true;
+    case "startday": S.sessionDay = +ds.d; S.sessionLog = {}; save(); go("session"); return true;
+    case "doneset": {
+      var j = +ds.j, k = +ds.k;
+      var wEl = document.querySelector('[data-set="'+j+'-'+k+'-w"]'), rEl = document.querySelector('[data-set="'+j+'-'+k+'-r"]');
+      var s = S.sessionLog[j][k];
+      if (wEl) s.w = wEl.value; if (rEl) s.r = rEl.value;
+      s.done = !s.done; save(); render(current, true); return true;
+    }
+    case "addset": {
+      var jj = +ds.j;
+      S.sessionLog[jj] = S.sessionLog[jj] || [];
+      S.sessionLog[jj].push({ w:"", r:"", done:false }); save(); render(current, true); return true;
+    }
+    case "finish": {
+      var pr3 = program(), d3 = pr3.days[S.sessionDay || 0], vol = 0, done = 0;
+      Object.keys(S.sessionLog || {}).forEach(function(j){
+        (S.sessionLog[j]||[]).forEach(function(s){ if (s.done){ vol += (+s.w||0)*(+s.r||0); done++; } });
+      });
+      S.sessions = S.sessions || [];
+      S.sessions.push({ d: stamp(), ar: d3.ar, en: d3.en, volume: Math.round(vol), sets: done });
+      S.sessionLog = {}; save(); go("workouts");
+      toast((en?"Session saved · ":"انحفظت الجلسة · ")+arGroup(vol)+(en?" kg":" كجم")); return true;
+    }
+  }
+  return false;
+}
+function pushWeight(kg){
+  S.weights = S.weights || [];
+  var last = S.weights[S.weights.length-1];
+  if (last && last.d === stamp()) last.kg = kg;
+  else S.weights.push({ d: stamp(), kg: kg });
+  if (S.weights.length > 30) S.weights.shift();
+  S.profile.weight = kg;
+}
+var DYNAMIC = { home:vHome, meals:vMeals, addfood:vAddFood, body:vBody, workouts:vWorkouts,
+                session:vSession, progress:vProgress, dietinfo:vDietInfo };
