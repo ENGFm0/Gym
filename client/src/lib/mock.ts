@@ -270,6 +270,11 @@ export const mockApi = {
     return all.filter((f) => f.nameAr.includes(q) || f.nameEn.toLowerCase().includes(q)).slice(0, 40);
   },
 
+  /** Offline there is no product database to ask, so a scan only finds what you saved before. */
+  async findByBarcode(code: string): Promise<Food | null> {
+    return [...store.customFoods, ...FOODS].find((food) => food.barcode === code) ?? null;
+  },
+
   async addCustomFood(food: Omit<Food, "id" | "isCustom">): Promise<Food> {
     const created: Food = { ...food, id: "u" + id(), isCustom: true };
     store.customFoods.unshift(created);
@@ -547,6 +552,26 @@ export const mockApi = {
     return store.trainees;
   },
 
+  /**
+   * Demo mode has no second account to read, so a trainee's screens show the signed-in
+   * member's own data. Against the API these are the coach endpoints, link-checked per call.
+   */
+  async getTraineeWeek(_uid: string): Promise<WeekSummary> {
+    return this.getWeek();
+  },
+
+  async getTraineeWeights(_uid: string): Promise<Weight[]> {
+    return this.getWeights();
+  },
+
+  async getTraineePhotos(_uid: string): Promise<Photo[]> {
+    return this.getPhotos();
+  },
+
+  async getTraineeDay(_uid: string, date: string): Promise<Day> {
+    return this.getDay(date);
+  },
+
   async inviteTrainee(email: string, name?: string): Promise<Trainee[]> {
     store.trainees.push({
       uid: "t" + id(), name: name || email, status: "invited",
@@ -632,6 +657,9 @@ export const mockApi = {
   async saveScan(scan: { weightKg?: number | null; bodyFatPercent?: number | null; skeletalMuscleKg?: number | null }) {
     if (scan.weightKg) await this.addWeight(scan.weightKg, "inbody");
   },
+
+  /** No server to register with in demo mode; the call is accepted and dropped. */
+  async registerDevice(_device: { token: string; platform?: string; lang?: string }): Promise<void> {},
 
   /** Used by the sign-out button in demo mode. */
   async reset() {

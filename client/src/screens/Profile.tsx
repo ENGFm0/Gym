@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Card, Field, Icon, Label, Segmented, Title, cx } from "@/components/ui";
 import { isConfigured, leave } from "@/lib/firebase";
+import { enablePush, pushSupported } from "@/lib/push";
 import { isOffline } from "@/lib/api";
 import { dec, group, lengthLabel, massLabel, n, parseNumber, raw, showLength, showMass, toCm, toKg } from "@/lib/format";
 import { useDay, useProfile, useSaveProfile } from "@/lib/queries";
@@ -15,6 +16,9 @@ export function ProfileScreen() {
   const day = useDay();
   const save = useSaveProfile();
   const [editing, setEditing] = useState(false);
+  const [pushOn, setPushOn] = useState(
+    typeof Notification !== "undefined" && Notification.permission === "granted"
+  );
   const [draft, setDraft] = useState<{ name: string; height: string; weight: string; target: string; birth: string }>({
     name: "",
     height: "",
@@ -190,6 +194,42 @@ export function ProfileScreen() {
           <Icon name="chevron_right" className="text-on-surface-variant rtl:rotate-180" />
         </button>
       </div>
+
+      {pushSupported() && (
+        <div className="rounded-2xl bg-surface-container overflow-hidden">
+          <button
+            onClick={async () => {
+              const state = await enablePush(lang);
+              setPushOn(state === "granted");
+              say(
+                state === "granted"
+                  ? t(lang, "بنذكّرك", "We will nudge you")
+                  : state === "denied"
+                    ? t(lang, "التنبيهات مرفوضة من المتصفح", "Notifications are blocked in the browser")
+                    : t(lang, "التنبيهات تحتاج ربط السيرفر", "Notifications need the API")
+              );
+            }}
+            className="tap w-full flex items-center justify-between px-4 py-3.5 text-start"
+          >
+            <span>
+              <span className="block text-label-lg text-on-surface">{t(lang, "التنبيهات", "Notifications")}</span>
+              <span className="block text-label-sm text-on-surface-variant">
+                {pushOn
+                  ? t(lang, "مفعّلة — خطة مدرّبك وجلساته توصلك", "On — your coach's plan and sessions reach you")
+                  : t(lang, "تذكير بالوجبة والتمرين وخطة مدرّبك", "Meal and training reminders, and your coach's plan")}
+              </span>
+            </span>
+            <span
+              className={cx(
+                "w-6 h-6 rounded-full flex items-center justify-center shrink-0",
+                pushOn ? "bg-primary-fixed text-on-primary-fixed" : "bg-surface-container-high"
+              )}
+            >
+              {pushOn && <Icon name="check" size={14} />}
+            </span>
+          </button>
+        </div>
+      )}
 
       <Button
         variant="soft"

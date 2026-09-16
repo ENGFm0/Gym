@@ -12,7 +12,8 @@ public sealed class ProfileController(
     CurrentUser user,
     ProfileService profiles,
     IIdentityService identity,
-    CoachService coaches) : ApiControllerBase(user)
+    CoachService coaches,
+    IDeviceRepository devices) : ApiControllerBase(user)
 {
     /// <summary>The signed-in member; the profile document is created on first call.</summary>
     [HttpGet("profile")]
@@ -72,6 +73,24 @@ public sealed class ProfileController(
         await coaches.LeaveCoachAsync(Uid, ct);
         var profile = await profiles.GetOrCreateAsync(Uid, Account.Email, Account.Name, ct);
         return Ok(profiles.Map(profile));
+    }
+
+    /* ---- notifications ---- */
+
+    /// <summary>Registers this device for push. The language decides which text it receives.</summary>
+    [HttpPost("devices")]
+    public async Task<IActionResult> RegisterDevice([FromBody] RegisterDeviceRequest request, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(request.Token)) return BadRequest(new { message = "No token." });
+        await devices.AddTokenAsync(Uid, request.Token, request.Platform, request.Lang, ct);
+        return NoContent();
+    }
+
+    [HttpDelete("devices/{token}")]
+    public async Task<IActionResult> ForgetDevice(string token, CancellationToken ct)
+    {
+        await devices.RemoveTokenAsync(Uid, token, ct);
+        return NoContent();
     }
 
     [HttpGet("diets")]

@@ -42,7 +42,8 @@ try {
   const browser = await chromium.launch(
     process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}
   );
-  const page = await browser.newPage({ viewport: { width: 430, height: 932 } });
+  const context = await browser.newContext({ viewport: { width: 430, height: 932 } });
+  const page = await context.newPage();
 
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -107,6 +108,18 @@ try {
   const weights = await page.evaluate(() => JSON.parse(localStorage["fitcore.demo.v1"]).weights.map((w) => w.kg));
   if (weights.length !== 2) fail(`both readings should be kept, got ${JSON.stringify(weights)}`);
   else ok("weight history keeps every reading");
+
+  // 5. The app opens with the network gone: the worker has to serve the shell and its code.
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await context.setOffline(true);
+  // `load` never fires offline — the font stylesheet hangs — so wait for the document instead.
+  await page.reload({ waitUntil: "domcontentloaded" }).catch(() => {});
+  await page.waitForTimeout(1200);
+
+  const rendered = await page.evaluate(() => document.getElementById("root")?.innerHTML.length ?? 0).catch(() => 0);
+  if (rendered < 500) fail(`the app did not render offline (root had ${rendered} chars)`);
+  else ok("opens offline");
+  await context.setOffline(false);
 
   if (errors.length) fail(`page errors: ${errors.join(" | ")}`);
   else ok("no page errors");

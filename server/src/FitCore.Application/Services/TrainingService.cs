@@ -10,6 +10,7 @@ namespace FitCore.Application.Services;
 public sealed class TrainingService(
     ITrainingRepository training,
     IUserRepository users,
+    INotifier notifier,
     IClock clock)
 {
     /* ---------------- program ---------------- */
@@ -205,6 +206,20 @@ public sealed class TrainingService(
                 Reps = best.Reps,
                 AtUtc = session.PerformedAtUtc
             }, ct);
+        }
+
+        // A member with a coach usually wants them to see the work; the coach gets one line.
+        if (profile?.Assignment?.CoachUid is { Length: > 0 } coachUid)
+        {
+            var who = profile.DisplayName ?? "متدربك";
+            var detail = session.VolumeKg > 0
+                ? $"{session.NameAr} · {session.VolumeKg:0} كجم"
+                : $"{session.NameAr} · {session.Minutes} دقيقة";
+
+            await notifier.SendAsync(coachUid, new PushMessage(
+                $"{who} سجّل جلسة", detail,
+                $"{who} logged a session", $"{session.NameEn} · {session.Minutes} min",
+                $"/coach/{uid}"), ct);
         }
 
         return MapSession(session);

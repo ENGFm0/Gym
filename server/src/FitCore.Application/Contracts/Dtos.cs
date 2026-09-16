@@ -199,3 +199,5 @@ public sealed record AssignmentDto(
     DateTime AssignedAtUtc);
 
 public sealed record AssignRequest(string? DietId, int? CalorieOverride, string? Note);
+
+public sealed record RegisterDeviceRequest(string Token, string? Platform, string? Lang);

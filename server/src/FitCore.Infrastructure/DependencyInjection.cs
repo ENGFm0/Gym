@@ -1,8 +1,10 @@
 using FitCore.Application.Abstractions;
 using FitCore.Infrastructure.Catalog;
+using System.Net.Http.Headers;
 using FitCore.Infrastructure.Firestore;
 using FitCore.Infrastructure.Firestore.Repositories;
 using FitCore.Infrastructure.Identity;
+using FitCore.Infrastructure.Notifications;
 using FitCore.Infrastructure.Scanning;
 using FitCore.Infrastructure.Storage;
 using Google.Cloud.Firestore;
@@ -18,6 +20,7 @@ public static class DependencyInjection
     {
         services.Configure<FirebaseOptions>(configuration.GetSection(FirebaseOptions.SectionName));
         services.Configure<ClaudeOptions>(configuration.GetSection(ClaudeOptions.SectionName));
+        services.Configure<FoodLookupOptions>(configuration.GetSection(FoodLookupOptions.SectionName));
 
         services.AddSingleton(sp =>
         {
@@ -38,9 +41,28 @@ public static class DependencyInjection
         services.AddScoped<ITrainingRepository, FirestoreTrainingRepository>();
         services.AddScoped<ICoachRepository, FirestoreCoachRepository>();
         services.AddScoped<IFoodCatalog, FirestoreFoodCatalog>();
+
+        var foods = configuration.GetSection(FoodLookupOptions.SectionName).Get<FoodLookupOptions>() ?? new();
+        if (foods.ExternalLookup)
+        {
+            services.AddHttpClient<IBarcodeLookup, OpenFoodFactsLookup>(client =>
+            {
+                client.BaseAddress = new Uri(foods.BaseUrl);
+                client.Timeout = TimeSpan.FromSeconds(foods.TimeoutSeconds);
+                client.DefaultRequestHeaders.UserAgent.ParseAdd(foods.UserAgent);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            });
+        }
+        else
+        {
+            services.AddSingleton<IBarcodeLookup, NoBarcodeLookup>();
+        }
         services.AddSingleton<IPhotoStorage, FirebasePhotoStorage>();
         services.AddSingleton<IIdentityService, FirebaseIdentityService>();
         services.AddSingleton<IInBodyScanner, ClaudeInBodyScanner>();
+        services.AddScoped<IDeviceRepository, FirestoreDeviceRepository>();
+        services.AddScoped<IQuotaRepository, FirestoreQuotaRepository>();
+        services.AddScoped<INotifier, FirebaseNotifier>();
 
         return services;
     }

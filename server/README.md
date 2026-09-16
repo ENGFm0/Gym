@@ -38,6 +38,8 @@ through `POST /api/me/become-coach`; the client must refresh its ID token once a
 | `Cors:Origins` | the origins the React app is served from |
 | `Anthropic:ApiKey` | key for reading InBody reports; empty falls back to `ANTHROPIC_API_KEY` |
 | `Anthropic:Model` | defaults to `claude-opus-5` |
+| `Foods:ExternalLookup` | off by default; on, an unknown barcode is looked up in Open Food Facts |
+| `Foods:UserAgent` | Open Food Facts throttles anonymous traffic — identify the app |
 
 ```bash
 dotnet user-secrets --project src/FitCore.Api set "Firebase:ProjectId" "your-project"
@@ -100,6 +102,7 @@ Firestore cannot `SUM` or `GROUP BY`, so weekly figures are computed from a boun
 | POST | `/api/me/leave-coach` | the member walks away whenever they like |
 | POST | `/api/scan/inbody` | reads a body-composition photo into typed numbers |
 | POST | `/api/scan/inbody/save` | keeps the numbers the member confirmed |
+| POST/DELETE | `/api/me/devices` | register or forget a device for push |
 
 ## Firestore security rules
 
@@ -153,3 +156,29 @@ Jeor against a hand-computed BMR, age derived from the birth date, the activity 
 the goal deltas and the 1200 kcal floor, the macro split per diet, the 1-to-7-day week
 planner (including that flipping days keeps the exercises already entered and that the last
 training day cannot be removed), and MET burn.
+
+## Barcodes
+
+`GET /api/foods/barcode/{code}` checks our own catalog first, then — when
+`Foods:ExternalLookup` is on — Open Food Facts, the open product database. A hit is written
+into `foods` with its barcode, so the second person to scan that packet gets it instantly and
+offline. Entries with no energy value are ignored rather than logged as zero-calorie food.
+
+The lookup is off by default because turning it on sends scanned barcodes to a third party;
+that is the member's data leaving, so it is a decision, not a default.
+
+## Notifications
+
+Device tokens live under `users/{uid}/devices`; a token FCM reports as unregistered is deleted
+rather than retried, which is the common case after an app is removed. Three things are worth
+a push and nothing else is: a coach assigning a plan, a member accepting an invite, and a
+member logging a session while they have a coach. Text is sent in the member's own language.
+
+## Limits
+
+Two layers, both keyed on the member rather than the IP — a gym's wifi is one address for
+everyone in it:
+
+- The whole API: 300 requests a minute.
+- `POST /api/scan/inbody`: 5 in five minutes, and **10 a day** enforced in Firestore with a
+  transaction, because that endpoint calls a model and costs real money per call.

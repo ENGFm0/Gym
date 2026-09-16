@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "./App";
 import { paint, useUi } from "./state/ui";
+import { registerWorker } from "./lib/push";
 import "./styles/index.css";
 
 const { lang, theme } = useUi.getState();
@@ -18,6 +19,9 @@ if (document.fonts?.ready) {
     if (loaded) document.documentElement.classList.remove("icons-missing");
   });
 }
+
+// The worker is what makes the app openable offline; push is asked for separately, on a tap.
+void registerWorker();
 
 const client = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 15_000 } }

@@ -18,7 +18,9 @@ export const keys = {
   sessions: ["sessions"] as const,
   week: ["week"] as const,
   trainees: ["trainees"] as const,
-  invites: ["invites"] as const
+  invites: ["invites"] as const,
+  trainee: (uid: string) => ["trainee", uid] as const,
+  traineeDay: (uid: string, date: string) => ["trainee", uid, "day", date] as const
 };
 
 export const useProfile = () => useQuery({ queryKey: keys.profile, queryFn: () => api.getProfile() });
@@ -208,6 +210,23 @@ export function useAssignPlan() {
 }
 
 export const useInvites = () => useQuery({ queryKey: keys.invites, queryFn: () => api.getInvites() });
+
+export const useTraineeWeek = (uid: string) =>
+  useQuery({ queryKey: [...keys.trainee(uid), "week"], queryFn: () => api.getTraineeWeek(uid) });
+
+export const useTraineeWeights = (uid: string) =>
+  useQuery({ queryKey: [...keys.trainee(uid), "weights"], queryFn: () => api.getTraineeWeights(uid) });
+
+export const useTraineePhotos = (uid: string) =>
+  useQuery({ queryKey: [...keys.trainee(uid), "photos"], queryFn: () => api.getTraineePhotos(uid) });
+
+export const useTraineeDay = (uid: string, date: string) =>
+  useQuery({ queryKey: keys.traineeDay(uid, date), queryFn: () => api.getTraineeDay(uid, date) });
+
+export function useRevokeInvite() {
+  const refresh = useRefresh();
+  return useMutation({ mutationFn: (inviteId: string) => api.revokeInvite(inviteId), onSuccess: () => refresh(keys.trainees) });
+}
 
 export function useAcceptInvite() {
   const refresh = useRefresh();

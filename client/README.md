@@ -68,9 +68,20 @@ it stays visible in both themes.
 Numbers render in the reader's own digits (`src/lib/format.ts`), except in fields that are about to
 be typed over — those stay Latin so the keyboard behaves.
 
+## Installable, and it opens offline
+
+`public/sw.js` caches the shell and this build's hashed assets — the list is injected by
+`scripts/build-sw.mjs` after `vite build`, because Vite decides those names. API calls are
+never cached: a stale plan or an old diary is worse than saying you are offline. The manifest
+makes it installable with three shortcuts (log a meal, training, weigh in).
+
+Push runs through the same worker. Permission is asked for on a tap in the profile, never on
+load, and the token goes to `/api/me/devices` so the API can reach that device. Needs
+`VITE_FIREBASE_VAPID_KEY`.
+
 ## Smoke test
 
 `npm run smoke` builds nothing itself — it serves `dist` with `vite preview` and walks the
-app: onboarding, logging food, rearranging the training week, and two weigh-ins that both
-have to survive. It runs in CI after the build. Locally, `CHROMIUM_PATH=/path/to/chrome`
+app: onboarding, logging food, rearranging the training week, two weigh-ins that both have to
+survive, and a reload with the network cut to prove the worker really serves the app. It runs in CI after the build. Locally, `CHROMIUM_PATH=/path/to/chrome`
 reuses a browser you already have instead of downloading one.

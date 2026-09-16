@@ -21,6 +21,7 @@ export function AddFood() {
   const [quantity, setQuantity] = useState("");
   const [manual, setManual] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [scannedCode, setScannedCode] = useState<string | null>(null);
   const [custom, setCustom] = useState({ name: "", kcal: "", protein: "", carbs: "", fat: "" });
 
   const foods = useFoodSearch(query);
@@ -56,6 +57,22 @@ export function AddFood() {
     if (!Number.isFinite(kcal) || kcal <= 0) {
       say(t(lang, "اكتب السعرات", "Enter the calories"));
       return;
+    }
+
+    // A scanned packet becomes a saved item, so nobody types it twice.
+    if (scannedCode) {
+      await api.addCustomFood({
+        nameAr: custom.name || t(lang, "صنف يدوي", "Custom item"),
+        nameEn: custom.name || "Custom item",
+        unit: t(lang, "حصة", "serving"),
+        baseAmount: 1,
+        calories: kcal,
+        protein: parseNumber(custom.protein) || 0,
+        carbs: parseNumber(custom.carbs) || 0,
+        fat: parseNumber(custom.fat) || 0,
+        barcode: scannedCode
+      });
+      setScannedCode(null);
     }
 
     await add.mutateAsync({
@@ -144,16 +161,16 @@ export function AddFood() {
         onClose={() => setScanning(false)}
         onCode={async (code) => {
           setScanning(false);
-          const matches = await api.searchFoods(code);
-          const hit = matches.find((food) => food.barcode === code) ?? matches[0];
+          const hit = await api.findByBarcode(code);
           if (hit) {
             setPicked(hit);
             setQuantity(String(hit.baseAmount));
             return;
           }
-          // Not in the catalog yet: open the manual form rather than a dead end.
-          say(t(lang, "ما لقيناه — سجّله يدوياً ونحفظه لك", "Not in the catalog — add it once and we keep it"));
-          setCustom({ ...custom, name: code });
+          // Unknown packet: take it by hand once, and keep the code so the next scan finds it.
+          say(t(lang, "ما لقيناه — سجّله مرة ونحفظه لك", "Not found — add it once and we keep it"));
+          setScannedCode(code);
+          setCustom({ ...custom, name: "" });
           setManual(true);
         }}
       />
@@ -194,7 +211,12 @@ export function AddFood() {
       </Sheet>
 
       <Sheet open={manual} onClose={() => setManual(false)}>
-        <Title>{t(lang, "صنف يدوي", "Custom item")}</Title>
+        <Title>{scannedCode ? t(lang, "صنف جديد من الباركود", "New item from the barcode") : t(lang, "صنف يدوي", "Custom item")}</Title>
+        {scannedCode && (
+          <Label>
+            {t(lang, "نحفظه بالباركود عشان المرة الجاية يطلع لك مباشرة", "We keep it against the barcode for next time")}
+          </Label>
+        )}
         <div className="grid grid-cols-2 gap-2 mt-3">
           <div className="col-span-2">
             <Field

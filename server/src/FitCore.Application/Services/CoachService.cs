@@ -16,6 +16,7 @@ public sealed class CoachService(
     IProgressRepository progress,
     TrainingService training,
     WeekSummaryService summaries,
+    INotifier notifier,
     IClock clock)
 {
     /* ---------------- the coach's side ---------------- */
@@ -113,6 +114,14 @@ public sealed class CoachService(
 
         link.AssignedDietId = request.DietId;
         await coaches.SaveLinkAsync(link, ct);
+
+        var coachName = coach?.DisplayName ?? "مدرّبك";
+        await notifier.SendAsync(traineeUid, new PushMessage(
+            "خطة جديدة من مدرّبك",
+            request.Note ?? $"{coachName} حدّث نظامك الغذائي",
+            "A new plan from your coach",
+            request.Note ?? $"{coachName} updated your diet",
+            "/diet"), ct);
     }
 
     public async Task RemoveAsync(string coachUid, string traineeUid, CancellationToken ct = default)
@@ -158,6 +167,14 @@ public sealed class CoachService(
         invite.TraineeUid = uid;
         invite.AnsweredAtUtc = clock.UtcNow;
         await coaches.SaveInviteAsync(invite, ct);
+
+        var name = link.TraineeName;
+        await notifier.SendAsync(invite.CoachUid, new PushMessage(
+            "متدرب جديد",
+            $"{name} قبل دعوتك",
+            "A new trainee",
+            $"{name} accepted your invite",
+            $"/coach/{uid}"), ct);
 
         return link;
     }

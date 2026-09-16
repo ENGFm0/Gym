@@ -9,6 +9,8 @@ import type {
   Photo, Plan, Profile, Program, Session, SessionExercise, Trainee, WeekSummary, Weight
 } from "./types";
 
+/** Everything a coach is allowed to see about one trainee, in one call each. */
+
 /**
  * Demo mode is the absence of a configured API, not an empty string: behind Firebase Hosting
  * the API is same-origin, so `VITE_API_BASE=/` is a real backend with an empty base.
@@ -54,6 +56,13 @@ const httpApi: MockApi = {
   patchDay: (date, patch) => call<Day>(`/api/diary/${date}`, { method: "PATCH", body: body(patch) }),
 
   searchFoods: (query) => call<Food[]>(`/api/foods?q=${encodeURIComponent(query ?? "")}`),
+  findByBarcode: async (code) => {
+    try {
+      return await call<Food>(`/api/foods/barcode/${encodeURIComponent(code)}`);
+    } catch {
+      return null; // not in our catalog and not in the open database either
+    }
+  },
   addCustomFood: (food) => call<Food>("/api/foods/custom", { method: "POST", body: body(food) }),
 
   getWeights: () => call<Weight[]>("/api/progress/weights"),
@@ -133,6 +142,10 @@ const httpApi: MockApi = {
 
   becomeCoach: () => call<Profile>("/api/me/become-coach", { method: "POST" }),
   getTrainees: () => call<Trainee[]>("/api/coach/trainees"),
+  getTraineeWeek: (uid) => call<WeekSummary>(`/api/coach/trainees/${uid}/week`),
+  getTraineeWeights: (uid) => call<Weight[]>(`/api/coach/trainees/${uid}/weights`),
+  getTraineePhotos: (uid) => call<Photo[]>(`/api/coach/trainees/${uid}/photos`),
+  getTraineeDay: (uid, date) => call<Day>(`/api/coach/trainees/${uid}/diary/${date}`),
   inviteTrainee: async (email, name) => {
     await call<unknown>("/api/coach/trainees", { method: "POST", body: body({ email, name }) });
     return call<Trainee[]>("/api/coach/trainees");
@@ -154,6 +167,10 @@ const httpApi: MockApi = {
     await call<void>(`/api/me/invites/${inviteId}/decline`, { method: "POST" });
   },
   leaveCoach: () => call<Profile>("/api/me/leave-coach", { method: "POST" }),
+
+  registerDevice: async (device) => {
+    await call<void>("/api/me/devices", { method: "POST", body: body(device) });
+  },
   removeTrainee: async (traineeUid) => {
     await call<void>(`/api/coach/trainees/${traineeUid}`, { method: "DELETE" });
     return call<Trainee[]>("/api/coach/trainees");

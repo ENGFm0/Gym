@@ -1,0 +1,22 @@
+{
+  "name": "قِوام — FitCore",
+  "short_name": "FitCore",
+  "description": "دايتك وتمارينك في مكان واحد",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#111412",
+  "theme_color": "#111412",
+  "icons": [
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "سجّل وجبة", "url": "/meals/add" },
+    { "name": "تمريني", "url": "/training" },
+    { "name": "سجّل وزنك", "url": "/progress" }
+  ]
+}

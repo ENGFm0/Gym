@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Button, Card, Empty, Field, Icon, Label, Sheet, Title, cx } from "@/components/ui";
-import { dec, n, shortDate } from "@/lib/format";
+import { dec, n } from "@/lib/format";
+import { useNavigate } from "react-router-dom";
 import {
-  useAssignPlan, useBecomeCoach, useDiets, useInviteTrainee, useProfile, useRemoveTrainee, useTrainees
+  useBecomeCoach, useInviteTrainee, useProfile, useRevokeInvite, useTrainees
 } from "@/lib/queries";
-import { parseNumber } from "@/lib/format";
 import { t, useUi } from "@/state/ui";
 import type { Trainee } from "@/lib/types";
 
@@ -18,16 +18,13 @@ export function Coach() {
   const become = useBecomeCoach();
   const trainees = useTrainees(Boolean(profile.data?.isCoach));
   const invite = useInviteTrainee();
-  const assign = useAssignPlan();
-  const remove = useRemoveTrainee();
-  const diets = useDiets();
+  const revoke = useRevokeInvite();
+  const navigate = useNavigate();
 
   const [inviting, setInviting] = useState(false);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [open, setOpen] = useState<Trainee | null>(null);
-  const [calories, setCalories] = useState("");
-  const [note, setNote] = useState("");
 
   if (!profile.data) return null;
 
@@ -121,7 +118,7 @@ export function Coach() {
           {list.map((trainee) => (
             <button
               key={trainee.uid}
-              onClick={() => setOpen(trainee)}
+              onClick={() => (trainee.status === "invited" ? setOpen(trainee) : navigate(`/coach/${trainee.uid}`))}
               className="tap w-full flex items-center gap-3 px-4 py-3 text-start"
             >
               <span className="w-11 h-11 rounded-xl bg-primary-fixed/15 text-primary-fixed flex items-center justify-center text-title-md shrink-0">
@@ -187,95 +184,26 @@ export function Coach() {
         {open && (
           <>
             <div className="flex items-center gap-3 mb-3">
-              <span className="w-12 h-12 rounded-xl bg-primary-fixed text-on-primary-fixed flex items-center justify-center text-title-md shrink-0">
-                {open.name.trim().charAt(0)}
+              <span className="w-12 h-12 rounded-xl bg-surface-container-high text-on-surface-variant flex items-center justify-center shrink-0">
+                <Icon name="mail" size={20} />
               </span>
               <div className="min-w-0">
                 <Title>{open.name}</Title>
-                <Label>
-                  {t(lang, "بدأ معك ", "with you since ")}
-                  {shortDate(open.startedAtUtc, lang)}
-                </Label>
+                <Label>{t(lang, "الدعوة معلّقة — ما يوصلك شي قبل ما يقبل", "Invite pending — nothing reaches you before they accept")}</Label>
               </div>
             </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              {([
-                [t(lang, "الوزن", "Weight"), open.weightKg ? dec(open.weightKg, 1, lang) : "—"],
-                [t(lang, "جلسات", "Sessions"), n(open.sessionsThisWeek, lang)],
-                [t(lang, "الالتزام", "Adherence"), `${n(open.adherencePercent, lang)}${t(lang, "٪", "%")}`]
-              ] as const).map(([label, value]) => (
-                <div key={label} className="rounded-xl bg-surface-container-high p-3 text-center">
-                  <div className="text-title-md text-on-surface tabular-nums">{value}</div>
-                  <div className="text-label-sm text-on-surface-variant">{label}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-3">
-              <Label>{t(lang, "نظامه الغذائي", "Their diet")}</Label>
-              <div className="rounded-2xl bg-surface-container-high divide-y divide-outline-variant/40 mt-1 overflow-hidden max-h-56 overflow-y-auto">
-                {(diets.data ?? []).map((diet) => (
-                  <button
-                    key={diet.id}
-                    onClick={async () => {
-                      const override = parseNumber(calories);
-                      await assign.mutateAsync({
-                        uid: open.uid,
-                        plan: {
-                          dietId: diet.id,
-                          calorieOverride: Number.isFinite(override) && override > 0 ? Math.round(override) : null,
-                          note: note || null
-                        }
-                      });
-                      setOpen({ ...open, assignedDietId: diet.id });
-                      say(t(lang, "انحدّدت خطته", "Plan assigned"));
-                    }}
-                    className="tap w-full flex items-center justify-between px-4 py-3 text-start"
-                  >
-                    <span className="text-label-lg text-on-surface">{t(lang, diet.nameAr, diet.nameEn)}</span>
-                    {open.assignedDietId === diet.id && (
-                      <span className="px-2.5 py-1 rounded-lg bg-primary-fixed text-on-primary-fixed text-label-sm">
-                        {t(lang, "معطى", "Assigned")}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 mt-3">
-              <Field
-                label={t(lang, "سعرات مخصصة (اختياري)", "Calories (optional)")}
-                value={calories}
-                onChange={setCalories}
-                inputMode="numeric"
-              />
-              <Field
-                label={t(lang, "ملاحظة له", "Note")}
-                value={note}
-                onChange={setNote}
-                inputMode="text"
-              />
-            </div>
-            <p className="mt-2 text-label-sm text-on-surface-variant">
-              {t(
-                lang,
-                "الخطة تظهر له فوراً، ويقدر يفكّها متى ما بغى — حسابه حسابه.",
-                "The plan shows up for them at once, and they can drop it whenever — it is their account."
-              )}
-            </p>
 
             <Button
               variant="soft"
-              className="w-full mt-3"
+              className="w-full"
               onClick={async () => {
-                await remove.mutateAsync(open.uid);
+                // A pending row is an invite, not a link: it is revoked, not unlinked.
+                await revoke.mutateAsync(open.uid);
                 setOpen(null);
-                say(t(lang, "انفكّ الارتباط", "Unlinked"));
+                say(t(lang, "انلغت الدعوة", "Invite revoked"));
               }}
             >
-              {t(lang, "فكّ الارتباط", "Unlink trainee")}
+              {t(lang, "ألغِ الدعوة", "Revoke invite")}
             </Button>
           </>
         )}
